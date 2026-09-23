@@ -8,11 +8,11 @@
         <version>4.1.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>pe.edu.upc</groupId>
-    <artifactId>walletix</artifactId>
+    <groupId>org.upc</groupId>
+    <artifactId>WALLETIX_Gustabo</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>walletix</name>
-    <description>walletix</description>
+    <name>WALLETIX_Gustabo</name>
+    <description>WALLETIX_Gustabo</description>
     <url/>
     <licenses>
         <license/>
@@ -31,12 +31,23 @@
     </properties>
     <dependencies>
         <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>3.2.6</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webmvc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>3.1.0</version>
         </dependency>
 
         <dependency>
