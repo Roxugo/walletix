@@ -10,7 +10,7 @@ import java.time.LocalDate;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String idUser;
+    private int idUser;
 
     @Column(name = "nameUser",length =30 ,nullable =false )
     private String nameUser;
@@ -36,7 +36,7 @@ public class User {
     public User() {
     }
 
-    public User(String idUser, String nameUser, String emailUser, String phoneUser, LocalDate birthdayUser, String segmentUser, BigDecimal currentbalanceUser, int gamificationpointsUser) {
+    public User(int idUser, String nameUser, String emailUser, String phoneUser, LocalDate birthdayUser, String segmentUser, BigDecimal currentbalanceUser, int gamificationpointsUser) {
         this.idUser = idUser;
         this.nameUser = nameUser;
         this.emailUser = emailUser;
@@ -47,11 +47,11 @@ public class User {
         this.gamificationpointsUser = gamificationpointsUser;
     }
 
-    public String getIdUser() {
+    public int getIdUser() {
         return idUser;
     }
 
-    public void setIdUser(String idUser) {
+    public void setIdUser(int idUser) {
         this.idUser = idUser;
     }
 
