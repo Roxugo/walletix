@@ -6,13 +6,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "User")
-public class User {
+@Table(name = "Users")
+public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idUser;
 
-    @Column(name = "nameUser",length =30 ,nullable =false )
+    @Column(name = "nameUser", length = 30, nullable = false)
     private String nameUser;
 
     @Column(name = "emailUser", length = 20, nullable = false)
@@ -33,10 +33,10 @@ public class User {
     @Column(name = "gamificationpointsUser", nullable = false)
     private int gamificationpointsUser;
 
-    public User() {
+    public Users() {
     }
 
-    public User(int idUser, String nameUser, String emailUser, String phoneUser, LocalDate birthdayUser, String segmentUser, BigDecimal currentbalanceUser, int gamificationpointsUser) {
+    public Users(int idUser, String nameUser, String emailUser, String phoneUser, LocalDate birthdayUser, String segmentUser, BigDecimal currentbalanceUser, int gamificationpointsUser) {
         this.idUser = idUser;
         this.nameUser = nameUser;
         this.emailUser = emailUser;
