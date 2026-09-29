@@ -31,11 +31,11 @@ public class Incomes {
     private String description;
 
     @ManyToOne
-    @JoinColumn (name = "id_user")
+    @JoinColumn (name = "idUser")
     private User user;
 
     @ManyToOne
-    @JoinColumn (name = "id_category")
+    @JoinColumn (name = "idCategory")
     private CategoryEntity category;
 
     public int getIdIncome() {

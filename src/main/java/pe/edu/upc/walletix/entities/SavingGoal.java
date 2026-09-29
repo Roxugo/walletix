@@ -28,7 +28,7 @@ public class SavingGoal {
     private String status;
 
     @ManyToOne
-    @JoinColumn(name = "id_user")
+    @JoinColumn(name = "idUser")
     private User user;
 
     public int getIdSavingGoal() {
