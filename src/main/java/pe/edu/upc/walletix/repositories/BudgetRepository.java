@@ -14,12 +14,12 @@ public interface BudgetRepository extends JpaRepository<Budgets, Integer> {
             SELECT *
             FROM tm_budgets
             WHERE id_user = :idUser
-              AND month = :mes
-              AND year = :anio
+              AND month = :month
+              AND year = :year
             """, nativeQuery = true)
     List<Budgets> listarPorUsuarioYPeriodo(
             @Param("idUser") int idUser,
-            @Param("mes") int mes,
-            @Param("anio") int anio
+            @Param("mes") int month,
+            @Param("anio") int year
     );
 }
