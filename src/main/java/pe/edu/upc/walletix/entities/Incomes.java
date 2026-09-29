@@ -36,7 +36,7 @@ public class Incomes {
 
     @ManyToOne
     @JoinColumn (name = "idCategory")
-    private CategoryEntity category;
+    private Category category;
 
     public int getIdIncome() {
         return idIncome;

@@ -24,7 +24,7 @@ public class Budgets {
 
     @ManyToOne
     @JoinColumn (name = "idCategory")
-    private CategoryEntity category;
+    private Category category;
 
     public int getIdBudget() {
         return idBudget;
