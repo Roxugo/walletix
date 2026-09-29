@@ -4,18 +4,18 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import pe.edu.upc.walletix.entities.SavingGoals;
+import pe.edu.upc.walletix.entities.SavingGoal;
 
 import java.util.List;
 
 @Repository
-public interface SavingGoalRepository extends JpaRepository<SavingGoals, Integer> {
+public interface SavingGoalRepository extends JpaRepository<SavingGoal, Integer> {
     @Query(value = """
             SELECT *
             FROM tm_saving_goals
             WHERE id_user = :idUser
             """, nativeQuery = true)
-    List<SavingGoals> listarPorUsuario(
+    List<SavingGoal> listarPorUsuario(
             @Param("idUser") int idUser
     );
 }

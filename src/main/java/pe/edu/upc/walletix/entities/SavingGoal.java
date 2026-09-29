@@ -7,7 +7,7 @@ import java.time.LocalDate;
 
 @Entity
 @Table (name = "tm_savingGoals")
-public class SavingGoals {
+public class SavingGoal {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idSavingGoal;

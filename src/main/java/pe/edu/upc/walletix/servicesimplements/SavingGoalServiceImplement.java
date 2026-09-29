@@ -2,7 +2,7 @@ package pe.edu.upc.walletix.servicesimplements;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pe.edu.upc.walletix.entities.SavingGoals;
+import pe.edu.upc.walletix.entities.SavingGoal;
 import pe.edu.upc.walletix.repositories.SavingGoalRepository;
 import pe.edu.upc.walletix.servicesinterfaces.ISavingGoalService;
 
@@ -15,22 +15,22 @@ public class SavingGoalServiceImplement implements ISavingGoalService {
     private SavingGoalRepository sgR;
 
     @Override
-    public List<SavingGoals> list() {
+    public List<SavingGoal> list() {
         return sgR.findAll();
     }
 
     @Override
-    public SavingGoals insert(SavingGoals savingGoals) {
+    public SavingGoal insert(SavingGoal savingGoals) {
         return sgR.save(savingGoals);
     }
 
     @Override
-    public Optional<SavingGoals> listId(int id) {
+    public Optional<SavingGoal> listId(int id) {
         return sgR.findById(id);
     }
 
     @Override
-    public void update(SavingGoals sg) {
+    public void update(SavingGoal sg) {
         sgR.save(sg);
     }
 
