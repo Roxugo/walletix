@@ -12,7 +12,7 @@ public class Challenges {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idChallenge;
 
-    @Column(name = "titleChallenpackage pe.edu.upc.walletix.entities;\nge", length = 150, nullable = false)
+    @Column(name = "titleChallenge", length = 150, nullable = false)
     private String titleChallenge;
 
     @Column(name = "descriptionChallenge", columnDefinition = "TEXT")
