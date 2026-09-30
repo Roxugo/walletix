@@ -7,24 +7,25 @@ import jakarta.persistence.*;
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int idCategory;
 
-    @Column(name = "userIdCategory")
+    @Column(name = "user_id")
     private Integer userIdCategory;
 
-    @Column(name = "nameCategory", length = 50, nullable = false)
+    @Column(name = "name", length = 100, nullable = false)
     private String nameCategory;
 
-    @Column(name = "typeCategory", length = 10, nullable = false)
+    @Column(name = "type", length = 20, nullable = false)
     private String typeCategory;
 
-    @Column(name = "iconUrlCategory", length = 255)
+    @Column(name = "icon_url", length = 255)
     private String iconUrlCategory;
 
-    @Column(name = "colorHexCategory", length = 7)
+    @Column(name = "color_hex", length = 10)
     private String colorHexCategory;
 
-    @Column(name = "isDefaultCategory", nullable = false)
+    @Column(name = "is_default")
     private boolean isDefaultCategory;
 
     public Category() {

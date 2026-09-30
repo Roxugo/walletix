@@ -7,15 +7,16 @@ import jakarta.persistence.*;
 public class Merchant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int idMerchant;
 
-    @Column(name = "nameMerchant", length = 100, nullable = false)
+    @Column(name = "name", length = 100, nullable = false)
     private String nameMerchant;
 
-    @Column(name = "logoUrlMerchant", length = 255)
+    @Column(name = "logo_url", length = 255)
     private String logoUrlMerchant;
 
-    @Column(name = "defaultCategoryIdMerchant")
+    @Column(name = "default_category_id")
     private Integer defaultCategoryIdMerchant;
 
     public Merchant() {
