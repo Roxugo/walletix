@@ -1,5 +1,6 @@
 package pe.edu.upc.walletix.controllers;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,18 +28,6 @@ public class UserChallengeController {
     @Autowired
     private IChallengeService cS;
 
-    private UserChallengeDTO convertirADTO(UserChallenges uc) {
-        UserChallengeDTO dto = new UserChallengeDTO();
-        dto.setIdUserChallenge(uc.getIdUserChallenge());
-        dto.setIdUser(uc.getUser().getIdUser());
-        dto.setIdChallenge(uc.getChallenge().getIdChallenge());
-        dto.setInitialBalanceUserChallenge(uc.getInitialBalanceUserChallenge());
-        dto.setCurrentProgressAmountUserChallenge(uc.getCurrentProgressAmountUserChallenge());
-        dto.setProgressPercentageUserChallenge(uc.getProgressPercentageUserChallenge());
-        dto.setStatusUserChallenge(uc.getStatusUserChallenge());
-        return dto;
-    }
-
     private String validar(UserChallengeDTO dto) {
         BigDecimal p = dto.getProgressPercentageUserChallenge();
         if (p != null && (p.compareTo(BigDecimal.ZERO) < 0 || p.compareTo(new BigDecimal("100")) > 0)) {
@@ -49,8 +38,9 @@ public class UserChallengeController {
 
     @GetMapping
     public ResponseEntity<List<UserChallengeDTO>> listar(){
+        ModelMapper m = new ModelMapper();
         List<UserChallengeDTO> lista = ucS.list().stream()
-                .map(this::convertirADTO)
+                .map(y -> m.map(y, UserChallengeDTO.class))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(lista);
     }
@@ -71,21 +61,21 @@ public class UserChallengeController {
                     .body("Reto no encontrado");
         }
 
-        UserChallenges uc = new UserChallenges();
+        ModelMapper m = new ModelMapper();
+        UserChallenges uc = m.map(dto, UserChallenges.class);
         uc.setUser(usuario.get());
         uc.setChallenge(reto.get());
-        uc.setInitialBalanceUserChallenge(dto.getInitialBalanceUserChallenge());
-        uc.setCurrentProgressAmountUserChallenge(dto.getCurrentProgressAmountUserChallenge());
-        uc.setProgressPercentageUserChallenge(dto.getProgressPercentageUserChallenge());
-        uc.setStatusUserChallenge(dto.getStatusUserChallenge());
         UserChallenges cur = ucS.insert(uc);
-        return ResponseEntity.status(HttpStatus.CREATED).body(convertirADTO(cur));
+        UserChallengeDTO responseDTO = m.map(cur, UserChallengeDTO.class);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
     @GetMapping("/{id}")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
+        ModelMapper m = new ModelMapper();
         Optional<UserChallenges> uc = ucS.listId(id);
         if (uc.isPresent()) {
-            return ResponseEntity.ok(convertirADTO(uc.get()));
+            UserChallengeDTO dto = m.map(uc.get(), UserChallengeDTO.class);
+            return ResponseEntity.ok(dto);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Reto de usuario no encontrado");

@@ -1,5 +1,6 @@
 package pe.edu.upc.walletix.controllers;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,21 +23,11 @@ public class NotificationController {
     @Autowired
     private IUserService uS;
 
-    private NotificationDTO convertirADTO(Notifications n) {
-        NotificationDTO dto = new NotificationDTO();
-        dto.setIdNotification(n.getIdNotification());
-        dto.setIdUser(n.getUser().getIdUser());
-        dto.setTypeNotification(n.getTypeNotification());
-        dto.setTitleNotification(n.getTitleNotification());
-        dto.setMessageNotification(n.getMessageNotification());
-        dto.setReadNotification(n.isReadNotification());
-        return dto;
-    }
-
     @GetMapping
     public ResponseEntity<List<NotificationDTO>> listar(){
+        ModelMapper m = new ModelMapper();
         List<NotificationDTO> lista = nS.list().stream()
-                .map(this::convertirADTO)
+                .map(y -> m.map(y, NotificationDTO.class))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(lista);
     }
@@ -48,20 +39,20 @@ public class NotificationController {
                     .body("Usuario no encontrado");
         }
 
-        Notifications n = new Notifications();
+        ModelMapper m = new ModelMapper();
+        Notifications n = m.map(dto, Notifications.class);
         n.setUser(usuario.get());
-        n.setTypeNotification(dto.getTypeNotification());
-        n.setTitleNotification(dto.getTitleNotification());
-        n.setMessageNotification(dto.getMessageNotification());
-        n.setReadNotification(dto.isReadNotification());
         Notifications cur = nS.insert(n);
-        return ResponseEntity.status(HttpStatus.CREATED).body(convertirADTO(cur));
+        NotificationDTO responseDTO = m.map(cur, NotificationDTO.class);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
     @GetMapping("/{id}")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
+        ModelMapper m = new ModelMapper();
         Optional<Notifications> n = nS.listId(id);
         if (n.isPresent()) {
-            return ResponseEntity.ok(convertirADTO(n.get()));
+            NotificationDTO dto = m.map(n.get(), NotificationDTO.class);
+            return ResponseEntity.ok(dto);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Notificacion no encontrada");
