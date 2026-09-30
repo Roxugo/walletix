@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 public class Achievement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private int idAchievement;
 
     @Column(name = "nameAchievement",length =20 ,nullable =false )
     private String nameAchievement;
@@ -24,20 +24,20 @@ public class Achievement {
     public Achievement() {
     }
 
-    public Achievement(int id, String nameAchievement, String descriptionAchievement, String iconurlAchievement, int pointAchievement) {
-        this.id = id;
+    public Achievement(int idAchievement, String nameAchievement, String descriptionAchievement, String iconurlAchievement, int pointAchievement) {
+        this.idAchievement = idAchievement;
         this.nameAchievement = nameAchievement;
         this.descriptionAchievement = descriptionAchievement;
         this.iconurlAchievement = iconurlAchievement;
         this.pointAchievement = pointAchievement;
     }
 
-    public int getId() {
-        return id;
+    public int getIdAchievement() {
+        return idAchievement;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setIdAchievement(int idAchievement) {
+        this.idAchievement = idAchievement;
     }
 
     public String getNameAchievement() {
