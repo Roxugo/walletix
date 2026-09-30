@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "Users")
 public class Users {
@@ -32,6 +35,12 @@ public class Users {
 
     @Column(name = "gamificationpointsUser", nullable = false)
     private int gamificationpointsUser;
+
+    @OneToMany(mappedBy = "user")
+    private List<UserChallenges> userChallenges = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user")
+    private List<Notifications> notifications = new ArrayList<>();
 
     public Users() {
     }
@@ -109,5 +118,21 @@ public class Users {
 
     public void setGamificationpointsUser(int gamificationpointsUser) {
         this.gamificationpointsUser = gamificationpointsUser;
+    }
+
+    public List<UserChallenges> getUserChallenges() {
+        return userChallenges;
+    }
+
+    public void setUserChallenges(List<UserChallenges> userChallenges) {
+        this.userChallenges = userChallenges;
+    }
+
+    public List<Notifications> getNotifications() {
+        return notifications;
+    }
+
+    public void setNotifications(List<Notifications> notifications) {
+        this.notifications = notifications;
     }
 }
