@@ -39,4 +39,9 @@ public class CategoryServiceImplement implements ICategoryService {
     public void delete(int id) {
         cR.deleteById(id);
     }
+
+    @Override
+    public List<Category> buscarPorTipo(String type) {
+        return cR.buscarPorTipo(type);
+    }
 }

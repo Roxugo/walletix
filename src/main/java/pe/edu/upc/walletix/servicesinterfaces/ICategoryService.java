@@ -11,4 +11,5 @@ public interface ICategoryService {
     public Optional<Category> listId(int id);
     public void update(Category c);
     public void delete(int id);
+    public List<Category> buscarPorTipo(String type);
 }

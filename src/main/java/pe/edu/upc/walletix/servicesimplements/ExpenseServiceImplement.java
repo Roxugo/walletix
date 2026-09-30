@@ -6,6 +6,7 @@ import pe.edu.upc.walletix.entities.Expense;
 import pe.edu.upc.walletix.repositories.IExpenseRepository;
 import pe.edu.upc.walletix.servicesinterfaces.IExpenseService;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,5 +39,10 @@ public class ExpenseServiceImplement implements IExpenseService {
     @Override
     public void delete(int id) {
         eR.deleteById(id);
+    }
+
+    @Override
+    public List<Expense> buscarPorUsuarioYRango(int userId, LocalDate desde, LocalDate hasta) {
+        return eR.buscarPorUsuarioYRango(userId, desde, hasta);
     }
 }

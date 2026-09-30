@@ -9,6 +9,7 @@ import pe.edu.upc.walletix.dtos.ExpenseDTO;
 import pe.edu.upc.walletix.entities.Expense;
 import pe.edu.upc.walletix.servicesinterfaces.IExpenseService;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -89,5 +90,16 @@ public class ExpenseController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Gasto no encontrado");
         }
+    }
+
+    @GetMapping("/usuario/{userId}")
+    public ResponseEntity<List<ExpenseDTO>> buscarPorUsuarioYRango(@PathVariable int userId,
+                                                                     @RequestParam LocalDate desde,
+                                                                     @RequestParam LocalDate hasta) {
+        ModelMapper m = new ModelMapper();
+        List<ExpenseDTO> lista = eS.buscarPorUsuarioYRango(userId, desde, hasta).stream()
+                .map(y -> m.map(y, ExpenseDTO.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(lista);
     }
 }

@@ -79,4 +79,13 @@ public class CategoryController {
                     .body("Categoría no encontrada");
         }
     }
+
+    @GetMapping("/tipo/{type}")
+    public ResponseEntity<List<CategoryDTO>> buscarPorTipo(@PathVariable String type) {
+        ModelMapper m = new ModelMapper();
+        List<CategoryDTO> lista = cS.buscarPorTipo(type).stream()
+                .map(y -> m.map(y, CategoryDTO.class))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(lista);
+    }
 }
