@@ -1,0 +1,52 @@
+package pe.edu.upc.walletix.entities;
+
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "UsersAchiev")
+public class UsersAchiev {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int idUsersAchiev;
+
+    @ManyToOne
+    @JoinColumn(name = "IdUsers")
+    private Users users;
+
+    @ManyToOne
+    @JoinColumn(name = "IdAchievement")
+    private Achievement achievement;
+
+    public UsersAchiev() {
+    }
+
+    public UsersAchiev(int idUsersAchiev, Users users, Achievement achievement) {
+        this.idUsersAchiev = idUsersAchiev;
+        this.users = users;
+        this.achievement = achievement;
+    }
+
+    public int getIdUsersAchiev() {
+        return idUsersAchiev;
+    }
+
+    public void setIdUsersAchiev(int idUsersAchiev) {
+        this.idUsersAchiev = idUsersAchiev;
+    }
+
+    public Users getUsers() {
+        return users;
+    }
+
+    public void setUsers(Users users) {
+        this.users = users;
+    }
+
+    public Achievement getAchievement() {
+        return achievement;
+    }
+
+    public void setAchievement(Achievement achievement) {
+        this.achievement = achievement;
+    }
+}
