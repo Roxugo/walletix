@@ -5,6 +5,9 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "challenges")
 public class Challenges {
@@ -41,6 +44,9 @@ public class Challenges {
 
     @Column(name = "customChallenge")
     private boolean customChallenge;
+
+    @OneToMany(mappedBy = "challenge")
+    private List<UserChallenges> userChallenges = new ArrayList<>();
 
     public Challenges() {
     }
@@ -131,5 +137,13 @@ public class Challenges {
 
     public void setCustomChallenge(boolean customChallenge) {
         this.customChallenge = customChallenge;
+    }
+
+    public List<UserChallenges> getUserChallenges() {
+        return userChallenges;
+    }
+
+    public void setUserChallenges(List<UserChallenges> userChallenges) {
+        this.userChallenges = userChallenges;
     }
 }
