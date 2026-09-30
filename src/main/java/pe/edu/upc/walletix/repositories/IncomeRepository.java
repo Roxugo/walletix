@@ -14,8 +14,8 @@ public interface IncomeRepository extends JpaRepository<Incomes, Integer> {
             SELECT *
             FROM tm_incomes
             WHERE id_user = :idUser
-              AND MONTH(date) = :month
-              AND YEAR(date) = :year
+              AND month(date) = :month
+              AND year(date) = :year
             """, nativeQuery = true)
     List<Incomes> listarPorUsuarioYPeriodo(
             @Param("idUser") int idUser,

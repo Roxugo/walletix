@@ -32,7 +32,7 @@ public class Incomes {
 
     @ManyToOne
     @JoinColumn (name = "idUser")
-    private User user;
+    private Users user;
 
     @ManyToOne
     @JoinColumn (name = "idCategory")
@@ -94,19 +94,19 @@ public class Incomes {
         this.description = description;
     }
 
-    public User getUser() {
+    public Users getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(Users user) {
         this.user = user;
     }
 
-    public CategoryEntity getCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(CategoryEntity category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
 }

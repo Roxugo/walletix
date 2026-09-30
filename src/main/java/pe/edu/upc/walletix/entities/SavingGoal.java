@@ -29,7 +29,7 @@ public class SavingGoal {
 
     @ManyToOne
     @JoinColumn(name = "idUser")
-    private User user;
+    private Users user;
 
     public int getIdSavingGoal() {
         return idSavingGoal;
@@ -79,11 +79,11 @@ public class SavingGoal {
         this.status = status;
     }
 
-    public User getUser() {
+    public Users getUser() {
         return user;
     }
 
-    public void setUser(User user) {
+    public void setUser(Users user) {
         this.user = user;
     }
 }
