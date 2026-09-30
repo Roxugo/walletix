@@ -10,30 +10,31 @@ import java.time.LocalDate;
 public class Expense {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int idExpense;
 
-    @Column(name = "userIdExpense", nullable = false)
+    @Column(name = "user_id", nullable = false)
     private int userIdExpense;
 
-    @Column(name = "categoryIdExpense", nullable = false)
+    @Column(name = "category_id", nullable = false)
     private int categoryIdExpense;
 
-    @Column(name = "merchantIdExpense")
+    @Column(name = "merchant_id")
     private Integer merchantIdExpense;
 
-    @Column(name = "amountExpense", nullable = false)
+    @Column(name = "amount", nullable = false)
     private BigDecimal amountExpense;
 
-    @Column(name = "dateExpense", nullable = false)
+    @Column(name = "date", nullable = false)
     private LocalDate dateExpense;
 
-    @Column(name = "descriptionExpense", length = 255)
+    @Column(name = "description")
     private String descriptionExpense;
 
-    @Column(name = "paymentMethodExpense", length = 20, nullable = false)
+    @Column(name = "payment_method", length = 50)
     private String paymentMethodExpense;
 
-    @Column(name = "isMicroexpenseExpense", nullable = false)
+    @Column(name = "is_microexpense")
     private boolean isMicroexpenseExpense;
 
     public Expense() {
