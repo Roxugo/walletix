@@ -9,6 +9,9 @@ public class UsuarioLogro {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idUsuarioLogro;
 
+    @Column(name = "estadoUsuarioLogro", nullable = false)
+    private boolean estadoUsuarioLogro = true;
+
     @ManyToOne
     @JoinColumn(name = "IdUsuario")
     private Usuario usuario;
@@ -20,12 +23,12 @@ public class UsuarioLogro {
     public UsuarioLogro() {
     }
 
-    public UsuarioLogro(int idUsuarioLogro, Usuario usuario, Logro logro) {
+    public UsuarioLogro(int idUsuarioLogro, boolean estadoUsuarioLogro, Usuario usuario, Logro logro) {
         this.idUsuarioLogro = idUsuarioLogro;
+        this.estadoUsuarioLogro = estadoUsuarioLogro;
         this.usuario = usuario;
         this.logro = logro;
     }
-
 
     public int getIdUsuarioLogro() {
         return idUsuarioLogro;
@@ -33,6 +36,14 @@ public class UsuarioLogro {
 
     public void setIdUsuarioLogro(int idUsuarioLogro) {
         this.idUsuarioLogro = idUsuarioLogro;
+    }
+
+    public boolean isEstadoUsuarioLogro() {
+        return estadoUsuarioLogro;
+    }
+
+    public void setEstadoUsuarioLogro(boolean estadoUsuarioLogro) {
+        this.estadoUsuarioLogro = estadoUsuarioLogro;
     }
 
     public Usuario getUsuario() {
