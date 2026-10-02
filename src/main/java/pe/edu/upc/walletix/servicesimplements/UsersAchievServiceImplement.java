@@ -3,7 +3,6 @@ package pe.edu.upc.walletix.servicesimplements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pe.edu.upc.walletix.entities.UsersAchiev;
-import pe.edu.upc.walletix.repositories.IUserRepository;
 import pe.edu.upc.walletix.repositories.IUsersAchievRepository;
 import pe.edu.upc.walletix.servicesinterfaces.IUsersAchievService;
 

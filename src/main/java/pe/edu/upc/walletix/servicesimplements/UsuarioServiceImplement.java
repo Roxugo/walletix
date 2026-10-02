@@ -2,36 +2,36 @@ package pe.edu.upc.walletix.servicesimplements;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pe.edu.upc.walletix.entities.Users;
-import pe.edu.upc.walletix.repositories.IUserRepository;
-import pe.edu.upc.walletix.servicesinterfaces.IUserService;
+import pe.edu.upc.walletix.entities.Usuario;
+import pe.edu.upc.walletix.repositories.IUsuarioRepository;
+import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UserServiceImplement implements IUserService {
+public class UsuarioServiceImplement implements IUsuarioService {
 
     @Autowired
-    private IUserRepository uR;
+    private IUsuarioRepository uR;
 
     @Override
-    public List<Users> list() {
+    public List<Usuario> list() {
         return uR.findAll();
     }
 
     @Override
-    public Users insert(Users usu) {
+    public Usuario insert(Usuario usu) {
         return uR.save(usu);
     }
 
     @Override
-    public Optional<Users> listId(int id) {
+    public Optional<Usuario> listId(int id) {
         return uR.findById(id);
     }
 
     @Override
-    public void update(Users u) {
+    public void update(Usuario u) {
         uR.save(u);
     }
 

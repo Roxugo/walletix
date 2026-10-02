@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pe.edu.upc.walletix.entities.Achievement;
 import pe.edu.upc.walletix.repositories.IAchievementRepository;
-import pe.edu.upc.walletix.repositories.IUserRepository;
 import pe.edu.upc.walletix.servicesinterfaces.IAchievementService;
 
 import java.util.List;

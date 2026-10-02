@@ -1,51 +1,17 @@
-package pe.edu.upc.walletix.entities;
-
-import jakarta.persistence.*;
+package pe.edu.upc.walletix.dtos;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "Users")
-public class Users {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class UsuarioDTO {
     private int idUser;
-
-    @Column(name = "nameUser", length = 30, nullable = false)
     private String nameUser;
-
-    @Column(name = "emailUser", length = 20, nullable = false)
     private String emailUser;
-
-    @Column(name = "phoneUser", length = 9, nullable = false)
     private String phoneUser;
-
-    @Column(name = "birthdayUser", length = 20, nullable = false)
     private LocalDate birthdayUser;
-
-    @Column(name = "segmentUser", length = 20, nullable = false)
     private String segmentUser;
-
-    @Column(name = "currentbalanceUser", nullable = false)
     private BigDecimal currentbalanceUser;
-
-    @Column(name = "gamificationpointsUser", nullable = false)
     private int gamificationpointsUser;
-
-    public Users() {
-    }
-
-    public Users(int idUser, String nameUser, String emailUser, String phoneUser, LocalDate birthdayUser, String segmentUser, BigDecimal currentbalanceUser, int gamificationpointsUser) {
-        this.idUser = idUser;
-        this.nameUser = nameUser;
-        this.emailUser = emailUser;
-        this.phoneUser = phoneUser;
-        this.birthdayUser = birthdayUser;
-        this.segmentUser = segmentUser;
-        this.currentbalanceUser = currentbalanceUser;
-        this.gamificationpointsUser = gamificationpointsUser;
-    }
 
     public int getIdUser() {
         return idUser;
