@@ -16,7 +16,7 @@ public class LogroServiceImplement implements ILogroService {
 
     @Override
     public List<Logro> list() {
-        return logroRepository.findAll();
+        return logroRepository.findByEstadoLogroTrue();
     }
 
     @Override
@@ -36,6 +36,11 @@ public class LogroServiceImplement implements ILogroService {
 
     @Override
     public void delete(int id) {
-        logroRepository.deleteById(id);
+        Optional<Logro> opt = logroRepository.findById(id);
+        if (opt.isPresent()) {
+            Logro logro = opt.get();
+            logro.setEstadoLogro(false); // Inactivar
+            logroRepository.save(logro); // Guardar cambio
+        }
     }
 }

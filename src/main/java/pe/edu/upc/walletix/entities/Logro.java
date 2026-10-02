@@ -21,15 +21,19 @@ public class Logro {
     @Column(name = "puntosLogro", nullable = false)
     private int puntosLogro;
 
+    @Column(name = "estadoLogro", nullable = false)
+    private boolean estadoLogro = true;
+
     public Logro() {
     }
 
-    public Logro(int idLogro, String nombreLogro, String descripcionLogro, String urlIconoLogro, int puntosLogro) {
+    public Logro(int idLogro, String nombreLogro, String descripcionLogro, String urlIconoLogro, int puntosLogro, boolean estadoLogro) {
         this.idLogro = idLogro;
         this.nombreLogro = nombreLogro;
         this.descripcionLogro = descripcionLogro;
         this.urlIconoLogro = urlIconoLogro;
         this.puntosLogro = puntosLogro;
+        this.estadoLogro = estadoLogro;
     }
 
     public int getIdLogro() {
@@ -70,5 +74,13 @@ public class Logro {
 
     public void setPuntosLogro(int puntosLogro) {
         this.puntosLogro = puntosLogro;
+    }
+
+    public boolean isEstadoLogro() {
+        return estadoLogro;
+    }
+
+    public void setEstadoLogro(boolean estadoLogro) {
+        this.estadoLogro = estadoLogro;
     }
 }

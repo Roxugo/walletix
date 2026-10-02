@@ -12,7 +12,7 @@ public class UsuarioDTO {
     private String segmentoUsuario;
     private BigDecimal saldoActualUsuario;
     private int puntosGamificacionUsuario;
-    private boolean estadoUsuario;
+    private boolean estadoUsuario = true;
 
     public int getIdUsuario() {
         return idUsuario;

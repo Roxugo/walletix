@@ -8,6 +8,7 @@ public class LogroDTO {
     private String descripcionLogro;
     private String urlIconoLogro;
     private int puntosLogro;
+    private boolean estadoLogro = true;
 
     public int getIdLogro() {
         return idLogro;
@@ -47,5 +48,13 @@ public class LogroDTO {
 
     public void setPuntosLogro(int puntosLogro) {
         this.puntosLogro = puntosLogro;
+    }
+
+    public boolean isEstadoLogro() {
+        return estadoLogro;
+    }
+
+    public void setEstadoLogro(boolean estadoLogro) {
+        this.estadoLogro = estadoLogro;
     }
 }
