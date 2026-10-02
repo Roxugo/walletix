@@ -1,6 +1,5 @@
 package pe.edu.upc.walletix.servicesinterfaces;
 
-import pe.edu.upc.walletix.entities.Achievement;
 import pe.edu.upc.walletix.entities.UsersAchiev;
 
 import java.util.List;

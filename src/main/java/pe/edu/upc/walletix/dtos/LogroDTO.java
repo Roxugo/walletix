@@ -1,36 +1,13 @@
-package pe.edu.upc.walletix.entities;
+package pe.edu.upc.walletix.dtos;
 
-import jakarta.persistence.*;
 
-@Entity
-@Table(name = "Achievement")
-public class Achievement {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+public class LogroDTO {
     private int idAchievement;
-
-    @Column(name = "nameAchievement",length =20 ,nullable =false )
     private String nameAchievement;
-
-    @Column(name = "descriptionAchievement", length = 30, nullable = false)
     private String descriptionAchievement;
-
-    @Column(name = "iconurlAchievement", length = 60, nullable = false)
     private String iconurlAchievement;
-
-    @Column(name = "pointAchievement", nullable = false)
     private int pointAchievement;
-
-    public Achievement() {
-    }
-
-    public Achievement(int idAchievement, String nameAchievement, String descriptionAchievement, String iconurlAchievement, int pointAchievement) {
-        this.idAchievement = idAchievement;
-        this.nameAchievement = nameAchievement;
-        this.descriptionAchievement = descriptionAchievement;
-        this.iconurlAchievement = iconurlAchievement;
-        this.pointAchievement = pointAchievement;
-    }
 
     public int getIdAchievement() {
         return idAchievement;

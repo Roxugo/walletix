@@ -6,7 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.UsersAchievDTO;
-import pe.edu.upc.walletix.entities.Achievement;
+import pe.edu.upc.walletix.entities.Logro;
 import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.entities.UsersAchiev;
 import pe.edu.upc.walletix.servicesinterfaces.IUsersAchievService;
@@ -63,7 +63,7 @@ public class UsersAchievController {
         u.setIdUser(dto.getIdUser());
         ah.setUsers(u);
 
-        Achievement a = new Achievement();
+        Logro a = new Logro();
         a.setIdAchievement(dto.getIdAchievement());
         ah.setAchievement(a);
 

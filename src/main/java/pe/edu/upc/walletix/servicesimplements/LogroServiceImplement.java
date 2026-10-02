@@ -2,35 +2,35 @@ package pe.edu.upc.walletix.servicesimplements;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pe.edu.upc.walletix.entities.Achievement;
-import pe.edu.upc.walletix.repositories.IAchievementRepository;
-import pe.edu.upc.walletix.servicesinterfaces.IAchievementService;
+import pe.edu.upc.walletix.entities.Logro;
+import pe.edu.upc.walletix.repositories.ILogroRepository;
+import pe.edu.upc.walletix.servicesinterfaces.ILogroService;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class AchievementServiceImplement implements IAchievementService {
+public class LogroServiceImplement implements ILogroService {
     @Autowired
-    private IAchievementRepository aR;
+    private ILogroRepository aR;
 
     @Override
-    public List<Achievement> list() {
+    public List<Logro> list() {
         return aR.findAll();
     }
 
     @Override
-    public Achievement insert(Achievement logr) {
+    public Logro insert(Logro logr) {
         return aR.save(logr);
     }
 
     @Override
-    public Optional<Achievement> listId(int id) {
+    public Optional<Logro> listId(int id) {
         return aR.findById(id);
     }
 
     @Override
-    public void update(Achievement l) {
+    public void update(Logro l) {
         aR.save(l);
     }
 

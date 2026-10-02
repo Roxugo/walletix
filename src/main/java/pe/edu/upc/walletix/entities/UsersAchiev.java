@@ -15,15 +15,15 @@ public class UsersAchiev {
 
     @ManyToOne
     @JoinColumn(name = "IdAchievement")
-    private Achievement achievement;
+    private Logro logro;
 
     public UsersAchiev() {
     }
 
-    public UsersAchiev(int idUsersAchiev, Usuario usuario, Achievement achievement) {
+    public UsersAchiev(int idUsersAchiev, Usuario usuario, Logro logro) {
         this.idUsersAchiev = idUsersAchiev;
         this.usuario = usuario;
-        this.achievement = achievement;
+        this.logro = logro;
     }
 
     public int getIdUsersAchiev() {
@@ -42,11 +42,11 @@ public class UsersAchiev {
         this.usuario = usuario;
     }
 
-    public Achievement getAchievement() {
-        return achievement;
+    public Logro getAchievement() {
+        return logro;
     }
 
-    public void setAchievement(Achievement achievement) {
-        this.achievement = achievement;
+    public void setAchievement(Logro logro) {
+        this.logro = logro;
     }
 }
