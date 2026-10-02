@@ -12,30 +12,30 @@ import java.util.Optional;
 @Service
 public class LogroServiceImplement implements ILogroService {
     @Autowired
-    private ILogroRepository aR;
+    private ILogroRepository logroRepository;
 
     @Override
     public List<Logro> list() {
-        return aR.findAll();
+        return logroRepository.findAll();
     }
 
     @Override
     public Logro insert(Logro logr) {
-        return aR.save(logr);
+        return logroRepository.save(logr);
     }
 
     @Override
     public Optional<Logro> listId(int id) {
-        return aR.findById(id);
+        return logroRepository.findById(id);
     }
 
     @Override
     public void update(Logro l) {
-        aR.save(l);
+        logroRepository.save(l);
     }
 
     @Override
     public void delete(int id) {
-        aR.deleteById(id);
+        logroRepository.deleteById(id);
     }
 }

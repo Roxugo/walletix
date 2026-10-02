@@ -1,31 +1,31 @@
 package pe.edu.upc.walletix.dtos;
 
 public class UsuarioLogroDTO {
-    private int idUsersAchiev;
-    private int idUser;
-    private int idAchievement;
+    private int idUsuarioLogro;
+    private int idUsuario;
+    private int idLogro;
 
-    public int getIdUsersAchiev() {
-        return idUsersAchiev;
+    public int getIdUsuarioLogro() {
+        return idUsuarioLogro;
     }
 
-    public void setIdUsersAchiev(int idUsersAchiev) {
-        this.idUsersAchiev = idUsersAchiev;
+    public void setIdUsuarioLogro(int idUsuarioLogro) {
+        this.idUsuarioLogro = idUsuarioLogro;
     }
 
-    public int getIdUser() {
-        return idUser;
+    public int getIdUsuario() {
+        return idUsuario;
     }
 
-    public void setIdUser(int idUser) {
-        this.idUser = idUser;
+    public void setIdUsuario(int idUsuario) {
+        this.idUsuario = idUsuario;
     }
 
-    public int getIdAchievement() {
-        return idAchievement;
+    public int getIdLogro() {
+        return idLogro;
     }
 
-    public void setIdAchievement(int idAchievement) {
-        this.idAchievement = idAchievement;
+    public void setIdLogro(int idLogro) {
+        this.idLogro = idLogro;
     }
 }

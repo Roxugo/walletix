@@ -13,30 +13,30 @@ import java.util.Optional;
 public class UsuarioLogroServiceImplement implements IUsuarioLogroService {
 
     @Autowired
-    private IUsuarioLogroRepository hR;
+    private IUsuarioLogroRepository usuariologroRepository;
 
     @Override
     public List<UsuarioLogro> list() {
-        return hR.findAll();
+        return usuariologroRepository.findAll();
     }
 
     @Override
     public UsuarioLogro insert(UsuarioLogro usac) {
-        return hR.save(usac);
+        return usuariologroRepository.save(usac);
     }
 
     @Override
     public Optional<UsuarioLogro> listId(int id) {
-        return hR.findById(id);
+        return usuariologroRepository.findById(id);
     }
 
     @Override
     public void update(UsuarioLogro ua) {
-        hR.save(ua);
+        usuariologroRepository.save(ua);
     }
 
     @Override
     public void delete(int id) {
-        hR.deleteById(id);
+        usuariologroRepository.deleteById(id);
     }
 }

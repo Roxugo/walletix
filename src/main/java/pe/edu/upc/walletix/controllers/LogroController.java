@@ -17,12 +17,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/logros")
 public class LogroController {
     @Autowired
-    private ILogroService aS;
+    private ILogroService logroService;
 
     @GetMapping
     public ResponseEntity<List<LogroDTO>> listar(){
         ModelMapper m= new ModelMapper();
-        List<LogroDTO> listalogros =aS.list().stream()
+        List<LogroDTO> listalogros = logroService.list().stream()
                 .map(y->m.map(y, LogroDTO.class))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(listalogros);
@@ -31,14 +31,14 @@ public class LogroController {
     public ResponseEntity<?> registrar(@RequestBody LogroDTO dto){
         ModelMapper m=new ModelMapper();
         Logro c=m.map(dto, Logro.class);
-        Logro cur= aS.insert(c);
+        Logro cur= logroService.insert(c);
         LogroDTO responseDTO=m.map(cur, LogroDTO.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
     @GetMapping("/{id}")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
         ModelMapper m = new ModelMapper();
-        Optional<Logro> mach = aS.listId(id);
+        Optional<Logro> mach = logroService.listId(id);
         if (mach.isPresent()) {
             LogroDTO dto = m.map(mach.get(), LogroDTO.class);
             return ResponseEntity.ok(dto);
@@ -49,7 +49,7 @@ public class LogroController {
     }
     @PutMapping("/actualiza")
     public ResponseEntity<String> actualizar(@RequestBody LogroDTO dto) {
-        Optional<Logro> existente = aS.listId(dto.getIdLogro());
+        Optional<Logro> existente = logroService.listId(dto.getIdLogro());
         if (existente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Logro no encontrado");
@@ -59,14 +59,14 @@ public class LogroController {
         ac.setDescripcionLogro(dto.getDescripcionLogro());
         ac.setUrlIconoLogro(dto.getUrlIconoLogro());
         ac.setPuntosLogro(dto.getPuntosLogro());
-        aS.update(ac);
+        logroService.update(ac);
         return ResponseEntity.ok("Logro actualizado correctamente");
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
-        Optional<Logro> achievement = aS.listId(id);
+        Optional<Logro> achievement = logroService.listId(id);
         if (achievement.isPresent()) {
-            aS.delete(id);
+            logroService.delete(id);
             return ResponseEntity.ok("Logro eliminado correctamente");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

@@ -17,12 +17,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/usuarios")
 public class UsuarioController {
     @Autowired
-    private IUsuarioService uS;
+    private IUsuarioService usuarioService;
 
     @GetMapping
     public ResponseEntity<List<UsuarioDTO>> listar(){
         ModelMapper m= new ModelMapper();
-        List<UsuarioDTO>listaUsuarios=uS.list().stream()
+        List<UsuarioDTO>listaUsuarios= usuarioService.list().stream()
                 .map(y->m.map(y, UsuarioDTO.class))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(listaUsuarios);
@@ -36,14 +36,14 @@ public class UsuarioController {
 
         ModelMapper m=new ModelMapper();
         Usuario c=m.map(dto, Usuario.class);
-        Usuario cur= uS.insert(c);
+        Usuario cur= usuarioService.insert(c);
         UsuarioDTO responseDTO=m.map(cur, UsuarioDTO.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
     @GetMapping("/{id}")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
         ModelMapper m = new ModelMapper();
-        Optional<Usuario> mach = uS.listId(id);
+        Optional<Usuario> mach = usuarioService.listId(id);
         if (mach.isPresent()) {
             UsuarioDTO dto = m.map(mach.get(), UsuarioDTO.class);
             return ResponseEntity.ok(dto);
@@ -58,7 +58,7 @@ public class UsuarioController {
             return ResponseEntity.badRequest()
                     .body("La fecha de nacimiento no puede ser futura");
         }
-        Optional<Usuario> existente = uS.listId(dto.getIdUsuario());
+        Optional<Usuario> existente = usuarioService.listId(dto.getIdUsuario());
         if (existente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Usuario no encontrado");
@@ -71,14 +71,14 @@ public class UsuarioController {
         us.setSegmentoUsuario(dto.getSegmentoUsuario());
         us.setSaldoActualUsuario(dto.getSaldoActualUsuario());
         us.setPuntosGamificacionUsuario(dto.getPuntosGamificacionUsuario());
-        uS.update(us);
+        usuarioService.update(us);
         return ResponseEntity.ok("Usuario actualizado correctamente");
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
-        Optional<Usuario> machine = uS.listId(id);
+        Optional<Usuario> machine = usuarioService.listId(id);
         if (machine.isPresent()) {
-            uS.delete(id);
+            usuarioService.delete(id);
             return ResponseEntity.ok("Usuario eliminado correctamente");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

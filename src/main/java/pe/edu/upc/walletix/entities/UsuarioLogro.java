@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 public class UsuarioLogro {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int idUsersAchiev;
+    private int idUsuarioLogro;
 
     @ManyToOne
     @JoinColumn(name = "IdUsuario")
@@ -20,33 +20,34 @@ public class UsuarioLogro {
     public UsuarioLogro() {
     }
 
-    public UsuarioLogro(int idUsersAchiev, Usuario usuario, Logro logro) {
-        this.idUsersAchiev = idUsersAchiev;
+    public UsuarioLogro(int idUsuarioLogro, Usuario usuario, Logro logro) {
+        this.idUsuarioLogro = idUsuarioLogro;
         this.usuario = usuario;
         this.logro = logro;
     }
 
-    public int getIdUsersAchiev() {
-        return idUsersAchiev;
+
+    public int getIdUsuarioLogro() {
+        return idUsuarioLogro;
     }
 
-    public void setIdUsersAchiev(int idUsersAchiev) {
-        this.idUsersAchiev = idUsersAchiev;
+    public void setIdUsuarioLogro(int idUsuarioLogro) {
+        this.idUsuarioLogro = idUsuarioLogro;
     }
 
-    public Usuario getUsers() {
+    public Usuario getUsuario() {
         return usuario;
     }
 
-    public void setUsers(Usuario usuario) {
+    public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
     }
 
-    public Logro getAchievement() {
+    public Logro getLogro() {
         return logro;
     }
 
-    public void setAchievement(Logro logro) {
+    public void setLogro(Logro logro) {
         this.logro = logro;
     }
 }

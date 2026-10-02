@@ -19,12 +19,12 @@ import java.util.stream.Collectors;
 @RequestMapping("/usuarioslogros")
 public class UsuarioLogroController {
     @Autowired
-    private IUsuarioLogroService hS;
+    private IUsuarioLogroService usuariologroService;
 
     @GetMapping
     public ResponseEntity<List<UsuarioLogroDTO>> listar(){
         ModelMapper m= new ModelMapper();
-        List<UsuarioLogroDTO> listalogros =hS.list().stream()
+        List<UsuarioLogroDTO> listalogros =usuariologroService.list().stream()
                 .map(y->m.map(y, UsuarioLogroDTO.class))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(listalogros);
@@ -33,14 +33,14 @@ public class UsuarioLogroController {
     public ResponseEntity<?> registrar(@RequestBody UsuarioLogroDTO dto){
         ModelMapper m=new ModelMapper();
         UsuarioLogro c=m.map(dto, UsuarioLogro.class);
-        UsuarioLogro cur= hS.insert(c);
+        UsuarioLogro cur= usuariologroService.insert(c);
         UsuarioLogroDTO responseDTO=m.map(cur, UsuarioLogroDTO.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
     @GetMapping("/{id}")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
         ModelMapper m = new ModelMapper();
-        Optional<UsuarioLogro> mach = hS.listId(id);
+        Optional<UsuarioLogro> mach = usuariologroService.listId(id);
         if (mach.isPresent()) {
             UsuarioLogroDTO dto = m.map(mach.get(), UsuarioLogroDTO.class);
             return ResponseEntity.ok(dto);
@@ -51,7 +51,7 @@ public class UsuarioLogroController {
     }
     @PutMapping("/actualiza")
     public ResponseEntity<String> actualizar(@RequestBody UsuarioLogroDTO dto) {
-        Optional<UsuarioLogro> existente = hS.listId(dto.getIdUsersAchiev());
+        Optional<UsuarioLogro> existente = usuariologroService.listId(dto.getIdUsuarioLogro());
         if (existente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Registro no encontrado");
@@ -60,21 +60,21 @@ public class UsuarioLogroController {
         UsuarioLogro ah = existente.get();
 
         Usuario u = new Usuario();
-        u.setIdUser(dto.getIdUser());
-        ah.setUsers(u);
+        u.setIdUsuario(dto.getIdUsuario());
+        ah.setUsuario(u);
 
         Logro a = new Logro();
-        a.setIdAchievement(dto.getIdAchievement());
-        ah.setAchievement(a);
+        a.setIdLogro(dto.getIdLogro());
+        ah.setLogro(a);
 
-        hS.update(ah);
+        usuariologroService.update(ah);
         return ResponseEntity.ok("Registro actualizado correctamente");
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
-        Optional<UsuarioLogro> usersAchiev = hS.listId(id);
+        Optional<UsuarioLogro> usersAchiev = usuariologroService.listId(id);
         if (usersAchiev.isPresent()) {
-            hS.delete(id);
+            usuariologroService.delete(id);
             return ResponseEntity.ok("Registro eliminado correctamente");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
