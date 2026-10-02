@@ -21,8 +21,8 @@ public class UsuarioLogroServiceImplement implements IUsuarioLogroService {
     }
 
     @Override
-    public UsuarioLogro insert(UsuarioLogro usac) {
-        return usuariologroRepository.save(usac);
+    public UsuarioLogro insert(UsuarioLogro usuariologro) {
+        return usuariologroRepository.save(usuariologro);
     }
 
     @Override
@@ -31,8 +31,8 @@ public class UsuarioLogroServiceImplement implements IUsuarioLogroService {
     }
 
     @Override
-    public void update(UsuarioLogro ua) {
-        usuariologroRepository.save(ua);
+    public void update(UsuarioLogro usuariologro) {
+        usuariologroRepository.save(usuariologro);
     }
 
     @Override

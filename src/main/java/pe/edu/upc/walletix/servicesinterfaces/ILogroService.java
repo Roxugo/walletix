@@ -7,8 +7,8 @@ import java.util.Optional;
 
 public interface ILogroService {
     public List<Logro> list();
-    public Logro insert(Logro logr);
+    public Logro insert(Logro logro);
     public Optional<Logro> listId(int id);
-    public void update(Logro l);
+    public void update(Logro logro);
     public void delete(int id);
 }

@@ -21,8 +21,8 @@ public class UsuarioServiceImplement implements IUsuarioService {
     }
 
     @Override
-    public Usuario insert(Usuario usu) {
-        return usuarioRepository.save(usu);
+    public Usuario insert(Usuario usuario) {
+        return usuarioRepository.save(usuario);
     }
 
     @Override
@@ -31,8 +31,8 @@ public class UsuarioServiceImplement implements IUsuarioService {
     }
 
     @Override
-    public void update(Usuario u) {
-        usuarioRepository.save(u);
+    public void update(Usuario usuario) {
+        usuarioRepository.save(usuario);
     }
 
     @Override

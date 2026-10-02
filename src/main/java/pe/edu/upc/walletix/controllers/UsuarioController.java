@@ -76,8 +76,8 @@ public class UsuarioController {
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
-        Optional<Usuario> machine = usuarioService.listId(id);
-        if (machine.isPresent()) {
+        Optional<Usuario> usuario = usuarioService.listId(id);
+        if (usuario.isPresent()) {
             usuarioService.delete(id);
             return ResponseEntity.ok("Usuario eliminado correctamente");
         } else {

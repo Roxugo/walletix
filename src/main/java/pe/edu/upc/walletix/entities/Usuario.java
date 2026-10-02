@@ -12,22 +12,22 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idUsuario;
 
-    @Column(name = "nombreUsuario", length = 30, nullable = false)
+    @Column(name = "nombreUsuario", length = 50, nullable = false)
     private String nombreUsuario;
 
-    @Column(name = "correoUsuario", length = 20, nullable = false)
+    @Column(name = "correoUsuario", length = 50, nullable = false)
     private String correoUsuario;
 
     @Column(name = "telefonoUsuario", length = 9, nullable = false)
     private String telefonoUsuario;
 
-    @Column(name = "fechaNacimientoUsuario", length = 20, nullable = false)
+    @Column(name = "fechaNacimientoUsuario", nullable = false)
     private LocalDate fechaNacimientoUsuario;
 
-    @Column(name = "segmentoUsuario", length = 20, nullable = false)
+    @Column(name = "segmentoUsuario", length = 30, nullable = false)
     private String segmentoUsuario;
 
-    @Column(name = "saldoActualUsuario", nullable = false)
+    @Column(name = "saldoActualUsuario",precision = 10, scale = 2, nullable = false)
     private BigDecimal saldoActualUsuario;
 
     @Column(name = "puntosGamificacionUsuario", nullable = false)

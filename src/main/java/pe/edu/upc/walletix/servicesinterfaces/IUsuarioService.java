@@ -7,8 +7,8 @@ import java.util.Optional;
 
 public interface IUsuarioService {
     public List<Usuario> list();
-    public Usuario insert(Usuario usu);
+    public Usuario insert(Usuario usuario);
     public Optional<Usuario> listId(int id);
-    public void update(Usuario u);
+    public void update(Usuario usuario);
     public void delete(int id);
 }

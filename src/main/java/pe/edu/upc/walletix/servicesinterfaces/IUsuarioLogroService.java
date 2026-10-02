@@ -7,8 +7,8 @@ import java.util.Optional;
 
 public interface IUsuarioLogroService {
     public List<UsuarioLogro> list();
-    public UsuarioLogro insert(UsuarioLogro usac);
+    public UsuarioLogro insert(UsuarioLogro usuariologro);
     public Optional<UsuarioLogro> listId(int id);
-    public void update(UsuarioLogro ua);
+    public void update(UsuarioLogro usuariologro);
     public void delete(int id);
 }

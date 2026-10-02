@@ -20,8 +20,8 @@ public class LogroServiceImplement implements ILogroService {
     }
 
     @Override
-    public Logro insert(Logro logr) {
-        return logroRepository.save(logr);
+    public Logro insert(Logro logro) {
+        return logroRepository.save(logro);
     }
 
     @Override
@@ -30,8 +30,8 @@ public class LogroServiceImplement implements ILogroService {
     }
 
     @Override
-    public void update(Logro l) {
-        logroRepository.save(l);
+    public void update(Logro logro) {
+        logroRepository.save(logro);
     }
 
     @Override
