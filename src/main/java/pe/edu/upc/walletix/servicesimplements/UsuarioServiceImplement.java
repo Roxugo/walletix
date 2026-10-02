@@ -17,7 +17,7 @@ public class UsuarioServiceImplement implements IUsuarioService {
 
     @Override
     public List<Usuario> list() {
-        return usuarioRepository.findAll();
+        return usuarioRepository.findByEstadoUsuarioTrue();
     }
 
     @Override
@@ -37,6 +37,11 @@ public class UsuarioServiceImplement implements IUsuarioService {
 
     @Override
     public void delete(int id) {
-        usuarioRepository.deleteById(id);
+        Optional<Usuario> opt = usuarioRepository.findById(id);
+        if (opt.isPresent()) {
+            Usuario usuario = opt.get();
+            usuario.setEstadoUsuario(false); // Inactivar
+            usuarioRepository.save(usuario); // Guardar cambio
+        }
     }
 }
