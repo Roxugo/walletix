@@ -49,16 +49,16 @@ public class LogroController {
     }
     @PutMapping("/actualiza")
     public ResponseEntity<String> actualizar(@RequestBody LogroDTO dto) {
-        Optional<Logro> existente = aS.listId(dto.getIdAchievement());
+        Optional<Logro> existente = aS.listId(dto.getIdLogro());
         if (existente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Logro no encontrado");
         }
         Logro ac = existente.get();
-        ac.setNameAchievement(dto.getNameAchievement());
-        ac.setDescriptionAchievement(dto.getDescriptionAchievement());
-        ac.setIconurlAchievement(dto.getIconurlAchievement());
-        ac.setPointAchievement(dto.getPointAchievement());
+        ac.setNombreLogro(dto.getNombreLogro());
+        ac.setDescripcionLogro(dto.getDescripcionLogro());
+        ac.setUrlIconoLogro(dto.getUrlIconoLogro());
+        ac.setPuntosLogro(dto.getPuntosLogro());
         aS.update(ac);
         return ResponseEntity.ok("Logro actualizado correctamente");
     }

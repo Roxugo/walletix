@@ -5,11 +5,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import pe.edu.upc.walletix.dtos.UsersAchievDTO;
+import pe.edu.upc.walletix.dtos.UsuarioLogroDTO;
 import pe.edu.upc.walletix.entities.Logro;
 import pe.edu.upc.walletix.entities.Usuario;
-import pe.edu.upc.walletix.entities.UsersAchiev;
-import pe.edu.upc.walletix.servicesinterfaces.IUsersAchievService;
+import pe.edu.upc.walletix.entities.UsuarioLogro;
+import pe.edu.upc.walletix.servicesinterfaces.IUsuarioLogroService;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,32 +17,32 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/usuarioslogros")
-public class UsersAchievController {
+public class UsuarioLogroController {
     @Autowired
-    private IUsersAchievService hS;
+    private IUsuarioLogroService hS;
 
     @GetMapping
-    public ResponseEntity<List<UsersAchievDTO>> listar(){
+    public ResponseEntity<List<UsuarioLogroDTO>> listar(){
         ModelMapper m= new ModelMapper();
-        List<UsersAchievDTO> listalogros =hS.list().stream()
-                .map(y->m.map(y,UsersAchievDTO.class))
+        List<UsuarioLogroDTO> listalogros =hS.list().stream()
+                .map(y->m.map(y, UsuarioLogroDTO.class))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(listalogros);
     }
     @PostMapping("/web")
-    public ResponseEntity<?> registrar(@RequestBody UsersAchievDTO dto){
+    public ResponseEntity<?> registrar(@RequestBody UsuarioLogroDTO dto){
         ModelMapper m=new ModelMapper();
-        UsersAchiev c=m.map(dto, UsersAchiev.class);
-        UsersAchiev cur= hS.insert(c);
-        UsersAchievDTO responseDTO=m.map(cur,UsersAchievDTO.class);
+        UsuarioLogro c=m.map(dto, UsuarioLogro.class);
+        UsuarioLogro cur= hS.insert(c);
+        UsuarioLogroDTO responseDTO=m.map(cur, UsuarioLogroDTO.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
     @GetMapping("/{id}")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
         ModelMapper m = new ModelMapper();
-        Optional<UsersAchiev> mach = hS.listId(id);
+        Optional<UsuarioLogro> mach = hS.listId(id);
         if (mach.isPresent()) {
-            UsersAchievDTO dto = m.map(mach.get(), UsersAchievDTO.class);
+            UsuarioLogroDTO dto = m.map(mach.get(), UsuarioLogroDTO.class);
             return ResponseEntity.ok(dto);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -50,14 +50,14 @@ public class UsersAchievController {
         }
     }
     @PutMapping("/actualiza")
-    public ResponseEntity<String> actualizar(@RequestBody UsersAchievDTO dto) {
-        Optional<UsersAchiev> existente = hS.listId(dto.getIdUsersAchiev());
+    public ResponseEntity<String> actualizar(@RequestBody UsuarioLogroDTO dto) {
+        Optional<UsuarioLogro> existente = hS.listId(dto.getIdUsersAchiev());
         if (existente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Registro no encontrado");
         }
 
-        UsersAchiev ah = existente.get();
+        UsuarioLogro ah = existente.get();
 
         Usuario u = new Usuario();
         u.setIdUser(dto.getIdUser());
@@ -72,7 +72,7 @@ public class UsersAchievController {
     }
     @DeleteMapping("/{id}")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
-        Optional<UsersAchiev> usersAchiev = hS.listId(id);
+        Optional<UsuarioLogro> usersAchiev = hS.listId(id);
         if (usersAchiev.isPresent()) {
             hS.delete(id);
             return ResponseEntity.ok("Registro eliminado correctamente");

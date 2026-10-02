@@ -3,72 +3,72 @@ package pe.edu.upc.walletix.entities;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "Achievement")
+@Table(name = "Logro")
 public class Logro {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int idAchievement;
+    private int idLogro;
 
-    @Column(name = "nameAchievement",length =20 ,nullable =false )
-    private String nameAchievement;
+    @Column(name = "nombreLogro",length =20 ,nullable =false )
+    private String nombreLogro;
 
-    @Column(name = "descriptionAchievement", length = 30, nullable = false)
-    private String descriptionAchievement;
+    @Column(name = "descripcionLogro", length = 30, nullable = false)
+    private String descripcionLogro;
 
-    @Column(name = "iconurlAchievement", length = 60, nullable = false)
-    private String iconurlAchievement;
+    @Column(name = "urlIconoLogro", length = 60, nullable = false)
+    private String urlIconoLogro;
 
-    @Column(name = "pointAchievement", nullable = false)
-    private int pointAchievement;
+    @Column(name = "puntosLogro", nullable = false)
+    private int puntosLogro;
 
     public Logro() {
     }
 
-    public Logro(int idAchievement, String nameAchievement, String descriptionAchievement, String iconurlAchievement, int pointAchievement) {
-        this.idAchievement = idAchievement;
-        this.nameAchievement = nameAchievement;
-        this.descriptionAchievement = descriptionAchievement;
-        this.iconurlAchievement = iconurlAchievement;
-        this.pointAchievement = pointAchievement;
+    public Logro(int idLogro, String nombreLogro, String descripcionLogro, String urlIconoLogro, int puntosLogro) {
+        this.idLogro = idLogro;
+        this.nombreLogro = nombreLogro;
+        this.descripcionLogro = descripcionLogro;
+        this.urlIconoLogro = urlIconoLogro;
+        this.puntosLogro = puntosLogro;
     }
 
-    public int getIdAchievement() {
-        return idAchievement;
+    public int getIdLogro() {
+        return idLogro;
     }
 
-    public void setIdAchievement(int idAchievement) {
-        this.idAchievement = idAchievement;
+    public void setIdLogro(int idLogro) {
+        this.idLogro = idLogro;
     }
 
-    public String getNameAchievement() {
-        return nameAchievement;
+    public String getNombreLogro() {
+        return nombreLogro;
     }
 
-    public void setNameAchievement(String nameAchievement) {
-        this.nameAchievement = nameAchievement;
+    public void setNombreLogro(String nombreLogro) {
+        this.nombreLogro = nombreLogro;
     }
 
-    public String getDescriptionAchievement() {
-        return descriptionAchievement;
+    public String getDescripcionLogro() {
+        return descripcionLogro;
     }
 
-    public void setDescriptionAchievement(String descriptionAchievement) {
-        this.descriptionAchievement = descriptionAchievement;
+    public void setDescripcionLogro(String descripcionLogro) {
+        this.descripcionLogro = descripcionLogro;
     }
 
-    public String getIconurlAchievement() {
-        return iconurlAchievement;
+    public String getUrlIconoLogro() {
+        return urlIconoLogro;
     }
 
-    public void setIconurlAchievement(String iconurlAchievement) {
-        this.iconurlAchievement = iconurlAchievement;
+    public void setUrlIconoLogro(String urlIconoLogro) {
+        this.urlIconoLogro = urlIconoLogro;
     }
 
-    public int getPointAchievement() {
-        return pointAchievement;
+    public int getPuntosLogro() {
+        return puntosLogro;
     }
 
-    public void setPointAchievement(int pointAchievement) {
-        this.pointAchievement = pointAchievement;
+    public void setPuntosLogro(int puntosLogro) {
+        this.puntosLogro = puntosLogro;
     }
 }

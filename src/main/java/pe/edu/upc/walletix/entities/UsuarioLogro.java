@@ -3,24 +3,24 @@ package pe.edu.upc.walletix.entities;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "UsersAchiev")
-public class UsersAchiev {
+@Table(name = "UsuarioLogro")
+public class UsuarioLogro {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idUsersAchiev;
 
     @ManyToOne
-    @JoinColumn(name = "IdUsers")
+    @JoinColumn(name = "IdUsuario")
     private Usuario usuario;
 
     @ManyToOne
-    @JoinColumn(name = "IdAchievement")
+    @JoinColumn(name = "IdLogro")
     private Logro logro;
 
-    public UsersAchiev() {
+    public UsuarioLogro() {
     }
 
-    public UsersAchiev(int idUsersAchiev, Usuario usuario, Logro logro) {
+    public UsuarioLogro(int idUsersAchiev, Usuario usuario, Logro logro) {
         this.idUsersAchiev = idUsersAchiev;
         this.usuario = usuario;
         this.logro = logro;

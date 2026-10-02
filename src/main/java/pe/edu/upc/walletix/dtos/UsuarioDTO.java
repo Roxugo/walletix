@@ -4,76 +4,76 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class UsuarioDTO {
-    private int idUser;
-    private String nameUser;
-    private String emailUser;
-    private String phoneUser;
-    private LocalDate birthdayUser;
-    private String segmentUser;
-    private BigDecimal currentbalanceUser;
-    private int gamificationpointsUser;
+    private int idUsuario;
+    private String nombreUsuario;
+    private String correoUsuario;
+    private String telefonoUsuario;
+    private LocalDate fechaNacimientoUsuario;
+    private String segmentoUsuario;
+    private BigDecimal saldoActualUsuario;
+    private int puntosGamificacionUsuario;
 
-    public int getIdUser() {
-        return idUser;
+    public int getIdUsuario() {
+        return idUsuario;
     }
 
-    public void setIdUser(int idUser) {
-        this.idUser = idUser;
+    public void setIdUsuario(int idUsuario) {
+        this.idUsuario = idUsuario;
     }
 
-    public String getNameUser() {
-        return nameUser;
+    public String getNombreUsuario() {
+        return nombreUsuario;
     }
 
-    public void setNameUser(String nameUser) {
-        this.nameUser = nameUser;
+    public void setNombreUsuario(String nombreUsuario) {
+        this.nombreUsuario = nombreUsuario;
     }
 
-    public String getEmailUser() {
-        return emailUser;
+    public String getCorreoUsuario() {
+        return correoUsuario;
     }
 
-    public void setEmailUser(String emailUser) {
-        this.emailUser = emailUser;
+    public void setCorreoUsuario(String correoUsuario) {
+        this.correoUsuario = correoUsuario;
     }
 
-    public String getPhoneUser() {
-        return phoneUser;
+    public String getTelefonoUsuario() {
+        return telefonoUsuario;
     }
 
-    public void setPhoneUser(String phoneUser) {
-        this.phoneUser = phoneUser;
+    public void setTelefonoUsuario(String telefonoUsuario) {
+        this.telefonoUsuario = telefonoUsuario;
     }
 
-    public LocalDate getBirthdayUser() {
-        return birthdayUser;
+    public LocalDate getFechaNacimientoUsuario() {
+        return fechaNacimientoUsuario;
     }
 
-    public void setBirthdayUser(LocalDate birthdayUser) {
-        this.birthdayUser = birthdayUser;
+    public void setFechaNacimientoUsuario(LocalDate fechaNacimientoUsuario) {
+        this.fechaNacimientoUsuario = fechaNacimientoUsuario;
     }
 
-    public String getSegmentUser() {
-        return segmentUser;
+    public String getSegmentoUsuario() {
+        return segmentoUsuario;
     }
 
-    public void setSegmentUser(String segmentUser) {
-        this.segmentUser = segmentUser;
+    public void setSegmentoUsuario(String segmentoUsuario) {
+        this.segmentoUsuario = segmentoUsuario;
     }
 
-    public BigDecimal getCurrentbalanceUser() {
-        return currentbalanceUser;
+    public BigDecimal getSaldoActualUsuario() {
+        return saldoActualUsuario;
     }
 
-    public void setCurrentbalanceUser(BigDecimal currentbalanceUser) {
-        this.currentbalanceUser = currentbalanceUser;
+    public void setSaldoActualUsuario(BigDecimal saldoActualUsuario) {
+        this.saldoActualUsuario = saldoActualUsuario;
     }
 
-    public int getGamificationpointsUser() {
-        return gamificationpointsUser;
+    public int getPuntosGamificacionUsuario() {
+        return puntosGamificacionUsuario;
     }
 
-    public void setGamificationpointsUser(int gamificationpointsUser) {
-        this.gamificationpointsUser = gamificationpointsUser;
+    public void setPuntosGamificacionUsuario(int puntosGamificacionUsuario) {
+        this.puntosGamificacionUsuario = puntosGamificacionUsuario;
     }
 }

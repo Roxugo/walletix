@@ -3,49 +3,49 @@ package pe.edu.upc.walletix.dtos;
 
 
 public class LogroDTO {
-    private int idAchievement;
-    private String nameAchievement;
-    private String descriptionAchievement;
-    private String iconurlAchievement;
-    private int pointAchievement;
+    private int idLogro;
+    private String nombreLogro;
+    private String descripcionLogro;
+    private String urlIconoLogro;
+    private int puntosLogro;
 
-    public int getIdAchievement() {
-        return idAchievement;
+    public int getIdLogro() {
+        return idLogro;
     }
 
-    public void setIdAchievement(int idAchievement) {
-        this.idAchievement = idAchievement;
+    public void setIdLogro(int idLogro) {
+        this.idLogro = idLogro;
     }
 
-    public String getNameAchievement() {
-        return nameAchievement;
+    public String getNombreLogro() {
+        return nombreLogro;
     }
 
-    public void setNameAchievement(String nameAchievement) {
-        this.nameAchievement = nameAchievement;
+    public void setNombreLogro(String nombreLogro) {
+        this.nombreLogro = nombreLogro;
     }
 
-    public String getDescriptionAchievement() {
-        return descriptionAchievement;
+    public String getDescripcionLogro() {
+        return descripcionLogro;
     }
 
-    public void setDescriptionAchievement(String descriptionAchievement) {
-        this.descriptionAchievement = descriptionAchievement;
+    public void setDescripcionLogro(String descripcionLogro) {
+        this.descripcionLogro = descripcionLogro;
     }
 
-    public String getIconurlAchievement() {
-        return iconurlAchievement;
+    public String getUrlIconoLogro() {
+        return urlIconoLogro;
     }
 
-    public void setIconurlAchievement(String iconurlAchievement) {
-        this.iconurlAchievement = iconurlAchievement;
+    public void setUrlIconoLogro(String urlIconoLogro) {
+        this.urlIconoLogro = urlIconoLogro;
     }
 
-    public int getPointAchievement() {
-        return pointAchievement;
+    public int getPuntosLogro() {
+        return puntosLogro;
     }
 
-    public void setPointAchievement(int pointAchievement) {
-        this.pointAchievement = pointAchievement;
+    public void setPuntosLogro(int puntosLogro) {
+        this.puntosLogro = puntosLogro;
     }
 }

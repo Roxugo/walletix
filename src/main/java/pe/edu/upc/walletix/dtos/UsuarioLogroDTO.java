@@ -1,6 +1,6 @@
 package pe.edu.upc.walletix.dtos;
 
-public class UsersAchievDTO {
+public class UsuarioLogroDTO {
     private int idUsersAchiev;
     private int idUser;
     private int idAchievement;

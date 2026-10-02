@@ -29,7 +29,7 @@ public class UsuarioController {
     }
     @PostMapping("/web")
     public ResponseEntity<?> registrar(@RequestBody UsuarioDTO dto){
-        if (dto.getBirthdayUser().isAfter(java.time.LocalDate.now())) {
+        if (dto.getFechaNacimientoUsuario().isAfter(java.time.LocalDate.now())) {
             return ResponseEntity.badRequest()
                     .body("La fecha de nacimiento no puede ser futura");
         }
@@ -54,23 +54,23 @@ public class UsuarioController {
     }
     @PutMapping("/actualiza")
     public ResponseEntity<String> actualizar(@RequestBody UsuarioDTO dto) {
-        if (dto.getBirthdayUser().isAfter(java.time.LocalDate.now())) {
+        if (dto.getFechaNacimientoUsuario().isAfter(java.time.LocalDate.now())) {
             return ResponseEntity.badRequest()
                     .body("La fecha de nacimiento no puede ser futura");
         }
-        Optional<Usuario> existente = uS.listId(dto.getIdUser());
+        Optional<Usuario> existente = uS.listId(dto.getIdUsuario());
         if (existente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Usuario no encontrado");
         }
         Usuario us = existente.get();
-        us.setNameUser(dto.getNameUser());
-        us.setEmailUser(dto.getEmailUser());
-        us.setPhoneUser(dto.getPhoneUser());
-        us.setBirthdayUser(dto.getBirthdayUser());
-        us.setSegmentUser(dto.getSegmentUser());
-        us.setCurrentbalanceUser(dto.getCurrentbalanceUser());
-        us.setGamificationpointsUser(dto.getGamificationpointsUser());
+        us.setNombreUsuario(dto.getNombreUsuario());
+        us.setCorreoUsuario(dto.getCorreoUsuario());
+        us.setTelefonoUsuario(dto.getTelefonoUsuario());
+        us.setFechaNacimientoUsuario(dto.getFechaNacimientoUsuario());
+        us.setSegmentoUsuario(dto.getSegmentoUsuario());
+        us.setSaldoActualUsuario(dto.getSaldoActualUsuario());
+        us.setPuntosGamificacionUsuario(dto.getPuntosGamificacionUsuario());
         uS.update(us);
         return ResponseEntity.ok("Usuario actualizado correctamente");
     }

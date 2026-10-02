@@ -6,108 +6,108 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "Users")
+@Table(name = "Usuario")
 public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int idUser;
+    private int idUsuario;
 
-    @Column(name = "nameUser", length = 30, nullable = false)
-    private String nameUser;
+    @Column(name = "nombreUsuario", length = 30, nullable = false)
+    private String nombreUsuario;
 
-    @Column(name = "emailUser", length = 20, nullable = false)
-    private String emailUser;
+    @Column(name = "correoUsuario", length = 20, nullable = false)
+    private String correoUsuario;
 
-    @Column(name = "phoneUser", length = 9, nullable = false)
-    private String phoneUser;
+    @Column(name = "telefonoUsuario", length = 9, nullable = false)
+    private String telefonoUsuario;
 
-    @Column(name = "birthdayUser", length = 20, nullable = false)
-    private LocalDate birthdayUser;
+    @Column(name = "fechaNacimientoUsuario", length = 20, nullable = false)
+    private LocalDate fechaNacimientoUsuario;
 
-    @Column(name = "segmentUser", length = 20, nullable = false)
-    private String segmentUser;
+    @Column(name = "segmentoUsuario", length = 20, nullable = false)
+    private String segmentoUsuario;
 
-    @Column(name = "currentbalanceUser", nullable = false)
-    private BigDecimal currentbalanceUser;
+    @Column(name = "saldoActualUsuario", nullable = false)
+    private BigDecimal saldoActualUsuario;
 
-    @Column(name = "gamificationpointsUser", nullable = false)
-    private int gamificationpointsUser;
+    @Column(name = "puntosGamificacionUsuario", nullable = false)
+    private int puntosGamificacionUsuario;
 
     public Usuario() {
     }
 
-    public Usuario(int idUser, String nameUser, String emailUser, String phoneUser, LocalDate birthdayUser, String segmentUser, BigDecimal currentbalanceUser, int gamificationpointsUser) {
-        this.idUser = idUser;
-        this.nameUser = nameUser;
-        this.emailUser = emailUser;
-        this.phoneUser = phoneUser;
-        this.birthdayUser = birthdayUser;
-        this.segmentUser = segmentUser;
-        this.currentbalanceUser = currentbalanceUser;
-        this.gamificationpointsUser = gamificationpointsUser;
+    public Usuario(int idUsuario, String nombreUsuario, String correoUsuario, String telefonoUsuario, LocalDate fechaNacimientoUsuario, String segmentoUsuario, BigDecimal saldoActualUsuario, int puntosGamificacionUsuario) {
+        this.idUsuario = idUsuario;
+        this.nombreUsuario = nombreUsuario;
+        this.correoUsuario = correoUsuario;
+        this.telefonoUsuario = telefonoUsuario;
+        this.fechaNacimientoUsuario = fechaNacimientoUsuario;
+        this.segmentoUsuario = segmentoUsuario;
+        this.saldoActualUsuario = saldoActualUsuario;
+        this.puntosGamificacionUsuario = puntosGamificacionUsuario;
     }
 
-    public int getIdUser() {
-        return idUser;
+    public int getIdUsuario() {
+        return idUsuario;
     }
 
-    public void setIdUser(int idUser) {
-        this.idUser = idUser;
+    public void setIdUsuario(int idUsuario) {
+        this.idUsuario = idUsuario;
     }
 
-    public String getNameUser() {
-        return nameUser;
+    public String getNombreUsuario() {
+        return nombreUsuario;
     }
 
-    public void setNameUser(String nameUser) {
-        this.nameUser = nameUser;
+    public void setNombreUsuario(String nombreUsuario) {
+        this.nombreUsuario = nombreUsuario;
     }
 
-    public String getEmailUser() {
-        return emailUser;
+    public String getCorreoUsuario() {
+        return correoUsuario;
     }
 
-    public void setEmailUser(String emailUser) {
-        this.emailUser = emailUser;
+    public void setCorreoUsuario(String correoUsuario) {
+        this.correoUsuario = correoUsuario;
     }
 
-    public String getPhoneUser() {
-        return phoneUser;
+    public String getTelefonoUsuario() {
+        return telefonoUsuario;
     }
 
-    public void setPhoneUser(String phoneUser) {
-        this.phoneUser = phoneUser;
+    public void setTelefonoUsuario(String telefonoUsuario) {
+        this.telefonoUsuario = telefonoUsuario;
     }
 
-    public LocalDate getBirthdayUser() {
-        return birthdayUser;
+    public LocalDate getFechaNacimientoUsuario() {
+        return fechaNacimientoUsuario;
     }
 
-    public void setBirthdayUser(LocalDate birthdayUser) {
-        this.birthdayUser = birthdayUser;
+    public void setFechaNacimientoUsuario(LocalDate fechaNacimientoUsuario) {
+        this.fechaNacimientoUsuario = fechaNacimientoUsuario;
     }
 
-    public String getSegmentUser() {
-        return segmentUser;
+    public String getSegmentoUsuario() {
+        return segmentoUsuario;
     }
 
-    public void setSegmentUser(String segmentUser) {
-        this.segmentUser = segmentUser;
+    public void setSegmentoUsuario(String segmentoUsuario) {
+        this.segmentoUsuario = segmentoUsuario;
     }
 
-    public BigDecimal getCurrentbalanceUser() {
-        return currentbalanceUser;
+    public BigDecimal getSaldoActualUsuario() {
+        return saldoActualUsuario;
     }
 
-    public void setCurrentbalanceUser(BigDecimal currentbalanceUser) {
-        this.currentbalanceUser = currentbalanceUser;
+    public void setSaldoActualUsuario(BigDecimal saldoActualUsuario) {
+        this.saldoActualUsuario = saldoActualUsuario;
     }
 
-    public int getGamificationpointsUser() {
-        return gamificationpointsUser;
+    public int getPuntosGamificacionUsuario() {
+        return puntosGamificacionUsuario;
     }
 
-    public void setGamificationpointsUser(int gamificationpointsUser) {
-        this.gamificationpointsUser = gamificationpointsUser;
+    public void setPuntosGamificacionUsuario(int puntosGamificacionUsuario) {
+        this.puntosGamificacionUsuario = puntosGamificacionUsuario;
     }
 }
