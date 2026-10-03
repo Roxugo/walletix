@@ -5,8 +5,8 @@ public class PresupuestoDto {
     private int mes;
     private int anio;
     private float montoAsignado;
-    private Usuario idUsuario;
-    private Categoria idCategoria;
+    private int idUsuario;
+    private int idCategoria;
     private int estado = 1;
 
     public int getIdPresupuesto() {
@@ -41,19 +41,19 @@ public class PresupuestoDto {
         this.montoAsignado = montoAsignado;
     }
 
-    public Usuario getIdUsuario() {
+    public int getIdUsuario() {
         return idUsuario;
     }
 
-    public void setIdUsuario(Usuario idUsuario) {
+    public void setIdUsuario(int idUsuario) {
         this.idUsuario = idUsuario;
     }
 
-    public Categoria getIdCategoria() {
+    public int getIdCategoria() {
         return idCategoria;
     }
 
-    public void setIdCategoria(Categoria idCategoria) {
+    public void setIdCategoria(int idCategoria) {
         this.idCategoria = idCategoria;
     }
 

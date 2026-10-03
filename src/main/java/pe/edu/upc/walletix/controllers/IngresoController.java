@@ -7,6 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.IngresoDto;
 import pe.edu.upc.walletix.entities.Ingreso;
+import pe.edu.upc.walletix.entities.Usuario;
+import pe.edu.upc.walletix.entities.Categoria;
+import pe.edu.upc.walletix.repositories.UsuarioRepository;
+import pe.edu.upc.walletix.repositories.CategoriaRepository;
 import pe.edu.upc.walletix.servicesinterfaces.IngresoServiceInterface;
 
 import java.util.List;
@@ -18,6 +22,12 @@ import java.util.stream.Collectors;
 public class IngresoController {
     @Autowired
     private IngresoServiceInterface ingresoService;
+
+    @Autowired
+    private IUsuarioService usuarioService;
+
+    @Autowired
+    private ICategoriaService categoriaService;
 
     @GetMapping
     public ResponseEntity<List<IngresoDto>> listar() {
@@ -33,7 +43,15 @@ public class IngresoController {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
 
-        Ingreso registrado = ingresoService.registrar(toEntity(dto));
+        Optional<Usuario> usuario = usuarioService.findById(dto.getIdUsuario());
+        if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        Optional<Categoria> categoria = categoriaService.findById(dto.getIdCategoria());
+        if (categoria.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Categoría no encontrada");
+
+        Ingreso ingreso = toEntity(dto);
+        ingreso.setUsuario(usuario.get());
+        ingreso.setCategoria(categoria.get());
+        Ingreso registrado = ingresoService.registrar(ingreso);
         return ResponseEntity.status(HttpStatus.CREATED).body(toDto(registrado, new ModelMapper()));
     }
 
@@ -51,6 +69,10 @@ public class IngresoController {
 
         Optional<Ingreso> existente = ingresoService.buscarPorId(dto.getIdIngreso());
         if (existente.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ingreso no encontrado");
+        Optional<Usuario> usuario = usuarioService.findById(dto.getIdUsuario());
+        if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        Optional<Categoria> categoria = categoriaService.findById(dto.getIdCategoria());
+        if (categoria.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Categoría no encontrada");
 
         Ingreso ingreso = existente.get();
         ingreso.setMonto(dto.getMonto());
@@ -60,8 +82,8 @@ public class IngresoController {
         ingreso.setFuente(dto.getFuente());
         ingreso.setDescripcion(dto.getDescripcion());
         ingreso.setEstado(dto.getEstado());
-        ingreso.setUsuario(dto.getIdUsuario());
-        ingreso.setCategoria(dto.getIdCategoria());
+        ingreso.setUsuario(usuario.get());
+        ingreso.setCategoria(categoria.get());
         ingresoService.actualizar(ingreso);
         return ResponseEntity.ok("Ingreso actualizado correctamente");
     }
@@ -85,15 +107,13 @@ public class IngresoController {
         ingreso.setFuente(dto.getFuente());
         ingreso.setDescripcion(dto.getDescripcion());
         ingreso.setEstado(dto.getEstado());
-        ingreso.setUsuario(dto.getIdUsuario());
-        ingreso.setCategoria(dto.getIdCategoria());
         return ingreso;
     }
 
     private IngresoDto toDto(Ingreso ingreso, ModelMapper mapper) {
         IngresoDto dto = mapper.map(ingreso, IngresoDto.class);
-        dto.setIdUsuario(ingreso.getUsuario());
-        dto.setIdCategoria(ingreso.getCategoria());
+        if (ingreso.getUsuario() != null) dto.setIdUsuario(ingreso.getUsuario().getIdUsuario());
+        if (ingreso.getCategoria() != null) dto.setIdCategoria(ingreso.getCategoria().getIdCategoria());
         return dto;
     }
 
@@ -105,8 +125,8 @@ public class IngresoController {
         if (dto.getTipoIngreso() == null || dto.getTipoIngreso().isBlank()) return "Se requiere el tipo de ingreso";
         if (dto.getFrecuencia() == null || dto.getFrecuencia().isBlank()) return "Se requiere la frecuencia";
         if (dto.getFuente() == null || dto.getFuente().isBlank()) return "Se requiere la fuente";
-        if (dto.getIdUsuario() == null) return "Se requiere un usuario";
-        if (dto.getIdCategoria() == null) return "Se requiere una categoría";
+        if (dto.getIdUsuario() <= 0) return "Se requiere un id de usuario válido";
+        if (dto.getIdCategoria() <= 0) return "Se requiere un id de categoría válido";
         return null;
     }
 }

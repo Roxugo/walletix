@@ -7,6 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.PresupuestoDto;
 import pe.edu.upc.walletix.entities.Presupuesto;
+import pe.edu.upc.walletix.entities.Usuario;
+import pe.edu.upc.walletix.entities.Categoria;
+import pe.edu.upc.walletix.repositories.UsuarioRepository;
+import pe.edu.upc.walletix.repositories.CategoriaRepository;
 import pe.edu.upc.walletix.servicesinterfaces.PresupuestoServiceInterface;
 
 import java.util.List;
@@ -18,6 +22,12 @@ import java.util.stream.Collectors;
 public class PresupuestoController {
     @Autowired
     private PresupuestoServiceInterface presupuestoService;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private CategoriaRepository categoriaRepository;
 
     @GetMapping
     public ResponseEntity<List<PresupuestoDto>> listar() {
@@ -33,7 +43,14 @@ public class PresupuestoController {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
 
+        Optional<Usuario> usuario = usuarioRepository.findById(dto.getIdUsuario());
+        if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        Optional<Categoria> categoria = categoriaRepository.findById(dto.getIdCategoria());
+        if (categoria.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Categoría no encontrada");
+
         Presupuesto presupuesto = toEntity(dto);
+        presupuesto.setUsuario(usuario.get());
+        presupuesto.setCategoria(categoria.get());
         Presupuesto registrado = presupuestoService.registrar(presupuesto);
         return ResponseEntity.status(HttpStatus.CREATED).body(toDto(registrado, new ModelMapper()));
     }
@@ -52,14 +69,18 @@ public class PresupuestoController {
 
         Optional<Presupuesto> existente = presupuestoService.buscarPorId(dto.getIdPresupuesto());
         if (existente.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Presupuesto no encontrado");
+        Optional<Usuario> usuario = usuarioRepository.findById(dto.getIdUsuario());
+        if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        Optional<Categoria> categoria = categoriaRepository.findById(dto.getIdCategoria());
+        if (categoria.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Categoría no encontrada");
 
         Presupuesto presupuesto = existente.get();
         presupuesto.setMes(dto.getMes());
         presupuesto.setAnio(dto.getAnio());
         presupuesto.setMontoAsignado(dto.getMontoAsignado());
         presupuesto.setEstado(dto.getEstado());
-        presupuesto.setUsuario(dto.getIdUsuario());
-        presupuesto.setCategoria(dto.getIdCategoria());
+        presupuesto.setUsuario(usuario.get());
+        presupuesto.setCategoria(categoria.get());
         presupuestoService.actualizar(presupuesto);
         return ResponseEntity.ok("Presupuesto actualizado correctamente");
     }
@@ -80,15 +101,13 @@ public class PresupuestoController {
         presupuesto.setAnio(dto.getAnio());
         presupuesto.setMontoAsignado(dto.getMontoAsignado());
         presupuesto.setEstado(dto.getEstado());
-        presupuesto.setUsuario(dto.getIdUsuario());
-        presupuesto.setCategoria(dto.getIdCategoria());
         return presupuesto;
     }
 
     private PresupuestoDto toDto(Presupuesto presupuesto, ModelMapper mapper) {
         PresupuestoDto dto = mapper.map(presupuesto, PresupuestoDto.class);
-        dto.setIdUsuario(presupuesto.getUsuario());
-        dto.setIdCategoria(presupuesto.getCategoria());
+        if (presupuesto.getUsuario() != null) dto.setIdUsuario(presupuesto.getUsuario().getIdUsuario());
+        if (presupuesto.getCategoria() != null) dto.setIdCategoria(presupuesto.getCategoria().getIdCategoria());
         return dto;
     }
 
@@ -98,8 +117,8 @@ public class PresupuestoController {
         if (dto.getMes() < 1 || dto.getMes() > 12) return "El mes debe estar entre 1 y 12";
         if (dto.getAnio() <= 0) return "El año debe ser positivo";
         if (dto.getMontoAsignado() <= 0) return "El monto asignado debe ser mayor que cero";
-        if (dto.getIdUsuario() == null) return "Se requiere un usuario";
-        if (dto.getIdCategoria() == null) return "Se requiere una categoría";
+        if (dto.getIdUsuario() <= 0) return "Se requiere un id de usuario válido";
+        if (dto.getIdCategoria() <= 0) return "Se requiere un id de categoría válido";
         return null;
     }
 }

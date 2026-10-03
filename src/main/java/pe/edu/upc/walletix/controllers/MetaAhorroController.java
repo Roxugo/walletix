@@ -7,6 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.MetaAhorroDto;
 import pe.edu.upc.walletix.entities.MetaAhorro;
+import pe.edu.upc.walletix.entities.Usuario;
+import pe.edu.upc.walletix.repositories.UsuarioRepository;
 import pe.edu.upc.walletix.servicesinterfaces.MetaAhorroServiceInterface;
 
 import java.math.BigDecimal;
@@ -19,6 +21,9 @@ import java.util.stream.Collectors;
 public class MetaAhorroController {
     @Autowired
     private MetaAhorroServiceInterface metaAhorroService;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     @GetMapping
     public ResponseEntity<List<MetaAhorroDto>> listar() {
@@ -34,7 +39,11 @@ public class MetaAhorroController {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
 
-        MetaAhorro registrada = metaAhorroService.registrar(toEntity(dto));
+        Optional<Usuario> usuario = usuarioRepository.findById(dto.getIdUsuario());
+        if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        MetaAhorro meta = toEntity(dto);
+        meta.setUsuario(usuario.get());
+        MetaAhorro registrada = metaAhorroService.registrar(meta);
         return ResponseEntity.status(HttpStatus.CREATED).body(toDto(registrada, new ModelMapper()));
     }
 
@@ -52,6 +61,8 @@ public class MetaAhorroController {
 
         Optional<MetaAhorro> existente = metaAhorroService.buscarPorId(dto.getIdMetaAhorro());
         if (existente.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Meta de ahorro no encontrada");
+        Optional<Usuario> usuario = usuarioRepository.findById(dto.getIdUsuario());
+        if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
 
         MetaAhorro meta = existente.get();
         meta.setTitulo(dto.getTitulo());
@@ -60,7 +71,7 @@ public class MetaAhorroController {
         meta.setFechaLimite(dto.getFechaLimite());
         meta.setEstadoMetaAhorro(dto.getEstadoMetaAhorro());
         meta.setEstado(dto.getEstado());
-        meta.setUsuario(dto.getIdUsuario());
+        meta.setUsuario(usuario.get());
         metaAhorroService.actualizar(meta);
         return ResponseEntity.ok("Meta de ahorro actualizada correctamente");
     }
@@ -83,13 +94,12 @@ public class MetaAhorroController {
         meta.setFechaLimite(dto.getFechaLimite());
         meta.setEstadoMetaAhorro(dto.getEstadoMetaAhorro());
         meta.setEstado(dto.getEstado());
-        meta.setUsuario(dto.getIdUsuario());
         return meta;
     }
 
     private MetaAhorroDto toDto(MetaAhorro meta, ModelMapper mapper) {
         MetaAhorroDto dto = mapper.map(meta, MetaAhorroDto.class);
-        dto.setIdUsuario(meta.getUsuario());
+        if (meta.getUsuario() != null) dto.setIdUsuario(meta.getUsuario().getIdUsuario());
         return dto;
     }
 
@@ -101,7 +111,7 @@ public class MetaAhorroController {
         if (dto.getMontoActual() == null || dto.getMontoActual().compareTo(BigDecimal.ZERO) < 0) return "El monto actual no puede ser negativo";
         if (dto.getFechaLimite() == null) return "Se requiere una fecha límite";
         if (dto.getEstadoMetaAhorro() == null || dto.getEstadoMetaAhorro().isBlank()) return "Se requiere el estado de la meta";
-        if (dto.getIdUsuario() == null) return "Se requiere un usuario";
+        if (dto.getIdUsuario() <= 0) return "Se requiere un id de usuario válido";
         return null;
     }
 }

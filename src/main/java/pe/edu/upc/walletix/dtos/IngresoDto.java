@@ -10,8 +10,8 @@ public class IngresoDto {
     private String frecuencia;
     private String fuente;
     private String descripcion;
-    private Usuario idUsuario;
-    private Categoria idCategoria;
+    private int idUsuario;
+    private int idCategoria;
     private int estado = 1;
 
     public int getIdIngreso() {
@@ -70,19 +70,19 @@ public class IngresoDto {
         this.descripcion = descripcion;
     }
 
-    public Usuario getIdUsuario() {
+    public int getIdUsuario() {
         return idUsuario;
     }
 
-    public void setIdUsuario(Usuario idUsuario) {
+    public void setIdUsuario(int idUsuario) {
         this.idUsuario = idUsuario;
     }
 
-    public Categoria getIdCategoria() {
+    public int getIdCategoria() {
         return idCategoria;
     }
 
-    public void setIdCategoria(Categoria idCategoria) {
+    public void setIdCategoria(int idCategoria) {
         this.idCategoria = idCategoria;
     }
 

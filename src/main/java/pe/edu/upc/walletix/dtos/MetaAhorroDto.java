@@ -10,7 +10,7 @@ public class MetaAhorroDto {
     private BigDecimal montoActual;
     private LocalDate fechaLimite;
     private String estadoMetaAhorro;
-    private Usuario idUsuario;
+    private int idUsuario;
     private int estado = 1;
 
     public int getIdMetaAhorro() {
@@ -61,11 +61,11 @@ public class MetaAhorroDto {
         this.estadoMetaAhorro = estadoMetaAhorro;
     }
 
-    public Usuario getIdUsuario() {
+    public int getIdUsuario() {
         return idUsuario;
     }
 
-    public void setIdUsuario(Usuario idUsuario) {
+    public void setIdUsuario(int idUsuario) {
         this.idUsuario = idUsuario;
     }
 
