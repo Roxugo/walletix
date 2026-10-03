@@ -7,7 +7,7 @@ public class UsuarioDTO {
     private int idUsuario;
     private String nombreUsuario;
     private String correoUsuario;
-    private String telefonoUsuario;
+    private int telefonoUsuario;
     private LocalDate fechaNacimientoUsuario;
     private String segmentoUsuario;
     private BigDecimal saldoActualUsuario;
@@ -38,11 +38,11 @@ public class UsuarioDTO {
         this.correoUsuario = correoUsuario;
     }
 
-    public String getTelefonoUsuario() {
+    public int getTelefonoUsuario() {
         return telefonoUsuario;
     }
 
-    public void setTelefonoUsuario(String telefonoUsuario) {
+    public void setTelefonoUsuario(int telefonoUsuario) {
         this.telefonoUsuario = telefonoUsuario;
     }
 

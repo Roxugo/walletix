@@ -19,7 +19,7 @@ public class Usuario {
     private String correoUsuario;
 
     @Column(name = "telefonoUsuario", length = 9, nullable = false)
-    private String telefonoUsuario;
+    private int telefonoUsuario;
 
     @Column(name = "fechaNacimientoUsuario", nullable = false)
     private LocalDate fechaNacimientoUsuario;
@@ -39,7 +39,7 @@ public class Usuario {
     public Usuario() {
     }
 
-    public Usuario(int idUsuario, String nombreUsuario, String correoUsuario, String telefonoUsuario, LocalDate fechaNacimientoUsuario, String segmentoUsuario, BigDecimal saldoActualUsuario, int puntosGamificacionUsuario, boolean estadoUsuario) {
+    public Usuario(int idUsuario, String nombreUsuario, String correoUsuario, int telefonoUsuario, LocalDate fechaNacimientoUsuario, String segmentoUsuario, BigDecimal saldoActualUsuario, int puntosGamificacionUsuario, boolean estadoUsuario) {
         this.idUsuario = idUsuario;
         this.nombreUsuario = nombreUsuario;
         this.correoUsuario = correoUsuario;
@@ -75,11 +75,11 @@ public class Usuario {
         this.correoUsuario = correoUsuario;
     }
 
-    public String getTelefonoUsuario() {
+    public int getTelefonoUsuario() {
         return telefonoUsuario;
     }
 
-    public void setTelefonoUsuario(String telefonoUsuario) {
+    public void setTelefonoUsuario(int telefonoUsuario) {
         this.telefonoUsuario = telefonoUsuario;
     }
 
