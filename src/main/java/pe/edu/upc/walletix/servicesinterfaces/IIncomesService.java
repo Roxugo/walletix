@@ -1,7 +1,5 @@
 package pe.edu.upc.walletix.servicesinterfaces;
 
-import pe.edu.upc.walletix.entities.Incomes;
-
 import java.util.List;
 import java.util.Optional;
 

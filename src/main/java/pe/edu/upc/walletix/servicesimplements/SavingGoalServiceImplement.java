@@ -2,7 +2,6 @@ package pe.edu.upc.walletix.servicesimplements;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pe.edu.upc.walletix.entities.SavingGoal;
 import pe.edu.upc.walletix.repositories.SavingGoalRepository;
 import pe.edu.upc.walletix.servicesinterfaces.ISavingGoalService;
 
