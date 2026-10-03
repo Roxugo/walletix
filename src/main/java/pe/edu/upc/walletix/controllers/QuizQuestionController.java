@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/preguntas-quiz")
-public class QuizQuestionController {
+public class cQuizQuestionController {
     @Autowired
     private IQuizQuestionService qS;
     @Autowired
