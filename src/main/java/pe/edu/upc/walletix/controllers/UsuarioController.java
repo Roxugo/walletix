@@ -33,6 +33,11 @@ public class UsuarioController {
             return ResponseEntity.badRequest()
                     .body("La fecha de nacimiento no puede ser futura");
         }
+        String telStr = String.valueOf(dto.getTelefonoUsuario());
+        if (telStr.length() != 9) {
+            return ResponseEntity.badRequest()
+                    .body("El teléfono debe tener exactamente 9 dígitos");
+        }
 
         ModelMapper m=new ModelMapper();
         Usuario c=m.map(dto, Usuario.class);
@@ -57,6 +62,11 @@ public class UsuarioController {
         if (dto.getFechaNacimientoUsuario().isAfter(java.time.LocalDate.now())) {
             return ResponseEntity.badRequest()
                     .body("La fecha de nacimiento no puede ser futura");
+        }
+        String telStr = String.valueOf(dto.getTelefonoUsuario());
+        if (telStr.length() != 9) {
+            return ResponseEntity.badRequest()
+                    .body("El teléfono debe tener exactamente 9 dígitos");
         }
         Optional<Usuario> existente = usuarioService.listId(dto.getIdUsuario());
         if (existente.isEmpty()) {
