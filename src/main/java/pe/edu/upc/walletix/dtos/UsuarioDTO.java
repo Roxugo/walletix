@@ -1,55 +1,18 @@
-package pe.edu.upc.walletix.entities;
-
-import jakarta.persistence.*;
+package pe.edu.upc.walletix.dtos;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "Usuario")
-public class Usuario {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class UsuarioDTO {
     private int idUsuario;
-
-    @Column(name = "nombreUsuario", length = 50, nullable = false)
     private String nombreUsuario;
-
-    @Column(name = "correoUsuario", length = 50, nullable = false)
     private String correoUsuario;
-
-    @Column(name = "telefonoUsuario", nullable = false)
     private int telefonoUsuario;
-
-    @Column(name = "fechaNacimientoUsuario", nullable = false)
     private LocalDate fechaNacimientoUsuario;
-
-    @Column(name = "segmentoUsuario", length = 30, nullable = false)
     private String segmentoUsuario;
-
-    @Column(name = "saldoActualUsuario",precision = 10, scale = 2, nullable = false)
     private BigDecimal saldoActualUsuario;
-
-    @Column(name = "puntosGamificacionUsuario", nullable = false)
     private int puntosGamificacionUsuario;
-
-    @Column(name = "estadoUsuario", nullable = false)
     private boolean estadoUsuario = true;
-
-    public Usuario() {
-    }
-
-    public Usuario(int idUsuario, String nombreUsuario, String correoUsuario, int telefonoUsuario, LocalDate fechaNacimientoUsuario, String segmentoUsuario, BigDecimal saldoActualUsuario, int puntosGamificacionUsuario, boolean estadoUsuario) {
-        this.idUsuario = idUsuario;
-        this.nombreUsuario = nombreUsuario;
-        this.correoUsuario = correoUsuario;
-        this.telefonoUsuario = telefonoUsuario;
-        this.fechaNacimientoUsuario = fechaNacimientoUsuario;
-        this.segmentoUsuario = segmentoUsuario;
-        this.saldoActualUsuario = saldoActualUsuario;
-        this.puntosGamificacionUsuario = puntosGamificacionUsuario;
-        this.estadoUsuario = estadoUsuario;
-    }
 
     public int getIdUsuario() {
         return idUsuario;
