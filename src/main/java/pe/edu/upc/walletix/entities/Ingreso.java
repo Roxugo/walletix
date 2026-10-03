@@ -12,34 +12,56 @@ public class Ingreso {
     @Column(name = "idIngreso")
     private int idIngreso;
 
-    @Column (name = "monto", nullable = false)
+    @Column(name = "monto", nullable = false)
     private float monto;
 
-    @Column (name = "fecha", nullable = false)
+    @Column(name = "fecha", nullable = false)
     private LocalDate fecha;
 
-    @Column (name = "tipoIngreso", length = 100, nullable = false)
+    @Column(name = "tipoIngreso", length = 100, nullable = false)
     private String tipoIngreso;
 
-    @Column (name = "frecuencia", nullable = false)
+    @Column(name = "frecuencia", nullable = false)
     private String frecuencia;
 
-    @Column (name = "fuente", length = 100, nullable = false)
+    @Column(name = "fuente", length = 100, nullable = false)
     private String fuente;
 
-    @Column (name = "descripcion", columnDefinition = "TEXT")
+    @Column(name = "descripcion", columnDefinition = "TEXT")
     private String descripcion;
 
     @Column(name = "estado", nullable = false)
     private int estado = 1;
 
     @ManyToOne
-    @JoinColumn (name = "idUsuario")
+    @JoinColumn(name = "idUsuario")
     private Usuario usuario;
 
     @ManyToOne
-    @JoinColumn (name = "idCategoria")
+    @JoinColumn(name = "idCategoria")
     private Categoria categoria;
+
+    @ManyToOne
+    @JoinColumn(name = "idAuditoria")
+    private Auditoria auditoria;
+
+    public Ingreso() {
+    }
+
+
+    public Ingreso(int idIngreso, Usuario usuario, Categoria categoria, Auditoria auditoria, float monto, LocalDate fecha, String tipoIngreso, String frecuencia, String fuente, String descripcion, int estado) {
+        this.idIngreso = idIngreso;
+        this.usuario = usuario;
+        this.categoria = categoria;
+        this.auditoria = auditoria;
+        this.monto = monto;
+        this.fecha = fecha;
+        this.tipoIngreso = tipoIngreso;
+        this.frecuencia = frecuencia;
+        this.fuente = fuente;
+        this.descripcion = descripcion;
+        this.estado = estado;
+    }
 
     public int getIdIngreso() {
         return idIngreso;
@@ -97,9 +119,13 @@ public class Ingreso {
         this.descripcion = descripcion;
     }
 
-    public int getEstado() { return estado; }
+    public int getEstado() {
+        return estado;
+    }
 
-    public void setEstado(int estado) { this.estado = estado; }
+    public void setEstado(int estado) {
+        this.estado = estado;
+    }
 
     public Usuario getUsuario() {
         return usuario;
@@ -116,3 +142,12 @@ public class Ingreso {
     public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
     }
+
+    public Auditoria getAuditoria() {
+        return auditoria;
+    }
+
+    public void setAuditoria(Auditoria auditoria) {
+        this.auditoria = auditoria;
+    }
+}
