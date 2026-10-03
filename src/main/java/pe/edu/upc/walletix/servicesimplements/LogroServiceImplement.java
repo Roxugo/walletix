@@ -26,7 +26,7 @@ public class LogroServiceImplement implements ILogroService {
 
     @Override
     public Optional<Logro> listId(int id) {
-        return logroRepository.findById(id);
+        return logroRepository.findByIdLogroAndEstadoLogroTrue(id);
     }
 
     @Override

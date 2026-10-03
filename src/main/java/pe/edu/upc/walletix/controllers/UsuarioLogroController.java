@@ -33,53 +33,67 @@ public class UsuarioLogroController {
     private ILogroService logroService;
 
     @GetMapping
-    public ResponseEntity<List<UsuarioLogroDTO>> listar(){
-        ModelMapper m= new ModelMapper();
-        List<UsuarioLogroDTO> listalogros =usuariologroService.list().stream()
-                .map(y->m.map(y, UsuarioLogroDTO.class))
+    public ResponseEntity<List<UsuarioLogroDTO>> listar() {
+        ModelMapper m = new ModelMapper();
+        m.getConfiguration().setMatchingStrategy(org.modelmapper.convention.MatchingStrategies.STRICT);
+
+        List<UsuarioLogroDTO> listalogros = usuariologroService.list().stream()
+                .map(y -> {
+                    UsuarioLogroDTO dto = m.map(y, UsuarioLogroDTO.class);
+                    // Asignamos los IDs de las claves foráneas
+                    if (y.getUsuario() != null) dto.setIdUsuario(y.getUsuario().getIdUsuario());
+                    if (y.getLogro() != null) dto.setIdLogro(y.getLogro().getIdLogro());
+                    return dto;
+                })
                 .collect(Collectors.toList());
+
         return ResponseEntity.ok(listalogros);
     }
     @PostMapping("/web")
-    public ResponseEntity<?> registrar(@RequestBody UsuarioLogroDTO dto){
+    public ResponseEntity<?> registrar(@RequestBody UsuarioLogroDTO dto) {
+        // 1. Validar que el Usuario foráneo exista y esté activo (si no existe, responde 404)
         Optional<Usuario> usuarioOpt = usuarioService.listId(dto.getIdUsuario());
         if (usuarioOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("El usuario con ID " + dto.getIdUsuario() + " no existe.");
         }
 
-        // 2. Validar si el logro existe
+        // 2. Validar que el Logro foráneo exista y esté activo (si no existe, responde 404)
         Optional<Logro> logroOpt = logroService.listId(dto.getIdLogro());
         if (logroOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("El logro con ID " + dto.getIdLogro() + " no existe.");
         }
-        ModelMapper m = new ModelMapper();
-        UsuarioLogro c = m.map(dto, UsuarioLogro.class);
 
-        // Le asignamos los objetos validados directamente (evita que queden en null)
+        ModelMapper m = new ModelMapper();
+        // 3. Estrategia STRICT: obliga a coincidir nombres exactos al 100% y evita que
+        //    ModelMapper confunda idUsuarioLogro con idLogro o idUsuario (evita error 500)
+        m.getConfiguration().setMatchingStrategy(org.modelmapper.convention.MatchingStrategies.STRICT);
+        UsuarioLogro c = m.map(dto, UsuarioLogro.class);
+        c.setEstadoUsuarioLogro(true);
         c.setUsuario(usuarioOpt.get());
         c.setLogro(logroOpt.get());
-
         UsuarioLogro cur = usuariologroService.insert(c);
-
         UsuarioLogroDTO responseDTO = m.map(cur, UsuarioLogroDTO.class);
-        // Aseguramos que la respuesta devuelva los IDs correctos y no 0
         responseDTO.setIdUsuario(cur.getUsuario().getIdUsuario());
         responseDTO.setIdLogro(cur.getLogro().getIdLogro());
-
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
     @GetMapping("/{id}")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
         ModelMapper m = new ModelMapper();
+        m.getConfiguration().setMatchingStrategy(org.modelmapper.convention.MatchingStrategies.STRICT);
+
         Optional<UsuarioLogro> mach = usuariologroService.listId(id);
         if (mach.isPresent()) {
-            UsuarioLogroDTO dto = m.map(mach.get(), UsuarioLogroDTO.class);
+            UsuarioLogro ul = mach.get();
+            UsuarioLogroDTO dto = m.map(ul, UsuarioLogroDTO.class);
+            if (ul.getUsuario() != null) dto.setIdUsuario(ul.getUsuario().getIdUsuario());
+            if (ul.getLogro() != null) dto.setIdLogro(ul.getLogro().getIdLogro());
             return ResponseEntity.ok(dto);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Logro no encontrado");
+                    .body("Registro no encontrado");
         }
     }
     @PutMapping("/actualiza")

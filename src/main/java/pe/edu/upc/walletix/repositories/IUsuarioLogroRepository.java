@@ -6,10 +6,12 @@ import org.springframework.stereotype.Repository;
 import pe.edu.upc.walletix.entities.UsuarioLogro;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface IUsuarioLogroRepository extends JpaRepository<UsuarioLogro, Integer> {
     List<UsuarioLogro> findByEstadoUsuarioLogroTrue();
+    Optional<UsuarioLogro> findByIdUsuarioLogroAndEstadoUsuarioLogroTrue(int idUsuarioLogro);
     @Query(value = "SELECT u.nombre_usuario, COUNT(ul.id_usuario_logro) " +
             "FROM usuario u " +
             "INNER JOIN usuario_logro ul ON u.id_usuario = ul.id_usuario " +

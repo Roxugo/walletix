@@ -27,7 +27,7 @@ public class UsuarioLogroServiceImplement implements IUsuarioLogroService {
 
     @Override
     public Optional<UsuarioLogro> listId(int id) {
-        return usuariologroRepository.findById(id);
+        return usuariologroRepository.findByIdUsuarioLogroAndEstadoUsuarioLogroTrue(id);
     }
 
     @Override

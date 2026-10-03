@@ -27,7 +27,7 @@ public class UsuarioServiceImplement implements IUsuarioService {
 
     @Override
     public Optional<Usuario> listId(int id) {
-        return usuarioRepository.findById(id);
+        return usuarioRepository.findByIdUsuarioAndEstadoUsuarioTrue(id);
     }
 
     @Override
