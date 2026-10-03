@@ -34,19 +34,14 @@ public class MetaAhorro {
     @JoinColumn(name = "idUsuario")
     private Usuario usuario;
 
-    @ManyToOne
-    @JoinColumn(name = "idAuditoria")
-    private Auditoria auditoria;
-
     public MetaAhorro (){
 
     }
 
-    public MetaAhorro (int idMetaAhorro, Usuario usuario, Auditoria auditoria, String titulo, BigDecimal montoObjetivo, BigDecimal montoActual, LocalDate fechaLimite, String estadoMetaAhorro, int estado)
+    public MetaAhorro (int idMetaAhorro, Usuario usuario, String titulo, BigDecimal montoObjetivo, BigDecimal montoActual, LocalDate fechaLimite, String estadoMetaAhorro, int estado)
     {
         this.idMetaAhorro = idMetaAhorro;
         this.usuario = usuario;
-        this.auditoria = auditoria;
         this.titulo = titulo;
         this.montoObjetivo = montoObjetivo;
         this.montoActual = montoActual;
@@ -119,11 +114,4 @@ public class MetaAhorro {
         this.usuario = usuario;
     }
 
-    public Auditoria getAuditoria() {
-        return auditoria;
-    }
-
-    public void setAuditoria(Auditoria auditoria) {
-        this.auditoria = auditoria;
-    }
 }

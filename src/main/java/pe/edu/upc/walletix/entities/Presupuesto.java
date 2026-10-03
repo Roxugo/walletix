@@ -29,19 +29,14 @@ public class Presupuesto {
     @JoinColumn(name = "idCategoria")
     private Categoria categoria;
 
-    @ManyToOne
-    @JoinColumn(name = "idAuditoria")
-    private Auditoria auditoria;
-
     public Presupuesto() {
 
     }
 
-    public Presupuesto(int idPresupuesto, Usuario usuario, Categoria categoria, Auditoria auditoria, int mes, int anio, float montoAsignado) {
+    public Presupuesto(int idPresupuesto, Usuario usuario, Categoria categoria, int mes, int anio, float montoAsignado) {
         this.idPresupuesto = idPresupuesto;
         this.usuario = usuario;
         this.categoria = categoria;
-        this.auditoria = auditoria;
         this.mes = mes;
         this.anio = anio;
         this.montoAsignado = montoAsignado;
@@ -103,12 +98,5 @@ public class Presupuesto {
         this.categoria = categoria;
     }
 
-    public Auditoria getAuditoria() {
-        return auditoria;
-    }
-
-    public void setAuditoria(Auditoria auditoria) {
-        this.auditoria = auditoria;
-    }
 }
 

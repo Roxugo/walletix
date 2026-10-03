@@ -11,7 +11,6 @@ public class MetaAhorroDto {
     private LocalDate fechaLimite;
     private String estadoMetaAhorro;
     private Usuario idUsuario;
-    private Auditoria idAuditoria;
     private int estado = 1;
 
     public int getIdMetaAhorro() {
@@ -68,14 +67,6 @@ public class MetaAhorroDto {
 
     public void setIdUsuario(Usuario idUsuario) {
         this.idUsuario = idUsuario;
-    }
-
-    public Auditoria getIdAuditoria() {
-        return idAuditoria;
-    }
-
-    public void setIdAuditoria(Auditoria idAuditoria) {
-        this.idAuditoria = idAuditoria;
     }
 
     public int getEstado() {

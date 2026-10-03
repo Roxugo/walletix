@@ -41,19 +41,14 @@ public class Ingreso {
     @JoinColumn(name = "idCategoria")
     private Categoria categoria;
 
-    @ManyToOne
-    @JoinColumn(name = "idAuditoria")
-    private Auditoria auditoria;
-
     public Ingreso() {
     }
 
 
-    public Ingreso(int idIngreso, Usuario usuario, Categoria categoria, Auditoria auditoria, float monto, LocalDate fecha, String tipoIngreso, String frecuencia, String fuente, String descripcion, int estado) {
+    public Ingreso(int idIngreso, Usuario usuario, Categoria categoria, float monto, LocalDate fecha, String tipoIngreso, String frecuencia, String fuente, String descripcion, int estado) {
         this.idIngreso = idIngreso;
         this.usuario = usuario;
         this.categoria = categoria;
-        this.auditoria = auditoria;
         this.monto = monto;
         this.fecha = fecha;
         this.tipoIngreso = tipoIngreso;
@@ -143,11 +138,4 @@ public class Ingreso {
         this.categoria = categoria;
     }
 
-    public Auditoria getAuditoria() {
-        return auditoria;
-    }
-
-    public void setAuditoria(Auditoria auditoria) {
-        this.auditoria = auditoria;
-    }
 }

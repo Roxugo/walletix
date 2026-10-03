@@ -12,7 +12,6 @@ public class IngresoDto {
     private String descripcion;
     private Usuario idUsuario;
     private Categoria idCategoria;
-    private Auditoria idAuditoria;
     private int estado = 1;
 
     public int getIdIngreso() {
@@ -85,14 +84,6 @@ public class IngresoDto {
 
     public void setIdCategoria(Categoria idCategoria) {
         this.idCategoria = idCategoria;
-    }
-
-    public Auditoria getIdAuditoria() {
-        return idAuditoria;
-    }
-
-    public void setIdAuditoria(Auditoria idAuditoria) {
-        this.idAuditoria = idAuditoria;
     }
 
     public int getEstado() {
