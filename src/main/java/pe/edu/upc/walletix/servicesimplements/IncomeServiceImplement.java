@@ -2,7 +2,6 @@ package pe.edu.upc.walletix.servicesimplements;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import pe.edu.upc.walletix.repositories.IncomeRepository;
 import pe.edu.upc.walletix.servicesinterfaces.IIncomesService;
 
 import java.util.List;

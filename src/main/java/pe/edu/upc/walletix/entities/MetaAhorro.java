@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "metaAhorro")
+@Table(name = "metasAhorro")
 public class MetaAhorro {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
