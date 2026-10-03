@@ -11,7 +11,9 @@ import pe.edu.upc.walletix.dtos.UsuarioLogrosCountDTO;
 import pe.edu.upc.walletix.entities.Logro;
 import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.entities.UsuarioLogro;
+import pe.edu.upc.walletix.servicesinterfaces.ILogroService;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioLogroService;
+import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,12 @@ public class UsuarioLogroController {
     @Autowired
     private IUsuarioLogroService usuariologroService;
 
+    @Autowired
+    private IUsuarioService usuarioService;
+
+    @Autowired
+    private ILogroService logroService;
+
     @GetMapping
     public ResponseEntity<List<UsuarioLogroDTO>> listar(){
         ModelMapper m= new ModelMapper();
@@ -34,10 +42,32 @@ public class UsuarioLogroController {
     }
     @PostMapping("/web")
     public ResponseEntity<?> registrar(@RequestBody UsuarioLogroDTO dto){
-        ModelMapper m=new ModelMapper();
-        UsuarioLogro c=m.map(dto, UsuarioLogro.class);
-        UsuarioLogro cur= usuariologroService.insert(c);
-        UsuarioLogroDTO responseDTO=m.map(cur, UsuarioLogroDTO.class);
+        Optional<Usuario> usuarioOpt = usuarioService.listId(dto.getIdUsuario());
+        if (usuarioOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("El usuario con ID " + dto.getIdUsuario() + " no existe.");
+        }
+
+        // 2. Validar si el logro existe
+        Optional<Logro> logroOpt = logroService.listId(dto.getIdLogro());
+        if (logroOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("El logro con ID " + dto.getIdLogro() + " no existe.");
+        }
+        ModelMapper m = new ModelMapper();
+        UsuarioLogro c = m.map(dto, UsuarioLogro.class);
+
+        // Le asignamos los objetos validados directamente (evita que queden en null)
+        c.setUsuario(usuarioOpt.get());
+        c.setLogro(logroOpt.get());
+
+        UsuarioLogro cur = usuariologroService.insert(c);
+
+        UsuarioLogroDTO responseDTO = m.map(cur, UsuarioLogroDTO.class);
+        // Aseguramos que la respuesta devuelva los IDs correctos y no 0
+        responseDTO.setIdUsuario(cur.getUsuario().getIdUsuario());
+        responseDTO.setIdLogro(cur.getLogro().getIdLogro());
+
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
     @GetMapping("/{id}")
