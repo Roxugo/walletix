@@ -5,12 +5,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import pe.edu.upc.walletix.dtos.LogroPopularidadDTO;
 import pe.edu.upc.walletix.dtos.UsuarioLogroDTO;
+import pe.edu.upc.walletix.dtos.UsuarioLogrosCountDTO;
 import pe.edu.upc.walletix.entities.Logro;
 import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.entities.UsuarioLogro;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioLogroService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -80,5 +83,30 @@ public class UsuarioLogroController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Registro no encontrado");
         }
+    }
+    @GetMapping("/ranking-usuario")
+    public ResponseEntity<List<UsuarioLogrosCountDTO>> cantidadLogrosPorUsuario() {
+        List<String[]> lista = usuariologroService.cantidadLogrosPorUsuario();
+        List<UsuarioLogrosCountDTO> listaDTO = new ArrayList<>();
+        for (String[] columna : lista) {
+            UsuarioLogrosCountDTO dto = new UsuarioLogrosCountDTO();
+            dto.setNombreUsuario(columna[0]);
+            dto.setTotalLogros(Long.parseLong(columna[1]));
+            listaDTO.add(dto);
+        }
+        return ResponseEntity.ok(listaDTO);
+    }
+
+    @GetMapping("/logros-populares")
+    public ResponseEntity<List<LogroPopularidadDTO>> logrosMasObtenidos() {
+        List<String[]> lista = usuariologroService.logrosMasObtenidos();
+        List<LogroPopularidadDTO> listaDTO = new ArrayList<>();
+        for (String[] columna : lista) {
+            LogroPopularidadDTO dto = new LogroPopularidadDTO();
+            dto.setNombreLogro(columna[0]);
+            dto.setCantidadUsuarios(Long.parseLong(columna[1]));
+            listaDTO.add(dto);
+        }
+        return ResponseEntity.ok(listaDTO);
     }
 }

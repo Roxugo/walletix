@@ -11,4 +11,6 @@ public interface IUsuarioLogroService {
     public Optional<UsuarioLogro> listId(int id);
     public void update(UsuarioLogro usuariologro);
     public void delete(int id);
+    List<String[]> cantidadLogrosPorUsuario();
+    List<String[]> logrosMasObtenidos();
 }

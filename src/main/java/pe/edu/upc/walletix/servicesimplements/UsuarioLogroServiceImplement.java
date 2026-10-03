@@ -44,4 +44,14 @@ public class UsuarioLogroServiceImplement implements IUsuarioLogroService {
             usuariologroRepository.save(ul);  // Guardar cambio
         }
     }
+
+    @Override
+    public List<String[]> cantidadLogrosPorUsuario() {
+        return usuariologroRepository.cantidadLogrosPorUsuario();
+    }
+
+    @Override
+    public List<String[]> logrosMasObtenidos() {
+        return usuariologroRepository.logrosMasObtenidos();
+    }
 }
