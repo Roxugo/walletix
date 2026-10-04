@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.PresupuestoDto;
 import pe.edu.upc.walletix.entities.Presupuesto;
-import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.entities.Categoria;
 import pe.edu.upc.walletix.repositories.UsuarioRepository;
 import pe.edu.upc.walletix.repositories.CategoriaRepository;
