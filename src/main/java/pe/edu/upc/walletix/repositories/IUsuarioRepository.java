@@ -11,4 +11,9 @@ import java.util.Optional;
 public interface IUsuarioRepository extends JpaRepository<Usuario, Integer> {
     List<Usuario> findByEstadoUsuario(int estadoUsuario);
     Optional<Usuario> findByIdUsuarioAndEstadoUsuario(int idUsuario, int estadoUsuario);
+
+    // Login: el correo funciona como nombre de usuario
+    Optional<Usuario> findByCorreoUsuarioAndEstadoUsuario(String correoUsuario, int estadoUsuario);
+
+    boolean existsByCorreoUsuario(String correoUsuario);
 }

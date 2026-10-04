@@ -4,6 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.IntentoQuizUsuarioDTO;
 import pe.edu.upc.walletix.dtos.ProgresoAprendizajeDTO;
@@ -30,6 +31,7 @@ public class IntentoQuizUsuarioController {
     private IMicroleccionService microleccionService;
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<IntentoQuizUsuarioDTO>> listar() {
         ModelMapper modelMapper = new ModelMapper();
         List<IntentoQuizUsuarioDTO> listaIntentos = intentoQuizUsuarioService.list().stream()
@@ -39,6 +41,7 @@ public class IntentoQuizUsuarioController {
     }
 
     @PostMapping("/web")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody IntentoQuizUsuarioDTO intentoQuizUsuarioDTO) {
         if (intentoQuizUsuarioDTO.getPuntajeIntentoQuizUsuario() < 0 || intentoQuizUsuarioDTO.getPuntajeIntentoQuizUsuario() > 100) {
             return ResponseEntity.badRequest()
@@ -71,6 +74,7 @@ public class IntentoQuizUsuarioController {
     }
 
     @GetMapping("/{idIntentoQuizUsuario}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int idIntentoQuizUsuario) {
         ModelMapper modelMapper = new ModelMapper();
         Optional<IntentoQuizUsuario> intentoQuizUsuario = intentoQuizUsuarioService.listId(idIntentoQuizUsuario);
@@ -84,6 +88,7 @@ public class IntentoQuizUsuarioController {
     }
 
     @PutMapping("/actualiza")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody IntentoQuizUsuarioDTO intentoQuizUsuarioDTO) {
         if (intentoQuizUsuarioDTO.getPuntajeIntentoQuizUsuario() < 0 || intentoQuizUsuarioDTO.getPuntajeIntentoQuizUsuario() > 100) {
             return ResponseEntity.badRequest()
@@ -102,6 +107,7 @@ public class IntentoQuizUsuarioController {
     }
 
     @DeleteMapping("/{idIntentoQuizUsuario}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int idIntentoQuizUsuario) {
         Optional<IntentoQuizUsuario> intentoQuizUsuario = intentoQuizUsuarioService.listId(idIntentoQuizUsuario);
         if (intentoQuizUsuario.isPresent()) {
@@ -115,6 +121,7 @@ public class IntentoQuizUsuarioController {
 
     // Query nativo: progreso de aprendizaje del usuario. Ej: /intentos-quiz/progreso/1
     @GetMapping("/progreso/{idUsuario}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> progreso(@PathVariable int idUsuario) {
         if (usuarioService.listId(idUsuario).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

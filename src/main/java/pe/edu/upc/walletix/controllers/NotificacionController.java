@@ -5,6 +5,7 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.NotificacionDTO;
 import pe.edu.upc.walletix.entities.Notificacion;
@@ -40,6 +41,7 @@ public class NotificacionController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<NotificacionDTO>> listar() {
         ModelMapper modelMapper = crearModelMapper();
         List<NotificacionDTO> listaNotificaciones = notificacionService.listar().stream()
@@ -49,6 +51,7 @@ public class NotificacionController {
     }
 
     @PostMapping("/web")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody NotificacionDTO notificacionDTO) {
         Optional<Usuario> usuario = usuarioService.listId(notificacionDTO.getIdUsuario());
         if (usuario.isEmpty()) {
@@ -64,6 +67,7 @@ public class NotificacionController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
         Optional<Notificacion> notificacion = notificacionService.buscarPorId(id);
         if (notificacion.isPresent()) {
@@ -75,6 +79,7 @@ public class NotificacionController {
     }
 
     @PutMapping("/actualiza")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody NotificacionDTO notificacionDTO) {
         Optional<Notificacion> notificacionExistente = notificacionService.buscarPorId(notificacionDTO.getIdNotificacion());
         if (notificacionExistente.isEmpty()) {
@@ -97,6 +102,7 @@ public class NotificacionController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
         Optional<Notificacion> notificacion = notificacionService.buscarPorId(id);
         if (notificacion.isPresent()) {
@@ -110,6 +116,7 @@ public class NotificacionController {
 
     // Query nativo: notificaciones no leídas de un usuario (US22, US24). Ej: /notificaciones/no-leidas/1
     @GetMapping("/no-leidas/{idUsuario}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarNoLeidasPorUsuario(@PathVariable int idUsuario) {
         if (usuarioService.listId(idUsuario).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
@@ -123,6 +130,7 @@ public class NotificacionController {
 
     // Query nativo: cantidad de notificaciones no leídas de un usuario. Ej: /notificaciones/no-leidas/1/cantidad
     @GetMapping("/no-leidas/{idUsuario}/cantidad")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> contarNoLeidasPorUsuario(@PathVariable int idUsuario) {
         if (usuarioService.listId(idUsuario).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");

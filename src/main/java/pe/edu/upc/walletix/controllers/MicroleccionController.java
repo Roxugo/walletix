@@ -4,6 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.MicroleccionDTO;
 import pe.edu.upc.walletix.entities.Microleccion;
@@ -59,6 +60,7 @@ public class MicroleccionController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<MicroleccionDTO>> listar() {
         ModelMapper modelMapper = new ModelMapper();
         List<MicroleccionDTO> listaMicrolecciones = microleccionService.list().stream()
@@ -68,6 +70,7 @@ public class MicroleccionController {
     }
 
     @PostMapping("/web")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> registrar(@RequestBody MicroleccionDTO microleccionDTO) {
         String error = validar(microleccionDTO);
         if (error != null) {
@@ -81,6 +84,7 @@ public class MicroleccionController {
     }
 
     @GetMapping("/{idMicroleccion}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int idMicroleccion) {
         ModelMapper modelMapper = new ModelMapper();
         Optional<Microleccion> microleccion = microleccionService.listId(idMicroleccion);
@@ -93,6 +97,7 @@ public class MicroleccionController {
     }
 
     @PutMapping("/actualiza")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> actualizar(@RequestBody MicroleccionDTO microleccionDTO) {
         String error = validar(microleccionDTO);
         if (error != null) {
@@ -119,6 +124,7 @@ public class MicroleccionController {
     }
 
     @DeleteMapping("/{idMicroleccion}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> eliminar(@PathVariable int idMicroleccion) {
         Optional<Microleccion> microleccion = microleccionService.listId(idMicroleccion);
         if (microleccion.isEmpty()) {
@@ -135,6 +141,7 @@ public class MicroleccionController {
 
     // JPQL: consejos y microlecciones por categoría (US31). Ej: /microlecciones/categoria?categoria=Ahorro
     @GetMapping("/categoria")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorCategoria(@RequestParam("categoria") String categoria) {
         ModelMapper modelMapper = new ModelMapper();
         List<MicroleccionDTO> listaMicrolecciones = microleccionService.buscarPorCategoria(categoria).stream()

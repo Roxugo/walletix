@@ -4,6 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.LogroPopularidadDTO;
 import pe.edu.upc.walletix.dtos.UsuarioLogroDTO;
@@ -33,6 +34,7 @@ public class UsuarioLogroController {
     private ILogroService logroService;
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<UsuarioLogroDTO>> listar() {
         ModelMapper m = new ModelMapper();
         m.getConfiguration().setMatchingStrategy(org.modelmapper.convention.MatchingStrategies.STRICT);
@@ -50,6 +52,7 @@ public class UsuarioLogroController {
         return ResponseEntity.ok(listalogros);
     }
     @PostMapping("/web")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody UsuarioLogroDTO dto) {
         // 1. Validar que el Usuario foráneo exista y esté activo (si no existe, responde 404)
         Optional<Usuario> usuarioOpt = usuarioService.listId(dto.getIdUsuario());
@@ -80,6 +83,7 @@ public class UsuarioLogroController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
         ModelMapper m = new ModelMapper();
         m.getConfiguration().setMatchingStrategy(org.modelmapper.convention.MatchingStrategies.STRICT);
@@ -97,6 +101,7 @@ public class UsuarioLogroController {
         }
     }
     @PutMapping("/actualiza")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody UsuarioLogroDTO dto) {
         Optional<UsuarioLogro> existente = usuariologroService.listId(dto.getIdUsuarioLogro());
         if (existente.isEmpty()) {
@@ -125,6 +130,7 @@ public class UsuarioLogroController {
         return ResponseEntity.ok("Registro actualizado correctamente");
     }
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
         Optional<UsuarioLogro> usersAchiev = usuariologroService.listId(id);
         if (usersAchiev.isPresent()) {
@@ -136,6 +142,7 @@ public class UsuarioLogroController {
         }
     }
     @GetMapping("/ranking-usuario")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<UsuarioLogrosCountDTO>> cantidadLogrosPorUsuario() {
         List<String[]> lista = usuariologroService.cantidadLogrosPorUsuario();
         List<UsuarioLogrosCountDTO> listaDTO = new ArrayList<>();
@@ -149,6 +156,7 @@ public class UsuarioLogroController {
     }
 
     @GetMapping("/logros-populares")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<LogroPopularidadDTO>> logrosMasObtenidos() {
         List<String[]> lista = usuariologroService.logrosMasObtenidos();
         List<LogroPopularidadDTO> listaDTO = new ArrayList<>();

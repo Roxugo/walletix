@@ -4,6 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.GastoDTO;
 import pe.edu.upc.walletix.entities.Categoria;
@@ -72,6 +73,7 @@ public class GastoController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<GastoDTO>> listar() {
         List<GastoDTO> listaGastos = gastoService.list().stream()
                 .map(gasto -> convertirADTO(gasto))
@@ -80,6 +82,7 @@ public class GastoController {
     }
 
     @PostMapping("/web")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody GastoDTO gastoDTO) {
         String error = validar(gastoDTO);
         if (error != null) {
@@ -115,6 +118,7 @@ public class GastoController {
     }
 
     @GetMapping("/{idGasto}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int idGasto) {
         Optional<Gasto> gasto = gastoService.listId(idGasto);
         if (gasto.isPresent()) {
@@ -126,6 +130,7 @@ public class GastoController {
     }
 
     @PutMapping("/actualiza")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody GastoDTO gastoDTO) {
         String error = validar(gastoDTO);
         if (error != null) {
@@ -164,6 +169,7 @@ public class GastoController {
     }
 
     @DeleteMapping("/{idGasto}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int idGasto) {
         Optional<Gasto> gasto = gastoService.listId(idGasto);
         if (gasto.isPresent()) {
@@ -178,6 +184,7 @@ public class GastoController {
     // JPQL: gastos de un usuario en un rango de fechas (historial, US18 y US19)
     // Ej: /gastos/usuario/1?fechaInicio=2026-10-01&fechaFin=2026-10-31
     @GetMapping("/usuario/{idUsuario}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorUsuarioYRango(@PathVariable int idUsuario,
                                                     @RequestParam LocalDate fechaInicio,
                                                     @RequestParam LocalDate fechaFin) {

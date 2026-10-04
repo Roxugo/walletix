@@ -4,6 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.LogroDTO;
 import pe.edu.upc.walletix.entities.Logro;
@@ -20,6 +21,7 @@ public class LogroController {
     private ILogroService logroService;
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<LogroDTO>> listar(){
         ModelMapper m= new ModelMapper();
         List<LogroDTO> listalogros = logroService.list().stream()
@@ -28,6 +30,7 @@ public class LogroController {
         return ResponseEntity.ok(listalogros);
     }
     @PostMapping("/web")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> registrar(@RequestBody LogroDTO dto){
         ModelMapper m=new ModelMapper();
         Logro c=m.map(dto, Logro.class);
@@ -37,6 +40,7 @@ public class LogroController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
         ModelMapper m = new ModelMapper();
         Optional<Logro> mach = logroService.listId(id);
@@ -49,6 +53,7 @@ public class LogroController {
         }
     }
     @PutMapping("/actualiza")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> actualizar(@RequestBody LogroDTO dto) {
         Optional<Logro> existente = logroService.listId(dto.getIdLogro());
         if (existente.isEmpty()) {
@@ -64,6 +69,7 @@ public class LogroController {
         return ResponseEntity.ok("Logro actualizado correctamente");
     }
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
         Optional<Logro> achievement = logroService.listId(id);
         if (achievement.isPresent()) {

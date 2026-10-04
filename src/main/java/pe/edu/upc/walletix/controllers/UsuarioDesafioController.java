@@ -5,6 +5,7 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.UsuarioDesafioDTO;
 import pe.edu.upc.walletix.entities.Desafio;
@@ -48,6 +49,7 @@ public class UsuarioDesafioController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<UsuarioDesafioDTO>> listar() {
         ModelMapper modelMapper = crearModelMapper();
         List<UsuarioDesafioDTO> listaUsuarioDesafios = usuarioDesafioService.listar().stream()
@@ -57,6 +59,7 @@ public class UsuarioDesafioController {
     }
 
     @PostMapping("/web")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody UsuarioDesafioDTO usuarioDesafioDTO) {
         Optional<Usuario> usuario = usuarioService.listId(usuarioDesafioDTO.getIdUsuario());
         if (usuario.isEmpty()) {
@@ -81,6 +84,7 @@ public class UsuarioDesafioController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
         Optional<UsuarioDesafio> usuarioDesafio = usuarioDesafioService.buscarPorId(id);
         if (usuarioDesafio.isPresent()) {
@@ -92,6 +96,7 @@ public class UsuarioDesafioController {
     }
 
     @PutMapping("/actualiza")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody UsuarioDesafioDTO usuarioDesafioDTO) {
         Optional<UsuarioDesafio> usuarioDesafioExistente = usuarioDesafioService.buscarPorId(usuarioDesafioDTO.getIdUsuarioDesafio());
         if (usuarioDesafioExistente.isEmpty()) {
@@ -123,6 +128,7 @@ public class UsuarioDesafioController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
         Optional<UsuarioDesafio> usuarioDesafio = usuarioDesafioService.buscarPorId(id);
         if (usuarioDesafio.isPresent()) {
@@ -136,6 +142,7 @@ public class UsuarioDesafioController {
 
     // Query nativo: desafíos de un usuario según su estado (US26). Ej: /usuariosdesafios/usuario/1?estadoDesafio=EN_PROGRESO
     @GetMapping("/usuario/{idUsuario}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorUsuarioYEstadoDesafio(@PathVariable int idUsuario,
                                                             @RequestParam String estadoDesafio) {
         if (usuarioService.listId(idUsuario).isEmpty()) {
@@ -150,6 +157,7 @@ public class UsuarioDesafioController {
 
     // Query nativo: cantidad de usuarios inscritos en un desafío. Ej: /usuariosdesafios/desafio/1/cantidad
     @GetMapping("/desafio/{idDesafio}/cantidad")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> contarUsuariosPorDesafio(@PathVariable int idDesafio) {
         if (desafioService.buscarPorId(idDesafio).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Desafío no encontrado");

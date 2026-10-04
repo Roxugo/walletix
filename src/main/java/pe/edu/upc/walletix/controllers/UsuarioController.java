@@ -4,9 +4,13 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.UsuarioDTO;
+import pe.edu.upc.walletix.entities.Rol;
 import pe.edu.upc.walletix.entities.Usuario;
+import pe.edu.upc.walletix.servicesinterfaces.IRolService;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
 
 import java.util.List;
@@ -18,8 +22,13 @@ import java.util.stream.Collectors;
 public class UsuarioController {
     @Autowired
     private IUsuarioService usuarioService;
+    @Autowired
+    private IRolService rolService;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<UsuarioDTO>> listar(){
         ModelMapper m= new ModelMapper();
         List<UsuarioDTO>listaUsuarios= usuarioService.list().stream()
@@ -38,15 +47,32 @@ public class UsuarioController {
             return ResponseEntity.badRequest()
                     .body("El teléfono debe tener exactamente 9 dígitos");
         }
+        if (dto.getContrasenaUsuario() == null || dto.getContrasenaUsuario().length() < 6) {
+            return ResponseEntity.badRequest()
+                    .body("La contraseña debe tener al menos 6 caracteres");
+        }
+        // El correo es el usuario del login, por eso no se puede repetir
+        if (usuarioService.existeCorreo(dto.getCorreoUsuario())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("El correo ya está registrado");
+        }
 
         ModelMapper m=new ModelMapper();
         Usuario c=m.map(dto, Usuario.class);
         c.setEstadoUsuario(1); // Siempre nace en 1 al registrar
+        // La contraseña se guarda cifrada con BCrypt, nunca en texto plano
+        c.setContrasenaUsuario(passwordEncoder.encode(dto.getContrasenaUsuario()));
         Usuario cur= usuarioService.insert(c);
+        // Todo usuario nuevo recibe el rol USUARIO (relación usuario-rol de 1 a muchos)
+        Rol rolUsuario = new Rol();
+        rolUsuario.setRol("USUARIO");
+        rolUsuario.setUsuario(cur);
+        rolService.insert(rolUsuario);
         UsuarioDTO responseDTO=m.map(cur, UsuarioDTO.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
         ModelMapper m = new ModelMapper();
         Optional<Usuario> mach = usuarioService.listId(id);
@@ -59,6 +85,7 @@ public class UsuarioController {
         }
     }
     @PutMapping("/actualiza")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody UsuarioDTO dto) {
         if (dto.getFechaNacimientoUsuario().isAfter(java.time.LocalDate.now())) {
             return ResponseEntity.badRequest()
@@ -86,6 +113,7 @@ public class UsuarioController {
         return ResponseEntity.ok("Usuario actualizado correctamente");
     }
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
         Optional<Usuario> usuario = usuarioService.listId(id);
         if (usuario.isPresent()) {

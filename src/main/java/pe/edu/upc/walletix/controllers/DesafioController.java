@@ -5,6 +5,7 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.DesafioDTO;
 import pe.edu.upc.walletix.entities.Desafio;
@@ -28,6 +29,7 @@ public class DesafioController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<DesafioDTO>> listar() {
         ModelMapper modelMapper = crearModelMapper();
         List<DesafioDTO> listaDesafios = desafioService.listar().stream()
@@ -37,6 +39,7 @@ public class DesafioController {
     }
 
     @PostMapping("/web")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> registrar(@RequestBody DesafioDTO desafioDTO) {
         String error = validar(desafioDTO);
         if (error != null) {
@@ -50,6 +53,7 @@ public class DesafioController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
         ModelMapper modelMapper = crearModelMapper();
         Optional<Desafio> desafio = desafioService.buscarPorId(id);
@@ -61,6 +65,7 @@ public class DesafioController {
     }
 
     @PutMapping("/actualiza")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> actualizar(@RequestBody DesafioDTO desafioDTO) {
         Optional<Desafio> desafioExistente = desafioService.buscarPorId(desafioDTO.getIdDesafio());
         if (desafioExistente.isEmpty()) {
@@ -85,6 +90,7 @@ public class DesafioController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
         Optional<Desafio> desafio = desafioService.buscarPorId(id);
         if (desafio.isPresent()) {
@@ -97,6 +103,7 @@ public class DesafioController {
 
     // Query nativo: desafíos vigentes (la fecha de hoy está dentro del rango). Ej: /desafios/vigentes
     @GetMapping("/vigentes")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<DesafioDTO>> buscarVigentes() {
         ModelMapper modelMapper = crearModelMapper();
         List<DesafioDTO> listaDesafios = desafioService.buscarVigentes().stream()
@@ -107,6 +114,7 @@ public class DesafioController {
 
     // Query nativo: desafíos a los que puede acceder un usuario según su edad. Ej: /desafios/edad/20
     @GetMapping("/edad/{edad}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorEdadMinima(@PathVariable int edad) {
         if (edad < 0) {
             return ResponseEntity.badRequest().body("La edad no puede ser negativa");

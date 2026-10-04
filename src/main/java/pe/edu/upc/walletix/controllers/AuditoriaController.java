@@ -5,6 +5,7 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.AuditoriaDTO;
 import pe.edu.upc.walletix.entities.Auditoria;
@@ -28,6 +29,7 @@ public class AuditoriaController {
     private IUsuarioService usuarioService;
 
     @GetMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<AuditoriaDTO>> listar() {
         ModelMapper m = new ModelMapper();
         m.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
@@ -52,6 +54,7 @@ public class AuditoriaController {
     }
 
     @PostMapping("/web")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> registrar(@RequestBody AuditoriaDTO dto) {
         // Validar que el usuario que registra exista
         Optional<Usuario> usuarioRegistroOpt = usuarioService.listId(dto.getIdUsuarioRegistro());
@@ -94,6 +97,7 @@ public class AuditoriaController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
         ModelMapper m = new ModelMapper();
         m.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
@@ -119,6 +123,7 @@ public class AuditoriaController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
         Optional<Auditoria> auditoria = auditoriaService.listId(id);
         if (auditoria.isPresent()) {

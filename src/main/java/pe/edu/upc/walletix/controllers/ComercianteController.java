@@ -4,6 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.ComercianteDTO;
 import pe.edu.upc.walletix.entities.Categoria;
@@ -39,6 +40,7 @@ public class ComercianteController {
 
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<ComercianteDTO>> listar() {
         ModelMapper modelMapper = new ModelMapper();
         List<ComercianteDTO> listaComerciantes = comercianteService.list().stream()
@@ -48,6 +50,7 @@ public class ComercianteController {
     }
 
     @PostMapping("/web")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> registrar(@RequestBody ComercianteDTO comercianteDTO) {
         String error = validar(comercianteDTO);
         if (error != null) {
@@ -67,6 +70,7 @@ public class ComercianteController {
     }
 
     @GetMapping("/{idComerciante}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int idComerciante) {
         ModelMapper modelMapper = new ModelMapper();
         Optional<Comerciante> comerciante = comercianteService.listId(idComerciante);
@@ -79,6 +83,7 @@ public class ComercianteController {
     }
 
     @PutMapping("/actualiza")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> actualizar(@RequestBody ComercianteDTO comercianteDTO) {
         String error = validar(comercianteDTO);
         if (error != null) {
@@ -103,6 +108,7 @@ public class ComercianteController {
     }
 
     @DeleteMapping("/{idComerciante}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> eliminar(@PathVariable int idComerciante) {
         Optional<Comerciante> comerciante = comercianteService.listId(idComerciante);
         if (comerciante.isPresent()) {

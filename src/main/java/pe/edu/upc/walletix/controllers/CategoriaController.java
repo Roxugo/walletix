@@ -4,6 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.CategoriaDTO;
 import pe.edu.upc.walletix.entities.Categoria;
@@ -46,6 +47,7 @@ public class CategoriaController {
 
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<CategoriaDTO>> listar() {
         ModelMapper modelMapper = new ModelMapper();
         List<CategoriaDTO> listaCategorias = categoriaService.list().stream()
@@ -55,6 +57,7 @@ public class CategoriaController {
     }
 
     @PostMapping("/web")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody CategoriaDTO categoriaDTO) {
         String error = validar(categoriaDTO);
         if (error != null) {
@@ -75,6 +78,7 @@ public class CategoriaController {
     }
 
     @GetMapping("/{idCategoria}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int idCategoria) {
         ModelMapper modelMapper = new ModelMapper();
         Optional<Categoria> categoria = categoriaService.listId(idCategoria);
@@ -87,6 +91,7 @@ public class CategoriaController {
     }
 
     @PutMapping("/actualiza")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody CategoriaDTO categoriaDTO) {
         String error = validar(categoriaDTO);
         if (error != null) {
@@ -114,6 +119,7 @@ public class CategoriaController {
     }
 
     @DeleteMapping("/{idCategoria}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int idCategoria) {
         Optional<Categoria> categoria = categoriaService.listId(idCategoria);
         if (categoria.isPresent()) {
@@ -127,6 +133,7 @@ public class CategoriaController {
 
     // JPQL: categorías por tipo. Ej: /categorias/tipo/gasto
     @GetMapping("/tipo/{tipo}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<CategoriaDTO>> buscarPorTipo(@PathVariable String tipo) {
         ModelMapper modelMapper = new ModelMapper();
         List<CategoriaDTO> listaCategorias = categoriaService.buscarPorTipo(tipo).stream()

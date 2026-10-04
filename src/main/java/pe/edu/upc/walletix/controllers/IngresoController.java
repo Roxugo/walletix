@@ -4,6 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.IngresoDto;
 import pe.edu.upc.walletix.entities.Ingreso;
@@ -30,6 +31,7 @@ public class IngresoController {
     private ICategoriaService categoriaService;
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<IngresoDto>> listar() {
         ModelMapper mapper = new ModelMapper();
         List<IngresoDto> lista = ingresoService.listar().stream()
@@ -39,6 +41,7 @@ public class IngresoController {
     }
 
     @PostMapping("/web")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody IngresoDto dto) {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
@@ -56,6 +59,7 @@ public class IngresoController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
         Optional<Ingreso> ingreso = ingresoService.buscarPorId(id);
         if (ingreso.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ingreso no encontrado");
@@ -63,6 +67,7 @@ public class IngresoController {
     }
 
     @PutMapping("/actualiza")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody IngresoDto dto) {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
@@ -88,6 +93,7 @@ public class IngresoController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
         if (ingresoService.buscarPorId(id).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ingreso no encontrado");

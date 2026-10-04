@@ -4,6 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.PresupuestoDto;
 import pe.edu.upc.walletix.entities.Presupuesto;
@@ -30,6 +31,7 @@ public class PresupuestoController {
     private ICategoriaService categoriaService;
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<PresupuestoDto>> listar() {
         ModelMapper mapper = new ModelMapper();
         List<PresupuestoDto> lista = presupuestoService.listar().stream()
@@ -39,6 +41,7 @@ public class PresupuestoController {
     }
 
     @PostMapping("/web")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody PresupuestoDto dto) {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
@@ -56,6 +59,7 @@ public class PresupuestoController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
         Optional<Presupuesto> presupuesto = presupuestoService.buscarPorId(id);
         if (presupuesto.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Presupuesto no encontrado");
@@ -63,6 +67,7 @@ public class PresupuestoController {
     }
 
     @PutMapping("/actualiza")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody PresupuestoDto dto) {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
@@ -85,6 +90,7 @@ public class PresupuestoController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
         if (presupuestoService.buscarPorId(id).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Presupuesto no encontrado");

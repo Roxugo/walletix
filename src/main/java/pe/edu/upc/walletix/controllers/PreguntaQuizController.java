@@ -4,6 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.PreguntaQuizDTO;
 import pe.edu.upc.walletix.entities.Microleccion;
@@ -51,6 +52,7 @@ public class PreguntaQuizController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<PreguntaQuizDTO>> listar() {
         ModelMapper modelMapper = new ModelMapper();
         List<PreguntaQuizDTO> listaPreguntas = preguntaQuizService.list().stream()
@@ -60,6 +62,7 @@ public class PreguntaQuizController {
     }
 
     @PostMapping("/web")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> registrar(@RequestBody PreguntaQuizDTO preguntaQuizDTO) {
         String error = validar(preguntaQuizDTO);
         if (error != null) {
@@ -85,6 +88,7 @@ public class PreguntaQuizController {
     }
 
     @GetMapping("/{idPreguntaQuiz}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int idPreguntaQuiz) {
         ModelMapper modelMapper = new ModelMapper();
         Optional<PreguntaQuiz> preguntaQuiz = preguntaQuizService.listId(idPreguntaQuiz);
@@ -98,6 +102,7 @@ public class PreguntaQuizController {
     }
 
     @PutMapping("/actualiza")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> actualizar(@RequestBody PreguntaQuizDTO preguntaQuizDTO) {
         String error = validar(preguntaQuizDTO);
         if (error != null) {
@@ -127,6 +132,7 @@ public class PreguntaQuizController {
     }
 
     @DeleteMapping("/{idPreguntaQuiz}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> eliminar(@PathVariable int idPreguntaQuiz) {
         Optional<PreguntaQuiz> preguntaQuiz = preguntaQuizService.listId(idPreguntaQuiz);
         if (preguntaQuiz.isPresent()) {
@@ -140,6 +146,7 @@ public class PreguntaQuizController {
 
     // Preguntas del quiz de una microlección. Ej: /preguntas-quiz/microleccion/1
     @GetMapping("/microleccion/{idMicroleccion}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> listarPorMicroleccion(@PathVariable int idMicroleccion) {
         if (microleccionService.listId(idMicroleccion).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

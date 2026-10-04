@@ -4,6 +4,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.MetaAhorroDto;
 import pe.edu.upc.walletix.entities.MetaAhorro;
@@ -26,6 +27,7 @@ public class MetaAhorroController {
     private IUsuarioService usuarioService;
 
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<MetaAhorroDto>> listar() {
         ModelMapper mapper = new ModelMapper();
         List<MetaAhorroDto> lista = metaAhorroService.listar().stream()
@@ -35,6 +37,7 @@ public class MetaAhorroController {
     }
 
     @PostMapping("/web")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody MetaAhorroDto dto) {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
@@ -48,6 +51,7 @@ public class MetaAhorroController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
         Optional<MetaAhorro> meta = metaAhorroService.buscarPorId(id);
         if (meta.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Meta de ahorro no encontrada");
@@ -55,6 +59,7 @@ public class MetaAhorroController {
     }
 
     @PutMapping("/actualiza")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody MetaAhorroDto dto) {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
@@ -76,6 +81,7 @@ public class MetaAhorroController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
         if (metaAhorroService.buscarPorId(id).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Meta de ahorro no encontrada");
