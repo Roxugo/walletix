@@ -1,7 +1,19 @@
-C:\Users\RODRIGO V\Documents\UPC-CICLO10\arqui web\walletix\walletix\src\main\java\pe\edu\upc\walletix\controllers\UserController.java
-C:\Users\RODRIGO V\Documents\UPC-CICLO10\arqui web\walletix\walletix\src\main\java\pe\edu\upc\walletix\dtos\UserDTO.java
-C:\Users\RODRIGO V\Documents\UPC-CICLO10\arqui web\walletix\walletix\src\main\java\pe\edu\upc\walletix\entities\Users.java
-C:\Users\RODRIGO V\Documents\UPC-CICLO10\arqui web\walletix\walletix\src\main\java\pe\edu\upc\walletix\repositories\IUserRepository.java
-C:\Users\RODRIGO V\Documents\UPC-CICLO10\arqui web\walletix\walletix\src\main\java\pe\edu\upc\walletix\servicesimplements\UserServiceImplement.java
-C:\Users\RODRIGO V\Documents\UPC-CICLO10\arqui web\walletix\walletix\src\main\java\pe\edu\upc\walletix\servicesinterfaces\IUserService.java
-C:\Users\RODRIGO V\Documents\UPC-CICLO10\arqui web\walletix\walletix\src\main\java\pe\edu\upc\walletix\WalletixApplication.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/WalletixApplication.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/controllers/CategoriaController.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/controllers/ComercianteController.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/controllers/GastoController.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/dtos/CategoriaDTO.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/dtos/ComercianteDTO.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/dtos/GastoDTO.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/entities/Categoria.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/entities/Comerciante.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/entities/Gasto.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/repositories/ICategoriaRepository.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/repositories/IComercianteRepository.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/repositories/IGastoRepository.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/servicesimplements/CategoriaServiceImplement.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/servicesimplements/ComercianteServiceImplement.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/servicesimplements/GastoServiceImplement.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/servicesinterfaces/ICategoriaService.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/servicesinterfaces/IComercianteService.java
+/home/runner/work/walletix/walletix/src/main/java/pe/edu/upc/walletix/servicesinterfaces/IGastoService.java
