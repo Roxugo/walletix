@@ -78,7 +78,6 @@ public class PresupuestoController {
         presupuesto.setMes(dto.getMes());
         presupuesto.setAnio(dto.getAnio());
         presupuesto.setMontoAsignado(dto.getMontoAsignado());
-        presupuesto.setEstado(dto.getEstado());
         presupuesto.setUsuario(usuario.get());
         presupuesto.setCategoria(categoria.get());
         presupuestoService.actualizar(presupuesto);
@@ -100,7 +99,7 @@ public class PresupuestoController {
         presupuesto.setMes(dto.getMes());
         presupuesto.setAnio(dto.getAnio());
         presupuesto.setMontoAsignado(dto.getMontoAsignado());
-        presupuesto.setEstado(dto.getEstado());
+        presupuesto.setEstado(1); // Todo registro nuevo empieza activo
         return presupuesto;
     }
 

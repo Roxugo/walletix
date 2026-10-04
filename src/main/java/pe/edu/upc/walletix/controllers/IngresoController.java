@@ -81,7 +81,6 @@ public class IngresoController {
         ingreso.setFrecuencia(dto.getFrecuencia());
         ingreso.setFuente(dto.getFuente());
         ingreso.setDescripcion(dto.getDescripcion());
-        ingreso.setEstado(dto.getEstado());
         ingreso.setUsuario(usuario.get());
         ingreso.setCategoria(categoria.get());
         ingresoService.actualizar(ingreso);
@@ -106,7 +105,7 @@ public class IngresoController {
         ingreso.setFrecuencia(dto.getFrecuencia());
         ingreso.setFuente(dto.getFuente());
         ingreso.setDescripcion(dto.getDescripcion());
-        ingreso.setEstado(dto.getEstado());
+        ingreso.setEstado(1); // Todo registro nuevo empieza activo
         return ingreso;
     }
 

@@ -70,7 +70,6 @@ public class MetaAhorroController {
         meta.setMontoActual(dto.getMontoActual());
         meta.setFechaLimite(dto.getFechaLimite());
         meta.setEstadoMetaAhorro(dto.getEstadoMetaAhorro());
-        meta.setEstado(dto.getEstado());
         meta.setUsuario(usuario.get());
         metaAhorroService.actualizar(meta);
         return ResponseEntity.ok("Meta de ahorro actualizada correctamente");
@@ -93,7 +92,7 @@ public class MetaAhorroController {
         meta.setMontoActual(dto.getMontoActual());
         meta.setFechaLimite(dto.getFechaLimite());
         meta.setEstadoMetaAhorro(dto.getEstadoMetaAhorro());
-        meta.setEstado(dto.getEstado());
+        meta.setEstado(1); // Todo registro nuevo empieza activo
         return meta;
     }
 

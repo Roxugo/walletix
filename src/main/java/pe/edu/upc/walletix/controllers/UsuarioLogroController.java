@@ -104,16 +104,23 @@ public class UsuarioLogroController {
                     .body("Registro no encontrado");
         }
 
+        // Validar que el Usuario foráneo exista y esté activo (si no existe, responde 404)
+        Optional<Usuario> usuarioOpt = usuarioService.listId(dto.getIdUsuario());
+        if (usuarioOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("El usuario con ID " + dto.getIdUsuario() + " no existe.");
+        }
+
+        // Validar que el Logro foráneo exista y esté activo (si no existe, responde 404)
+        Optional<Logro> logroOpt = logroService.listId(dto.getIdLogro());
+        if (logroOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("El logro con ID " + dto.getIdLogro() + " no existe.");
+        }
+
         UsuarioLogro ah = existente.get();
-
-        Usuario u = new Usuario();
-        u.setIdUsuario(dto.getIdUsuario());
-        ah.setUsuario(u);
-
-        Logro a = new Logro();
-        a.setIdLogro(dto.getIdLogro());
-        ah.setLogro(a);
-
+        ah.setUsuario(usuarioOpt.get());
+        ah.setLogro(logroOpt.get());
         usuariologroService.update(ah);
         return ResponseEntity.ok("Registro actualizado correctamente");
     }

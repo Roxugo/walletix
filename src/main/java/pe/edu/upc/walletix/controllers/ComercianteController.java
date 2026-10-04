@@ -69,7 +69,8 @@ public class ComercianteController {
     @GetMapping("/{idComerciante}")
     public ResponseEntity<?> buscarPorId(@PathVariable int idComerciante) {
         ModelMapper modelMapper = new ModelMapper();
-        Optional<Comerciante> comerciante = comercianteService.listId(idComerciante);\n        if (comerciante.isPresent()) {
+        Optional<Comerciante> comerciante = comercianteService.listId(idComerciante);
+        if (comerciante.isPresent()) {
             return ResponseEntity.ok(modelMapper.map(comerciante.get(), ComercianteDTO.class));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
