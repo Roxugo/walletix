@@ -70,7 +70,7 @@ public class UsuarioLogroController {
         //    ModelMapper confunda idUsuarioLogro con idLogro o idUsuario (evita error 500)
         m.getConfiguration().setMatchingStrategy(org.modelmapper.convention.MatchingStrategies.STRICT);
         UsuarioLogro c = m.map(dto, UsuarioLogro.class);
-        c.setEstadoUsuarioLogro(true);
+        c.setEstadoUsuarioLogro(1);
         c.setUsuario(usuarioOpt.get());
         c.setLogro(logroOpt.get());
         UsuarioLogro cur = usuariologroService.insert(c);

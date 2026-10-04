@@ -10,7 +10,7 @@ public class UsuarioLogro {
     private int idUsuarioLogro;
 
     @Column(name = "estadoUsuarioLogro", nullable = false)
-    private boolean estadoUsuarioLogro = true;
+    private int estadoUsuarioLogro = 1;
 
     @ManyToOne
     @JoinColumn(name = "IdUsuario")
@@ -23,7 +23,7 @@ public class UsuarioLogro {
     public UsuarioLogro() {
     }
 
-    public UsuarioLogro(int idUsuarioLogro, boolean estadoUsuarioLogro, Usuario usuario, Logro logro) {
+    public UsuarioLogro(int idUsuarioLogro, int estadoUsuarioLogro, Usuario usuario, Logro logro) {
         this.idUsuarioLogro = idUsuarioLogro;
         this.estadoUsuarioLogro = estadoUsuarioLogro;
         this.usuario = usuario;
@@ -38,11 +38,11 @@ public class UsuarioLogro {
         this.idUsuarioLogro = idUsuarioLogro;
     }
 
-    public boolean isEstadoUsuarioLogro() {
+    public int getEstadoUsuarioLogro() {
         return estadoUsuarioLogro;
     }
 
-    public void setEstadoUsuarioLogro(boolean estadoUsuarioLogro) {
+    public void setEstadoUsuarioLogro(int estadoUsuarioLogro) {
         this.estadoUsuarioLogro = estadoUsuarioLogro;
     }
 

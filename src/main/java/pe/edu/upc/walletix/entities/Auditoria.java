@@ -36,14 +36,14 @@ public class Auditoria {
     @Column(name = "fechaEliminar", nullable = true)
     private LocalDateTime fechaEliminar;
 
-    // Bandera operativa de estado (true: Activo, false: Inactivo)
+    // Bandera operativa de estado (1: Activo, 0: Inactivo)
     @Column(name = "estado", nullable = false)
-    private boolean estado = true;
+    private int estado = 1;
 
     public Auditoria() {
     }
 
-    public Auditoria(int idAuditoria, Usuario usuarioRegistro, LocalDateTime fechaRegistro, Usuario usuarioEditar, LocalDateTime fechaEditar, Usuario usuarioEliminar, LocalDateTime fechaEliminar, boolean estado) {
+    public Auditoria(int idAuditoria, Usuario usuarioRegistro, LocalDateTime fechaRegistro, Usuario usuarioEditar, LocalDateTime fechaEditar, Usuario usuarioEliminar, LocalDateTime fechaEliminar, int estado) {
         this.idAuditoria = idAuditoria;
         this.usuarioRegistro = usuarioRegistro;
         this.fechaRegistro = fechaRegistro;
@@ -110,11 +110,11 @@ public class Auditoria {
         this.fechaEliminar = fechaEliminar;
     }
 
-    public boolean isEstado() {
+    public int getEstado() {
         return estado;
     }
 
-    public void setEstado(boolean estado) {
+    public void setEstado(int estado) {
         this.estado = estado;
     }
 }

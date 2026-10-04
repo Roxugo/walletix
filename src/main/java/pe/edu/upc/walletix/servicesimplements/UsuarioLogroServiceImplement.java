@@ -17,7 +17,7 @@ public class UsuarioLogroServiceImplement implements IUsuarioLogroService {
 
     @Override
     public List<UsuarioLogro> list() {
-        return usuariologroRepository.findByEstadoUsuarioLogroTrue();
+        return usuariologroRepository.findByEstadoUsuarioLogro(1);
     }
 
     @Override
@@ -27,7 +27,7 @@ public class UsuarioLogroServiceImplement implements IUsuarioLogroService {
 
     @Override
     public Optional<UsuarioLogro> listId(int id) {
-        return usuariologroRepository.findByIdUsuarioLogroAndEstadoUsuarioLogroTrue(id);
+        return usuariologroRepository.findByIdUsuarioLogroAndEstadoUsuarioLogro(id, 1);
     }
 
     @Override
@@ -40,7 +40,7 @@ public class UsuarioLogroServiceImplement implements IUsuarioLogroService {
         Optional<UsuarioLogro> opt = usuariologroRepository.findById(id);
         if (opt.isPresent()) {
             UsuarioLogro ul = opt.get();
-            ul.setEstadoUsuarioLogro(false); // Inactivar
+            ul.setEstadoUsuarioLogro(0); // Inactivar con 0 (Soft delete)
             usuariologroRepository.save(ul);  // Guardar cambio
         }
     }

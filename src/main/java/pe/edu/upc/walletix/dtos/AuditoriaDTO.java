@@ -10,7 +10,7 @@ public class AuditoriaDTO {
     private LocalDateTime fechaEditar;
     private Integer idUsuarioEliminar;
     private LocalDateTime fechaEliminar;
-    private boolean estado = true;
+    private int estado = 1;
 
     public int getIdAuditoria() {
         return idAuditoria;
@@ -68,11 +68,11 @@ public class AuditoriaDTO {
         this.fechaEliminar = fechaEliminar;
     }
 
-    public boolean isEstado() {
+    public int getEstado() {
         return estado;
     }
 
-    public void setEstado(boolean estado) {
+    public void setEstado(int estado) {
         this.estado = estado;
     }
 }

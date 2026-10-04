@@ -2,7 +2,7 @@ package pe.edu.upc.walletix.dtos;
 
 public class UsuarioLogroDTO {
     private int idUsuarioLogro;
-    private boolean estadoUsuarioLogro = true;
+    private int estadoUsuarioLogro = 1;
     private int idUsuario;
     private int idLogro;
 
@@ -14,11 +14,11 @@ public class UsuarioLogroDTO {
         this.idUsuarioLogro = idUsuarioLogro;
     }
 
-    public boolean isEstadoUsuarioLogro() {
+    public int getEstadoUsuarioLogro() {
         return estadoUsuarioLogro;
     }
 
-    public void setEstadoUsuarioLogro(boolean estadoUsuarioLogro) {
+    public void setEstadoUsuarioLogro(int estadoUsuarioLogro) {
         this.estadoUsuarioLogro = estadoUsuarioLogro;
     }
 

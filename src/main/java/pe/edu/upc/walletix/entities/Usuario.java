@@ -34,12 +34,12 @@ public class Usuario {
     private int puntosGamificacionUsuario;
 
     @Column(name = "estadoUsuario", nullable = false)
-    private boolean estadoUsuario = true;
+    private int estadoUsuario = 1;
 
     public Usuario() {
     }
 
-    public Usuario(int idUsuario, String nombreUsuario, String correoUsuario, int telefonoUsuario, LocalDate fechaNacimientoUsuario, String segmentoUsuario, BigDecimal saldoActualUsuario, int puntosGamificacionUsuario, boolean estadoUsuario) {
+    public Usuario(int idUsuario, String nombreUsuario, String correoUsuario, int telefonoUsuario, LocalDate fechaNacimientoUsuario, String segmentoUsuario, BigDecimal saldoActualUsuario, int puntosGamificacionUsuario, int estadoUsuario) {
         this.idUsuario = idUsuario;
         this.nombreUsuario = nombreUsuario;
         this.correoUsuario = correoUsuario;
@@ -115,11 +115,11 @@ public class Usuario {
         this.puntosGamificacionUsuario = puntosGamificacionUsuario;
     }
 
-    public boolean isEstadoUsuario() {
+    public int getEstadoUsuario() {
         return estadoUsuario;
     }
 
-    public void setEstadoUsuario(boolean estadoUsuario) {
+    public void setEstadoUsuario(int estadoUsuario) {
         this.estadoUsuario = estadoUsuario;
     }
 }

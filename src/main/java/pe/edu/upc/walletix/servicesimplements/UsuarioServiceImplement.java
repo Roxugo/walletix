@@ -23,7 +23,7 @@ public class UsuarioServiceImplement implements IUsuarioService {
 
     @Override
     public List<Usuario> list() {
-        return usuarioRepository.findByEstadoUsuarioTrue();
+        return usuarioRepository.findByEstadoUsuario(1);
     }
 
     @Override
@@ -35,7 +35,7 @@ public class UsuarioServiceImplement implements IUsuarioService {
         Auditoria auditoria = new Auditoria();
         auditoria.setUsuarioRegistro(nuevoUsuario);
         auditoria.setFechaRegistro(LocalDateTime.now());
-        auditoria.setEstado(true);
+        auditoria.setEstado(1);
 
         // Los campos de edición y eliminación quedan en null por defecto
         auditoriaRepository.save(auditoria);
@@ -45,7 +45,7 @@ public class UsuarioServiceImplement implements IUsuarioService {
 
     @Override
     public Optional<Usuario> listId(int id) {
-        return usuarioRepository.findByIdUsuarioAndEstadoUsuarioTrue(id);
+        return usuarioRepository.findByIdUsuarioAndEstadoUsuario(id, 1);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class UsuarioServiceImplement implements IUsuarioService {
         Optional<Usuario> opt = usuarioRepository.findById(id);
         if (opt.isPresent()) {
             Usuario usuario = opt.get();
-            usuario.setEstadoUsuario(false); // Inactivar usuario
+            usuario.setEstadoUsuario(0); // Inactivar usuario (Soft delete con 0)
             usuarioRepository.save(usuario); // Guardar cambio
 
             // Registro automático en Auditoría (Fase 3: Eliminación / Baja lógica)
@@ -76,7 +76,7 @@ public class UsuarioServiceImplement implements IUsuarioService {
                 Auditoria auditoria = auditorias.get(auditorias.size() - 1);
                 auditoria.setUsuarioEliminar(usuario);
                 auditoria.setFechaEliminar(LocalDateTime.now());
-                auditoria.setEstado(false); // Inactivar auditoría
+                auditoria.setEstado(0); // Inactivar auditoría (0)
                 auditoriaRepository.save(auditoria);
             }
         }

@@ -68,7 +68,7 @@ public class AuditoriaController {
         if (auditoria.getFechaRegistro() == null) {
             auditoria.setFechaRegistro(LocalDateTime.now());
         }
-        auditoria.setEstado(true);
+        auditoria.setEstado(1);
 
         if (dto.getIdUsuarioEditar() != null) {
             Optional<Usuario> editorOpt = usuarioService.listId(dto.getIdUsuarioEditar());

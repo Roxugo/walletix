@@ -1,14 +1,12 @@
 package pe.edu.upc.walletix.dtos;
 
-
-
 public class LogroDTO {
     private int idLogro;
     private String nombreLogro;
     private String descripcionLogro;
     private String urlIconoLogro;
     private int puntosLogro;
-    private boolean estadoLogro = true;
+    private int estadoLogro = 1;
 
     public int getIdLogro() {
         return idLogro;
@@ -50,11 +48,11 @@ public class LogroDTO {
         this.puntosLogro = puntosLogro;
     }
 
-    public boolean isEstadoLogro() {
+    public int getEstadoLogro() {
         return estadoLogro;
     }
 
-    public void setEstadoLogro(boolean estadoLogro) {
+    public void setEstadoLogro(int estadoLogro) {
         this.estadoLogro = estadoLogro;
     }
 }

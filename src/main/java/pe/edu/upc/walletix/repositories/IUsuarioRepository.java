@@ -9,6 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface IUsuarioRepository extends JpaRepository<Usuario, Integer> {
-    List<Usuario> findByEstadoUsuarioTrue();
-    Optional<Usuario> findByIdUsuarioAndEstadoUsuarioTrue(int idUsuario);
+    List<Usuario> findByEstadoUsuario(int estadoUsuario);
+    Optional<Usuario> findByIdUsuarioAndEstadoUsuario(int idUsuario, int estadoUsuario);
 }

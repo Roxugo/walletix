@@ -41,7 +41,7 @@ public class AuditoriaServiceImplement implements IAuditoriaService {
         Optional<Auditoria> opt = auditoriaRepository.findById(id);
         if (opt.isPresent()) {
             Auditoria auditoria = opt.get();
-            auditoria.setEstado(false); // Baja lógica
+            auditoria.setEstado(0); // Baja lógica con 0
             auditoriaRepository.save(auditoria);
         }
     }

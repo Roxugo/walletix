@@ -12,7 +12,7 @@ public class UsuarioDTO {
     private String segmentoUsuario;
     private BigDecimal saldoActualUsuario;
     private int puntosGamificacionUsuario;
-    private boolean estadoUsuario = true;
+    private int estadoUsuario = 1;
 
     public int getIdUsuario() {
         return idUsuario;
@@ -78,11 +78,11 @@ public class UsuarioDTO {
         this.puntosGamificacionUsuario = puntosGamificacionUsuario;
     }
 
-    public boolean isEstadoUsuario() {
+    public int getEstadoUsuario() {
         return estadoUsuario;
     }
 
-    public void setEstadoUsuario(boolean estadoUsuario) {
+    public void setEstadoUsuario(int estadoUsuario) {
         this.estadoUsuario = estadoUsuario;
     }
 }
