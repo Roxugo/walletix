@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.MetaAhorroDto;
 import pe.edu.upc.walletix.entities.MetaAhorro;
 import pe.edu.upc.walletix.entities.Usuario;
-import pe.edu.upc.walletix.repositories.UsuarioRepository;
+import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
 import pe.edu.upc.walletix.servicesinterfaces.MetaAhorroServiceInterface;
 
 import java.math.BigDecimal;
@@ -23,7 +23,7 @@ public class MetaAhorroController {
     private MetaAhorroServiceInterface metaAhorroService;
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private IUsuarioService usuarioService;
 
     @GetMapping
     public ResponseEntity<List<MetaAhorroDto>> listar() {
@@ -39,7 +39,7 @@ public class MetaAhorroController {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
 
-        Optional<Usuario> usuario = usuarioRepository.findById(dto.getIdUsuario());
+        Optional<Usuario> usuario = usuarioService.listId(dto.getIdUsuario());
         if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
         MetaAhorro meta = toEntity(dto);
         meta.setUsuario(usuario.get());
@@ -61,7 +61,7 @@ public class MetaAhorroController {
 
         Optional<MetaAhorro> existente = metaAhorroService.buscarPorId(dto.getIdMetaAhorro());
         if (existente.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Meta de ahorro no encontrada");
-        Optional<Usuario> usuario = usuarioRepository.findById(dto.getIdUsuario());
+        Optional<Usuario> usuario = usuarioService.listId(dto.getIdUsuario());
         if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
 
         MetaAhorro meta = existente.get();

@@ -9,8 +9,8 @@ import pe.edu.upc.walletix.dtos.IngresoDto;
 import pe.edu.upc.walletix.entities.Ingreso;
 import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.entities.Categoria;
-import pe.edu.upc.walletix.repositories.UsuarioRepository;
-import pe.edu.upc.walletix.repositories.CategoriaRepository;
+import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
+import pe.edu.upc.walletix.servicesinterfaces.ICategoriaService;
 import pe.edu.upc.walletix.servicesinterfaces.IngresoServiceInterface;
 
 import java.util.List;
@@ -43,9 +43,9 @@ public class IngresoController {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
 
-        Optional<Usuario> usuario = usuarioService.findById(dto.getIdUsuario());
+        Optional<Usuario> usuario = usuarioService.listId(dto.getIdUsuario());
         if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
-        Optional<Categoria> categoria = categoriaService.findById(dto.getIdCategoria());
+        Optional<Categoria> categoria = categoriaService.listId(dto.getIdCategoria());
         if (categoria.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Categoría no encontrada");
 
         Ingreso ingreso = toEntity(dto);
@@ -69,9 +69,9 @@ public class IngresoController {
 
         Optional<Ingreso> existente = ingresoService.buscarPorId(dto.getIdIngreso());
         if (existente.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ingreso no encontrado");
-        Optional<Usuario> usuario = usuarioService.findById(dto.getIdUsuario());
+        Optional<Usuario> usuario = usuarioService.listId(dto.getIdUsuario());
         if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
-        Optional<Categoria> categoria = categoriaService.findById(dto.getIdCategoria());
+        Optional<Categoria> categoria = categoriaService.listId(dto.getIdCategoria());
         if (categoria.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Categoría no encontrada");
 
         Ingreso ingreso = existente.get();

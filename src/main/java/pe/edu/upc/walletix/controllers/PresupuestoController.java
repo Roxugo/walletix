@@ -9,8 +9,8 @@ import pe.edu.upc.walletix.dtos.PresupuestoDto;
 import pe.edu.upc.walletix.entities.Presupuesto;
 import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.entities.Categoria;
-import pe.edu.upc.walletix.repositories.UsuarioRepository;
-import pe.edu.upc.walletix.repositories.CategoriaRepository;
+import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
+import pe.edu.upc.walletix.servicesinterfaces.ICategoriaService;
 import pe.edu.upc.walletix.servicesinterfaces.PresupuestoServiceInterface;
 
 import java.util.List;
@@ -24,10 +24,10 @@ public class PresupuestoController {
     private PresupuestoServiceInterface presupuestoService;
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private IUsuarioService usuarioService;
 
     @Autowired
-    private CategoriaRepository categoriaRepository;
+    private ICategoriaService categoriaService;
 
     @GetMapping
     public ResponseEntity<List<PresupuestoDto>> listar() {
@@ -43,9 +43,9 @@ public class PresupuestoController {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
 
-        Optional<Usuario> usuario = usuarioRepository.findById(dto.getIdUsuario());
+        Optional<Usuario> usuario = usuarioService.listId(dto.getIdUsuario());
         if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
-        Optional<Categoria> categoria = categoriaRepository.findById(dto.getIdCategoria());
+        Optional<Categoria> categoria = categoriaService.listId(dto.getIdCategoria());
         if (categoria.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Categoría no encontrada");
 
         Presupuesto presupuesto = toEntity(dto);
@@ -69,9 +69,9 @@ public class PresupuestoController {
 
         Optional<Presupuesto> existente = presupuestoService.buscarPorId(dto.getIdPresupuesto());
         if (existente.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Presupuesto no encontrado");
-        Optional<Usuario> usuario = usuarioRepository.findById(dto.getIdUsuario());
+        Optional<Usuario> usuario = usuarioService.listId(dto.getIdUsuario());
         if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
-        Optional<Categoria> categoria = categoriaRepository.findById(dto.getIdCategoria());
+        Optional<Categoria> categoria = categoriaService.listId(dto.getIdCategoria());
         if (categoria.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Categoría no encontrada");
 
         Presupuesto presupuesto = existente.get();
