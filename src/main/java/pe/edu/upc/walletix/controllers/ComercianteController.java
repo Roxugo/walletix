@@ -61,6 +61,7 @@ public class ComercianteController {
         ModelMapper modelMapper = new ModelMapper();
         Comerciante nuevoComerciante = modelMapper.map(comercianteDTO, Comerciante.class);
         nuevoComerciante.setCategoria(categoria.get());
+        nuevoComerciante.setEstadoComerciante(1); // Siempre nace en 1 al registrar
         Comerciante comercianteRegistrado = comercianteService.insert(nuevoComerciante);
         return ResponseEntity.status(HttpStatus.CREATED).body(modelMapper.map(comercianteRegistrado, ComercianteDTO.class));
     }
@@ -68,8 +69,7 @@ public class ComercianteController {
     @GetMapping("/{idComerciante}")
     public ResponseEntity<?> buscarPorId(@PathVariable int idComerciante) {
         ModelMapper modelMapper = new ModelMapper();
-        Optional<Comerciante> comerciante = comercianteService.listId(idComerciante);
-        if (comerciante.isPresent()) {
+        Optional<Comerciante> comerciante = comercianteService.listId(idComerciante);\n        if (comerciante.isPresent()) {
             return ResponseEntity.ok(modelMapper.map(comerciante.get(), ComercianteDTO.class));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

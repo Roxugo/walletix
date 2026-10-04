@@ -31,6 +31,7 @@ public class LogroController {
     public ResponseEntity<?> registrar(@RequestBody LogroDTO dto){
         ModelMapper m=new ModelMapper();
         Logro c=m.map(dto, Logro.class);
+        c.setEstadoLogro(1); // Siempre nace en 1 al registrar
         Logro cur= logroService.insert(c);
         LogroDTO responseDTO=m.map(cur, LogroDTO.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);

@@ -69,6 +69,7 @@ public class CategoriaController {
         categoriaDTO.setTipoCategoria(categoriaDTO.getTipoCategoria().toLowerCase());
         Categoria nuevaCategoria = modelMapper.map(categoriaDTO, Categoria.class);
         nuevaCategoria.setUsuario(usuario.get());
+        nuevaCategoria.setEstadoCategoria(1); // Siempre nace en 1 al registrar
         Categoria categoriaRegistrada = categoriaService.insert(nuevaCategoria);
         return ResponseEntity.status(HttpStatus.CREATED).body(modelMapper.map(categoriaRegistrada, CategoriaDTO.class));
     }

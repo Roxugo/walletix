@@ -41,6 +41,7 @@ public class UsuarioController {
 
         ModelMapper m=new ModelMapper();
         Usuario c=m.map(dto, Usuario.class);
+        c.setEstadoUsuario(1); // Siempre nace en 1 al registrar
         Usuario cur= usuarioService.insert(c);
         UsuarioDTO responseDTO=m.map(cur, UsuarioDTO.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
