@@ -14,6 +14,7 @@ public class GastoDTO {
     private LocalDate fechaGasto;
     private String metodoPagoGasto;
     private boolean fijoGasto;
+    private int estadoGasto = 1;
 
     public int getIdGasto() {
         return idGasto;
@@ -85,5 +86,13 @@ public class GastoDTO {
 
     public void setFijoGasto(boolean fijoGasto) {
         this.fijoGasto = fijoGasto;
+    }
+
+    public int getEstadoGasto() {
+        return estadoGasto;
+    }
+
+    public void setEstadoGasto(int estadoGasto) {
+        this.estadoGasto = estadoGasto;
     }
 }

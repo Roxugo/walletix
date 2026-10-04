@@ -15,7 +15,7 @@ public interface MetaAhorroRepository extends JpaRepository<MetaAhorro, Integer>
 
     @Query(value = """
             SELECT *
-            FROM metasAhorro
+            FROM metas_Ahorro
             WHERE idUsuario = :idUsuario
               AND estado = 1
             """, nativeQuery = true)

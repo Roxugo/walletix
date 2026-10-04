@@ -9,6 +9,7 @@ public class CategoriaDTO {
     private String urlIconoCategoria;
     private String colorHexCategoria;
     private boolean predeterminadoCategoria;
+    private int estadoCategoria = 1;
 
     public int getIdCategoria() {
         return idCategoria;
@@ -64,5 +65,13 @@ public class CategoriaDTO {
 
     public void setPredeterminadoCategoria(boolean predeterminadoCategoria) {
         this.predeterminadoCategoria = predeterminadoCategoria;
+    }
+
+    public int getEstadoCategoria() {
+        return estadoCategoria;
+    }
+
+    public void setEstadoCategoria(int estadoCategoria) {
+        this.estadoCategoria = estadoCategoria;
     }
 }
