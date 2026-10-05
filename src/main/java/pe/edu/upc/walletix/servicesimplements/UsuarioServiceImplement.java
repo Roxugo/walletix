@@ -1,6 +1,9 @@
 package pe.edu.upc.walletix.servicesimplements;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import pe.edu.upc.walletix.entities.Auditoria;
 import pe.edu.upc.walletix.entities.Usuario;
@@ -20,6 +23,16 @@ public class UsuarioServiceImplement implements IUsuarioService {
 
     @Autowired
     private IAuditoriaRepository auditoriaRepository;
+
+    // Usuario que inició sesión y está haciendo la acción (sale del token JWT).
+    // Si no hay sesión, se usa el usuario afectado
+    private Usuario usuarioQueRealizaLaAccion(Usuario usuarioAfectado) {
+        Authentication autenticacion = SecurityContextHolder.getContext().getAuthentication();
+        if (autenticacion == null || !autenticacion.isAuthenticated() || autenticacion instanceof AnonymousAuthenticationToken) {
+            return usuarioAfectado;
+        }
+        return usuarioRepository.findByCorreoUsuarioIgnoreCaseAndEstadoUsuario(autenticacion.getName(), 1).orElse(usuarioAfectado);
+    }
 
     @Override
     public List<Usuario> list() {
@@ -56,7 +69,7 @@ public class UsuarioServiceImplement implements IUsuarioService {
         List<Auditoria> auditorias = auditoriaRepository.findByUsuarioRegistroIdUsuario(usuario.getIdUsuario());
         if (!auditorias.isEmpty()) {
             Auditoria auditoria = auditorias.get(auditorias.size() - 1);
-            auditoria.setUsuarioEditar(usuario);
+            auditoria.setUsuarioEditar(usuarioQueRealizaLaAccion(usuario)); // quién hizo la edición
             auditoria.setFechaEditar(LocalDateTime.now());
             auditoriaRepository.save(auditoria);
         }
@@ -67,6 +80,8 @@ public class UsuarioServiceImplement implements IUsuarioService {
         Optional<Usuario> opt = usuarioRepository.findById(id);
         if (opt.isPresent()) {
             Usuario usuario = opt.get();
+            // Se busca antes de inactivar, por si el usuario se elimina a sí mismo
+            Usuario eliminadoPor = usuarioQueRealizaLaAccion(usuario);
             usuario.setEstadoUsuario(0); // Inactivar usuario (Soft delete con 0)
             usuarioRepository.save(usuario); // Guardar cambio
 
@@ -74,7 +89,7 @@ public class UsuarioServiceImplement implements IUsuarioService {
             List<Auditoria> auditorias = auditoriaRepository.findByUsuarioRegistroIdUsuario(id);
             if (!auditorias.isEmpty()) {
                 Auditoria auditoria = auditorias.get(auditorias.size() - 1);
-                auditoria.setUsuarioEliminar(usuario);
+                auditoria.setUsuarioEliminar(eliminadoPor); // quién hizo la eliminación
                 auditoria.setFechaEliminar(LocalDateTime.now());
                 auditoria.setEstado(0); // Inactivar auditoría (0)
                 auditoriaRepository.save(auditoria);
@@ -84,6 +99,11 @@ public class UsuarioServiceImplement implements IUsuarioService {
 
     @Override
     public boolean existeCorreo(String correo) {
-        return usuarioRepository.existsByCorreoUsuario(correo);
+        return usuarioRepository.existsByCorreoUsuarioIgnoreCase(correo);
+    }
+
+    @Override
+    public Optional<Usuario> buscarPorCorreo(String correo) {
+        return usuarioRepository.findByCorreoUsuarioIgnoreCaseAndEstadoUsuario(correo, 1);
     }
 }

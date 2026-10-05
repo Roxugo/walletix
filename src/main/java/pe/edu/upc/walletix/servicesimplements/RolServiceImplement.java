@@ -16,7 +16,7 @@ public class RolServiceImplement implements IRolService {
 
     @Override
     public List<Rol> list() {
-        return rolRepository.findByEstadoRol(1);
+        return rolRepository.findByEstadoRolAndUsuarioEstadoUsuario(1, 1);
     }
 
     @Override
@@ -27,7 +27,7 @@ public class RolServiceImplement implements IRolService {
 
     @Override
     public Optional<Rol> listId(int id) {
-        return rolRepository.findByIdRolAndEstadoRol(id, 1);
+        return rolRepository.findByIdRolAndEstadoRolAndUsuarioEstadoUsuario(id, 1, 1);
     }
 
     @Override
@@ -36,23 +36,13 @@ public class RolServiceImplement implements IRolService {
     }
 
     @Override
-    public void delete(int id) {
-        // Borrado lógico: no se borra la fila, solo se marca como eliminada
-        Optional<Rol> rol = rolRepository.findByIdRolAndEstadoRol(id, 1);
-        if (rol.isPresent()) {
-            rol.get().setEstadoRol(0);
-            rolRepository.save(rol.get());
-        }
-    }
-
-    @Override
     public Optional<Rol> buscarPorUsuarioYRol(int idUsuario, String rol) {
         return rolRepository.findByUsuarioIdUsuarioAndRol(idUsuario, rol);
     }
 
     @Override
-    public long contarRolesActivosDeUsuario(int idUsuario) {
-        return rolRepository.countByUsuarioIdUsuarioAndEstadoRol(idUsuario, 1);
+    public List<Rol> listarActivosDeUsuario(int idUsuario) {
+        return rolRepository.findByUsuarioIdUsuarioAndEstadoRol(idUsuario, 1);
     }
 
     @Override

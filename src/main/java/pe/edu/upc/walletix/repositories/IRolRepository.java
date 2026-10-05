@@ -9,15 +9,16 @@ import java.util.Optional;
 
 @Repository
 public interface IRolRepository extends JpaRepository<Rol, Integer> {
-    List<Rol> findByEstadoRol(int estadoRol);
+    // Roles activos de usuarios activos (un usuario eliminado ya no aparece)
+    List<Rol> findByEstadoRolAndUsuarioEstadoUsuario(int estadoRol, int estadoUsuario);
 
-    Optional<Rol> findByIdRolAndEstadoRol(int idRol, int estadoRol);
+    Optional<Rol> findByIdRolAndEstadoRolAndUsuarioEstadoUsuario(int idRol, int estadoRol, int estadoUsuario);
 
-    // Busca la fila aunque esté eliminada (estado 0), para reactivarla en vez de duplicarla
+    // Busca la fila aunque esté dada de baja (estado 0), para reactivarla en vez de duplicarla
     Optional<Rol> findByUsuarioIdUsuarioAndRol(int idUsuario, String rol);
 
-    // Cuántos roles activos le quedan a un usuario
-    long countByUsuarioIdUsuarioAndEstadoRol(int idUsuario, int estadoRol);
+    // Roles activos de un usuario (en uso normal, siempre uno solo)
+    List<Rol> findByUsuarioIdUsuarioAndEstadoRol(int idUsuario, int estadoRol);
 
     // Cuántos usuarios activos tienen un rol activo (ej. cuántos ADMIN quedan)
     long countByRolAndEstadoRolAndUsuarioEstadoUsuario(String rol, int estadoRol, int estadoUsuario);

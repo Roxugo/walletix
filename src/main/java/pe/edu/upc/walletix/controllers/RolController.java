@@ -17,8 +17,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-// Solo un ADMIN puede ver, asignar, cambiar y quitar roles
-@Tag(name = "Roles", description = "Roles de seguridad de los usuarios (solo ADMIN)")
+// Cada usuario tiene un solo rol: nace como USUARIO al registrarse y un ADMIN puede cambiarlo.
+// No hay POST ni DELETE: un usuario nunca queda sin rol ni con dos roles
+@Tag(name = "Roles", description = "Rol de cada usuario (USUARIO o ADMIN). Solo un ADMIN puede verlos y cambiarlos")
 @RestController
 @RequestMapping("/roles")
 public class RolController {
@@ -42,12 +43,7 @@ public class RolController {
         return nombreRol.equals("USUARIO") || nombreRol.equals("ADMIN") ? nombreRol : null;
     }
 
-    // Evita que el sistema se quede sin ningún ADMIN activo
-    private boolean esUltimoAdmin(Rol rol) {
-        return rol.getRol().equals("ADMIN") && rolService.contarUsuariosActivosConRol("ADMIN") <= 1;
-    }
-
-    @Operation(summary = "Listar los roles activos de los usuarios")
+    @Operation(summary = "Listar el rol de cada usuario")
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<RolDTO>> listar() {
@@ -55,36 +51,6 @@ public class RolController {
                 .map(this::convertirADTO)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(listaRoles);
-    }
-
-    @Operation(summary = "Asignar un rol (USUARIO o ADMIN) a un usuario")
-    @PostMapping("/web")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> registrar(@RequestBody RolDTO rolDTO) {
-        String nombreRol = normalizarRol(rolDTO.getRol());
-        if (nombreRol == null) {
-            return ResponseEntity.badRequest().body("El rol debe ser USUARIO o ADMIN");
-        }
-        Optional<Usuario> usuario = usuarioService.listId(rolDTO.getIdUsuario());
-        if (usuario.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("El usuario con ID " + rolDTO.getIdUsuario() + " no existe.");
-        }
-        Optional<Rol> rolExistente = rolService.buscarPorUsuarioYRol(rolDTO.getIdUsuario(), nombreRol);
-        if (rolExistente.isPresent() && rolExistente.get().getEstadoRol() == 1) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("El usuario ya tiene el rol " + nombreRol);
-        }
-        if (rolExistente.isPresent()) {
-            // El rol se había eliminado antes: se reactiva la misma fila en vez de crear una repetida
-            Rol rolReactivado = rolExistente.get();
-            rolReactivado.setEstadoRol(1);
-            rolService.update(rolReactivado);
-            return ResponseEntity.status(HttpStatus.CREATED).body(convertirADTO(rolReactivado));
-        }
-        Rol nuevoRol = new Rol();
-        nuevoRol.setRol(nombreRol);
-        nuevoRol.setUsuario(usuario.get());
-        return ResponseEntity.status(HttpStatus.CREATED).body(convertirADTO(rolService.insert(nuevoRol)));
     }
 
     @Operation(summary = "Buscar un rol por su id")
@@ -99,61 +65,48 @@ public class RolController {
         }
     }
 
-    @Operation(summary = "Cambiar el rol de un registro (ej. de ADMIN a USUARIO)")
+    @Operation(summary = "Cambiar el rol de un usuario (USUARIO o ADMIN). Solo se envía idUsuario y rol")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> actualizar(@RequestBody RolDTO rolDTO) {
-        Optional<Rol> rolExistente = rolService.listId(rolDTO.getIdRol());
-        if (rolExistente.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Rol no encontrado");
-        }
         String nuevoRol = normalizarRol(rolDTO.getRol());
         if (nuevoRol == null) {
             return ResponseEntity.badRequest().body("El rol debe ser USUARIO o ADMIN");
         }
-        Rol rol = rolExistente.get();
-        int idUsuario = rol.getUsuario().getIdUsuario();
-        // No se permite que el usuario quede con el mismo rol repetido
-        Optional<Rol> rolRepetido = rolService.buscarPorUsuarioYRol(idUsuario, nuevoRol);
-        if (rolRepetido.isPresent() && rolRepetido.get().getEstadoRol() == 1) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("El usuario ya tiene el rol " + nuevoRol + ". Para quitarle un rol use DELETE /roles/{id}");
+        Optional<Usuario> usuario = usuarioService.listId(rolDTO.getIdUsuario());
+        if (usuario.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("El usuario con ID " + rolDTO.getIdUsuario() + " no existe.");
         }
-        if (esUltimoAdmin(rol)) {
+        int idUsuario = rolDTO.getIdUsuario();
+        List<Rol> rolesActuales = rolService.listarActivosDeUsuario(idUsuario);
+        if (rolesActuales.size() == 1 && rolesActuales.get(0).getRol().equals(nuevoRol)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("El usuario ya tiene el rol " + nuevoRol);
+        }
+        // Evita que el sistema se quede sin ningún ADMIN activo
+        boolean eraAdmin = rolesActuales.stream().anyMatch(rol -> rol.getRol().equals("ADMIN"));
+        if (eraAdmin && nuevoRol.equals("USUARIO") && rolService.contarUsuariosActivosConRol("ADMIN") <= 1) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("No se puede quitar el rol ADMIN al único administrador del sistema");
         }
-        if (rolRepetido.isPresent()) {
-            // El nuevo rol existía eliminado: se reactiva esa fila y se da de baja la actual
-            Rol rolReactivado = rolRepetido.get();
-            rolReactivado.setEstadoRol(1);
-            rolService.update(rolReactivado);
-            rolService.delete(rol.getIdRol());
+        // Se activa el nuevo rol (reutilizando su fila si ya existía dada de baja, para no duplicarla)
+        Optional<Rol> filaNuevoRol = rolService.buscarPorUsuarioYRol(idUsuario, nuevoRol);
+        if (filaNuevoRol.isPresent()) {
+            filaNuevoRol.get().setEstadoRol(1);
+            rolService.update(filaNuevoRol.get());
         } else {
+            Rol rol = new Rol();
             rol.setRol(nuevoRol);
-            rolService.update(rol);
+            rol.setUsuario(usuario.get());
+            rolService.insert(rol);
         }
-        return ResponseEntity.ok("Rol actualizado correctamente");
-    }
-
-    @Operation(summary = "Quitar un rol a un usuario (borrado lógico)")
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<String> eliminar(@PathVariable int id) {
-        Optional<Rol> rolExistente = rolService.listId(id);
-        if (rolExistente.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Rol no encontrado");
+        // Y se da de baja el rol anterior: el usuario siempre queda con un solo rol
+        for (Rol rolAnterior : rolesActuales) {
+            if (!rolAnterior.getRol().equals(nuevoRol)) {
+                rolAnterior.setEstadoRol(0);
+                rolService.update(rolAnterior);
+            }
         }
-        Rol rol = rolExistente.get();
-        if (rolService.contarRolesActivosDeUsuario(rol.getUsuario().getIdUsuario()) <= 1) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("No se puede eliminar el único rol del usuario; cámbielo con PUT /roles/actualiza");
-        }
-        if (esUltimoAdmin(rol)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("No se puede quitar el rol ADMIN al único administrador del sistema");
-        }
-        rolService.delete(id);
-        return ResponseEntity.ok("Rol eliminado correctamente");
+        return ResponseEntity.ok("Rol actualizado: el usuario ahora es " + nuevoRol);
     }
 }

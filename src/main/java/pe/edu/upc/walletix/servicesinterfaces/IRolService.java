@@ -10,8 +10,7 @@ public interface IRolService {
     public Rol insert(Rol rol);
     public Optional<Rol> listId(int id);
     public void update(Rol rol);
-    public void delete(int id);
     public Optional<Rol> buscarPorUsuarioYRol(int idUsuario, String rol);
-    public long contarRolesActivosDeUsuario(int idUsuario);
+    public List<Rol> listarActivosDeUsuario(int idUsuario);
     public long contarUsuariosActivosConRol(String rol);
 }

@@ -22,7 +22,7 @@ public class JwtUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
-        Usuario usuario = usuarioRepository.findByCorreoUsuarioAndEstadoUsuario(correo, 1)
+        Usuario usuario = usuarioRepository.findByCorreoUsuarioIgnoreCaseAndEstadoUsuario(correo, 1)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + correo));
 
         List<GrantedAuthority> roles = new ArrayList<>();
