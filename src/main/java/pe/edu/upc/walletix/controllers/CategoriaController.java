@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Categorías", description = "Categorías de gastos e ingresos del usuario")
 @RestController
 @RequestMapping("/categorias")
 public class CategoriaController {
@@ -46,6 +49,7 @@ public class CategoriaController {
     }
 
 
+    @Operation(summary = "Listar las categorías activas")
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<CategoriaDTO>> listar() {
@@ -56,6 +60,7 @@ public class CategoriaController {
         return ResponseEntity.ok(listaCategorias);
     }
 
+    @Operation(summary = "Registrar una categoría (tipo gasto o ingreso)")
     @PostMapping("/web")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody CategoriaDTO categoriaDTO) {
@@ -77,6 +82,7 @@ public class CategoriaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(modelMapper.map(categoriaRegistrada, CategoriaDTO.class));
     }
 
+    @Operation(summary = "Buscar una categoría por su id")
     @GetMapping("/{idCategoria}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int idCategoria) {
@@ -90,6 +96,7 @@ public class CategoriaController {
         }
     }
 
+    @Operation(summary = "Actualizar los datos de una categoría")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody CategoriaDTO categoriaDTO) {
@@ -118,6 +125,7 @@ public class CategoriaController {
         return ResponseEntity.ok("Categoría actualizada correctamente");
     }
 
+    @Operation(summary = "Eliminar una categoría (borrado lógico)")
     @DeleteMapping("/{idCategoria}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int idCategoria) {
@@ -132,6 +140,7 @@ public class CategoriaController {
     }
 
     // JPQL: categorías por tipo. Ej: /categorias/tipo/gasto
+    @Operation(summary = "Listar las categorías por tipo (gasto o ingreso)")
     @GetMapping("/tipo/{tipo}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<CategoriaDTO>> buscarPorTipo(@PathVariable String tipo) {

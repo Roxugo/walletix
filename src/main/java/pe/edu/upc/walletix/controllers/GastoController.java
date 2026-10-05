@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Gastos", description = "Registro y consulta de los gastos del usuario")
 @RestController
 @RequestMapping("/gastos")
 public class GastoController {
@@ -72,6 +75,7 @@ public class GastoController {
         return gastoDTO;
     }
 
+    @Operation(summary = "Listar los gastos activos")
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<GastoDTO>> listar() {
@@ -81,6 +85,7 @@ public class GastoController {
         return ResponseEntity.ok(listaGastos);
     }
 
+    @Operation(summary = "Registrar un gasto")
     @PostMapping("/web")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody GastoDTO gastoDTO) {
@@ -117,6 +122,7 @@ public class GastoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(convertirADTO(gastoRegistrado));
     }
 
+    @Operation(summary = "Buscar un gasto por su id")
     @GetMapping("/{idGasto}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int idGasto) {
@@ -129,6 +135,7 @@ public class GastoController {
         }
     }
 
+    @Operation(summary = "Actualizar los datos de un gasto")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody GastoDTO gastoDTO) {
@@ -168,6 +175,7 @@ public class GastoController {
         return ResponseEntity.ok("Gasto actualizado correctamente");
     }
 
+    @Operation(summary = "Eliminar un gasto (borrado lógico)")
     @DeleteMapping("/{idGasto}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int idGasto) {
@@ -183,6 +191,7 @@ public class GastoController {
 
     // JPQL: gastos de un usuario en un rango de fechas (historial, US18 y US19)
     // Ej: /gastos/usuario/1?fechaInicio=2026-10-01&fechaFin=2026-10-31
+    @Operation(summary = "Listar los gastos de un usuario entre dos fechas")
     @GetMapping("/usuario/{idUsuario}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorUsuarioYRango(@PathVariable int idUsuario,

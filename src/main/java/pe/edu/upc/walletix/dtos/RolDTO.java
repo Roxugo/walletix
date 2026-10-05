@@ -4,6 +4,7 @@ public class RolDTO {
     private int idRol;
     private String rol;
     private int idUsuario;
+    private int estadoRol = 1;
 
     public int getIdRol() {
         return idRol;
@@ -27,5 +28,13 @@ public class RolDTO {
 
     public void setIdUsuario(int idUsuario) {
         this.idUsuario = idUsuario;
+    }
+
+    public int getEstadoRol() {
+        return estadoRol;
+    }
+
+    public void setEstadoRol(int estadoRol) {
+        this.estadoRol = estadoRol;
     }
 }

@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Ingresos", description = "Registro y consulta de los ingresos del usuario")
 @RestController
 @RequestMapping("/ingresos")
 public class IngresoController {
@@ -30,6 +33,7 @@ public class IngresoController {
     @Autowired
     private ICategoriaService categoriaService;
 
+    @Operation(summary = "Listar los ingresos activos")
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<IngresoDto>> listar() {
@@ -40,6 +44,7 @@ public class IngresoController {
         return ResponseEntity.ok(lista);
     }
 
+    @Operation(summary = "Registrar un ingreso")
     @PostMapping("/web")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody IngresoDto dto) {
@@ -58,6 +63,7 @@ public class IngresoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toDto(registrado, new ModelMapper()));
     }
 
+    @Operation(summary = "Buscar un ingreso por su id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
@@ -66,6 +72,7 @@ public class IngresoController {
         return ResponseEntity.ok(toDto(ingreso.get(), new ModelMapper()));
     }
 
+    @Operation(summary = "Actualizar los datos de un ingreso")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody IngresoDto dto) {
@@ -92,6 +99,7 @@ public class IngresoController {
         return ResponseEntity.ok("Ingreso actualizado correctamente");
     }
 
+    @Operation(summary = "Eliminar un ingreso (borrado lógico)")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {

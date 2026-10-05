@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Preguntas de quiz", description = "Preguntas del quiz de cada microlección")
 @RestController
 @RequestMapping("/preguntas-quiz")
 public class PreguntaQuizController {
@@ -51,6 +54,7 @@ public class PreguntaQuizController {
         return null;
     }
 
+    @Operation(summary = "Listar las preguntas de quiz activas")
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<PreguntaQuizDTO>> listar() {
@@ -61,6 +65,7 @@ public class PreguntaQuizController {
         return ResponseEntity.ok(listaPreguntas);
     }
 
+    @Operation(summary = "Registrar una pregunta de quiz (solo ADMIN)")
     @PostMapping("/web")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> registrar(@RequestBody PreguntaQuizDTO preguntaQuizDTO) {
@@ -87,6 +92,7 @@ public class PreguntaQuizController {
         return ResponseEntity.status(HttpStatus.CREATED).body(respuestaDTO);
     }
 
+    @Operation(summary = "Buscar una pregunta de quiz por su id")
     @GetMapping("/{idPreguntaQuiz}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int idPreguntaQuiz) {
@@ -101,6 +107,7 @@ public class PreguntaQuizController {
         }
     }
 
+    @Operation(summary = "Actualizar una pregunta de quiz (solo ADMIN)")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> actualizar(@RequestBody PreguntaQuizDTO preguntaQuizDTO) {
@@ -131,6 +138,7 @@ public class PreguntaQuizController {
         return ResponseEntity.ok("Pregunta actualizada correctamente");
     }
 
+    @Operation(summary = "Eliminar una pregunta de quiz (borrado lógico, solo ADMIN)")
     @DeleteMapping("/{idPreguntaQuiz}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> eliminar(@PathVariable int idPreguntaQuiz) {
@@ -145,6 +153,7 @@ public class PreguntaQuizController {
     }
 
     // Preguntas del quiz de una microlección. Ej: /preguntas-quiz/microleccion/1
+    @Operation(summary = "Listar las preguntas de una microlección")
     @GetMapping("/microleccion/{idMicroleccion}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> listarPorMicroleccion(@PathVariable int idMicroleccion) {

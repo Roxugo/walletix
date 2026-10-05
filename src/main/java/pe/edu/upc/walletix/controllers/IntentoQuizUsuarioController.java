@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Intentos de quiz", description = "Intentos de los usuarios al rendir el quiz de una microlección")
 @RestController
 @RequestMapping("/intentos-quiz")
 public class IntentoQuizUsuarioController {
@@ -30,6 +33,7 @@ public class IntentoQuizUsuarioController {
     @Autowired
     private IMicroleccionService microleccionService;
 
+    @Operation(summary = "Listar los intentos de quiz activos")
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<IntentoQuizUsuarioDTO>> listar() {
@@ -40,6 +44,7 @@ public class IntentoQuizUsuarioController {
         return ResponseEntity.ok(listaIntentos);
     }
 
+    @Operation(summary = "Registrar un intento de quiz (calcula si aprobó)")
     @PostMapping("/web")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody IntentoQuizUsuarioDTO intentoQuizUsuarioDTO) {
@@ -73,6 +78,7 @@ public class IntentoQuizUsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(respuestaDTO);
     }
 
+    @Operation(summary = "Buscar un intento de quiz por su id")
     @GetMapping("/{idIntentoQuizUsuario}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int idIntentoQuizUsuario) {
@@ -87,6 +93,7 @@ public class IntentoQuizUsuarioController {
         }
     }
 
+    @Operation(summary = "Actualizar el puntaje de un intento de quiz")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody IntentoQuizUsuarioDTO intentoQuizUsuarioDTO) {
@@ -106,6 +113,7 @@ public class IntentoQuizUsuarioController {
         return ResponseEntity.ok("Intento actualizado correctamente");
     }
 
+    @Operation(summary = "Eliminar un intento de quiz (borrado lógico)")
     @DeleteMapping("/{idIntentoQuizUsuario}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int idIntentoQuizUsuario) {
@@ -120,6 +128,7 @@ public class IntentoQuizUsuarioController {
     }
 
     // Query nativo: progreso de aprendizaje del usuario. Ej: /intentos-quiz/progreso/1
+    @Operation(summary = "Ver el progreso de aprendizaje de un usuario")
     @GetMapping("/progreso/{idUsuario}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> progreso(@PathVariable int idUsuario) {

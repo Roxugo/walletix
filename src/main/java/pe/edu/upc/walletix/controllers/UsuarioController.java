@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Usuarios", description = "Registro y perfil de los usuarios")
 @RestController
 @RequestMapping("/usuarios")
 public class UsuarioController {
@@ -27,6 +30,7 @@ public class UsuarioController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Operation(summary = "Listar todos los usuarios activos (solo ADMIN)")
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<UsuarioDTO>> listar(){
@@ -36,6 +40,7 @@ public class UsuarioController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(listaUsuarios);
     }
+    @Operation(summary = "Registrar un usuario nuevo (libre, recibe el rol USUARIO)")
     @PostMapping("/web")
     public ResponseEntity<?> registrar(@RequestBody UsuarioDTO dto){
         if (dto.getFechaNacimientoUsuario().isAfter(java.time.LocalDate.now())) {
@@ -71,6 +76,7 @@ public class UsuarioController {
         UsuarioDTO responseDTO=m.map(cur, UsuarioDTO.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
+    @Operation(summary = "Buscar un usuario por su id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
@@ -84,6 +90,7 @@ public class UsuarioController {
                     .body("Usuario no encontrado");
         }
     }
+    @Operation(summary = "Actualizar el perfil de un usuario")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody UsuarioDTO dto) {
@@ -112,6 +119,7 @@ public class UsuarioController {
         usuarioService.update(us);
         return ResponseEntity.ok("Usuario actualizado correctamente");
     }
+    @Operation(summary = "Eliminar un usuario (borrado lógico, ya no podrá iniciar sesión)")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {

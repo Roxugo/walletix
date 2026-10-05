@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Presupuestos", description = "Presupuestos mensuales del usuario por categoría")
 @RestController
 @RequestMapping("/presupuestos")
 public class PresupuestoController {
@@ -30,6 +33,7 @@ public class PresupuestoController {
     @Autowired
     private ICategoriaService categoriaService;
 
+    @Operation(summary = "Listar los presupuestos activos")
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<PresupuestoDto>> listar() {
@@ -40,6 +44,7 @@ public class PresupuestoController {
         return ResponseEntity.ok(lista);
     }
 
+    @Operation(summary = "Registrar un presupuesto mensual")
     @PostMapping("/web")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody PresupuestoDto dto) {
@@ -58,6 +63,7 @@ public class PresupuestoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toDto(registrado, new ModelMapper()));
     }
 
+    @Operation(summary = "Buscar un presupuesto por su id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
@@ -66,6 +72,7 @@ public class PresupuestoController {
         return ResponseEntity.ok(toDto(presupuesto.get(), new ModelMapper()));
     }
 
+    @Operation(summary = "Actualizar los datos de un presupuesto")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody PresupuestoDto dto) {
@@ -89,6 +96,7 @@ public class PresupuestoController {
         return ResponseEntity.ok("Presupuesto actualizado correctamente");
     }
 
+    @Operation(summary = "Eliminar un presupuesto (borrado lógico)")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {

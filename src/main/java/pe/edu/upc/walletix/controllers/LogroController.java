@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,12 +16,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Logros", description = "Logros que los usuarios pueden obtener")
 @RestController
 @RequestMapping("/logros")
 public class LogroController {
     @Autowired
     private ILogroService logroService;
 
+    @Operation(summary = "Listar los logros activos")
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<LogroDTO>> listar(){
@@ -29,6 +33,7 @@ public class LogroController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(listalogros);
     }
+    @Operation(summary = "Registrar un logro (solo ADMIN)")
     @PostMapping("/web")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> registrar(@RequestBody LogroDTO dto){
@@ -39,6 +44,7 @@ public class LogroController {
         LogroDTO responseDTO=m.map(cur, LogroDTO.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
+    @Operation(summary = "Buscar un logro por su id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
@@ -52,6 +58,7 @@ public class LogroController {
                     .body("Logro no encontrado");
         }
     }
+    @Operation(summary = "Actualizar los datos de un logro (solo ADMIN)")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> actualizar(@RequestBody LogroDTO dto) {
@@ -68,6 +75,7 @@ public class LogroController {
         logroService.update(ac);
         return ResponseEntity.ok("Logro actualizado correctamente");
     }
+    @Operation(summary = "Eliminar un logro (borrado lógico, solo ADMIN)")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {

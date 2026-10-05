@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Notificaciones", description = "Notificaciones enviadas a los usuarios")
 @RestController
 @RequestMapping("/notificaciones")
 public class NotificacionController {
@@ -40,6 +43,7 @@ public class NotificacionController {
         return notificacionDTO;
     }
 
+    @Operation(summary = "Listar las notificaciones activas")
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<NotificacionDTO>> listar() {
@@ -50,6 +54,7 @@ public class NotificacionController {
         return ResponseEntity.ok(listaNotificaciones);
     }
 
+    @Operation(summary = "Registrar una notificación")
     @PostMapping("/web")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody NotificacionDTO notificacionDTO) {
@@ -66,6 +71,7 @@ public class NotificacionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(convertirADTO(notificacionRegistrada, modelMapper));
     }
 
+    @Operation(summary = "Buscar una notificación por su id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
@@ -78,6 +84,7 @@ public class NotificacionController {
         }
     }
 
+    @Operation(summary = "Actualizar una notificación (por ejemplo, marcarla como leída)")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody NotificacionDTO notificacionDTO) {
@@ -101,6 +108,7 @@ public class NotificacionController {
         return ResponseEntity.ok("Notificación actualizada correctamente");
     }
 
+    @Operation(summary = "Eliminar una notificación (borrado lógico)")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
@@ -115,6 +123,7 @@ public class NotificacionController {
     }
 
     // Query nativo: notificaciones no leídas de un usuario (US22, US24). Ej: /notificaciones/no-leidas/1
+    @Operation(summary = "Listar las notificaciones no leídas de un usuario")
     @GetMapping("/no-leidas/{idUsuario}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarNoLeidasPorUsuario(@PathVariable int idUsuario) {
@@ -129,6 +138,7 @@ public class NotificacionController {
     }
 
     // Query nativo: cantidad de notificaciones no leídas de un usuario. Ej: /notificaciones/no-leidas/1/cantidad
+    @Operation(summary = "Contar las notificaciones no leídas de un usuario")
     @GetMapping("/no-leidas/{idUsuario}/cantidad")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> contarNoLeidasPorUsuario(@PathVariable int idUsuario) {

@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Auditoría", description = "Historial de quién registró, editó o eliminó cada usuario (solo ADMIN)")
 @RestController
 @RequestMapping("/auditorias")
 public class AuditoriaController {
@@ -28,6 +31,7 @@ public class AuditoriaController {
     @Autowired
     private IUsuarioService usuarioService;
 
+    @Operation(summary = "Listar todo el historial de auditoría, incluidos los registros dados de baja")
     @GetMapping
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<AuditoriaDTO>> listar() {
@@ -53,6 +57,7 @@ public class AuditoriaController {
         return ResponseEntity.ok(lista);
     }
 
+    @Operation(summary = "Registrar una auditoría manualmente")
     @PostMapping("/web")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> registrar(@RequestBody AuditoriaDTO dto) {
@@ -96,6 +101,7 @@ public class AuditoriaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
+    @Operation(summary = "Buscar una auditoría por su id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
@@ -122,6 +128,7 @@ public class AuditoriaController {
         }
     }
 
+    @Operation(summary = "Dar de baja una auditoría (borrado lógico)")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {

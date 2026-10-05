@@ -26,7 +26,10 @@ public class JwtUserDetailsService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + correo));
 
         List<GrantedAuthority> roles = new ArrayList<>();
-        usuario.getRoles().forEach(rol -> roles.add(new SimpleGrantedAuthority(rol.getRol())));
+        // Solo cuentan los roles activos: un rol eliminado (estado 0) ya no da permisos
+        usuario.getRoles().stream()
+                .filter(rol -> rol.getEstadoRol() == 1)
+                .forEach(rol -> roles.add(new SimpleGrantedAuthority(rol.getRol())));
 
         return new User(usuario.getCorreoUsuario(), usuario.getContrasenaUsuario(), true, true, true, true, roles);
     }

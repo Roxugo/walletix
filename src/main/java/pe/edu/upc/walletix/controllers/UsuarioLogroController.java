@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Logros de usuario", description = "Logros obtenidos por cada usuario")
 @RestController
 @RequestMapping("/usuarioslogros")
 public class UsuarioLogroController {
@@ -33,6 +36,7 @@ public class UsuarioLogroController {
     @Autowired
     private ILogroService logroService;
 
+    @Operation(summary = "Listar los logros obtenidos por los usuarios")
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<UsuarioLogroDTO>> listar() {
@@ -51,6 +55,7 @@ public class UsuarioLogroController {
 
         return ResponseEntity.ok(listalogros);
     }
+    @Operation(summary = "Asignar un logro a un usuario")
     @PostMapping("/web")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody UsuarioLogroDTO dto) {
@@ -82,6 +87,7 @@ public class UsuarioLogroController {
         responseDTO.setIdLogro(cur.getLogro().getIdLogro());
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
+    @Operation(summary = "Buscar un logro de usuario por su id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
@@ -100,6 +106,7 @@ public class UsuarioLogroController {
                     .body("Registro no encontrado");
         }
     }
+    @Operation(summary = "Actualizar un logro de usuario")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody UsuarioLogroDTO dto) {
@@ -129,6 +136,7 @@ public class UsuarioLogroController {
         usuariologroService.update(ah);
         return ResponseEntity.ok("Registro actualizado correctamente");
     }
+    @Operation(summary = "Eliminar un logro de usuario (borrado lógico)")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
@@ -141,6 +149,7 @@ public class UsuarioLogroController {
                     .body("Registro no encontrado");
         }
     }
+    @Operation(summary = "Ranking de usuarios según la cantidad de logros obtenidos")
     @GetMapping("/ranking-usuario")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<UsuarioLogrosCountDTO>> cantidadLogrosPorUsuario() {
@@ -155,6 +164,7 @@ public class UsuarioLogroController {
         return ResponseEntity.ok(listaDTO);
     }
 
+    @Operation(summary = "Listar los logros más obtenidos por los usuarios")
     @GetMapping("/logros-populares")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<LogroPopularidadDTO>> logrosMasObtenidos() {

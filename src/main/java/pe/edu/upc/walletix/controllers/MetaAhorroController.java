@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Metas de ahorro", description = "Metas de ahorro del usuario")
 @RestController
 @RequestMapping("/metas-ahorro")
 public class MetaAhorroController {
@@ -26,6 +29,7 @@ public class MetaAhorroController {
     @Autowired
     private IUsuarioService usuarioService;
 
+    @Operation(summary = "Listar las metas de ahorro activas")
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<MetaAhorroDto>> listar() {
@@ -36,6 +40,7 @@ public class MetaAhorroController {
         return ResponseEntity.ok(lista);
     }
 
+    @Operation(summary = "Registrar una meta de ahorro")
     @PostMapping("/web")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody MetaAhorroDto dto) {
@@ -50,6 +55,7 @@ public class MetaAhorroController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toDto(registrada, new ModelMapper()));
     }
 
+    @Operation(summary = "Buscar una meta de ahorro por su id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
@@ -58,6 +64,7 @@ public class MetaAhorroController {
         return ResponseEntity.ok(toDto(meta.get(), new ModelMapper()));
     }
 
+    @Operation(summary = "Actualizar los datos de una meta de ahorro")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody MetaAhorroDto dto) {
@@ -80,6 +87,7 @@ public class MetaAhorroController {
         return ResponseEntity.ok("Meta de ahorro actualizada correctamente");
     }
 
+    @Operation(summary = "Eliminar una meta de ahorro (borrado lógico)")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {

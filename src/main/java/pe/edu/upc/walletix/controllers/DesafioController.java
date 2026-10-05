@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Desafíos", description = "Retos de ahorro disponibles en la plataforma")
 @RestController
 @RequestMapping("/desafios")
 public class DesafioController {
@@ -28,6 +31,7 @@ public class DesafioController {
         return modelMapper;
     }
 
+    @Operation(summary = "Listar los desafíos activos")
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<DesafioDTO>> listar() {
@@ -38,6 +42,7 @@ public class DesafioController {
         return ResponseEntity.ok(listaDesafios);
     }
 
+    @Operation(summary = "Registrar un desafío (solo ADMIN)")
     @PostMapping("/web")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> registrar(@RequestBody DesafioDTO desafioDTO) {
@@ -52,6 +57,7 @@ public class DesafioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(modelMapper.map(desafioRegistrado, DesafioDTO.class));
     }
 
+    @Operation(summary = "Buscar un desafío por su id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
@@ -64,6 +70,7 @@ public class DesafioController {
         }
     }
 
+    @Operation(summary = "Actualizar los datos de un desafío (solo ADMIN)")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> actualizar(@RequestBody DesafioDTO desafioDTO) {
@@ -89,6 +96,7 @@ public class DesafioController {
         return ResponseEntity.ok("Desafío actualizado correctamente");
     }
 
+    @Operation(summary = "Eliminar un desafío (borrado lógico, solo ADMIN)")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
@@ -102,6 +110,7 @@ public class DesafioController {
     }
 
     // Query nativo: desafíos vigentes (la fecha de hoy está dentro del rango). Ej: /desafios/vigentes
+    @Operation(summary = "Listar los desafíos vigentes (la fecha de hoy está dentro del rango)")
     @GetMapping("/vigentes")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<DesafioDTO>> buscarVigentes() {
@@ -113,6 +122,7 @@ public class DesafioController {
     }
 
     // Query nativo: desafíos a los que puede acceder un usuario según su edad. Ej: /desafios/edad/20
+    @Operation(summary = "Listar los desafíos a los que puede acceder un usuario según su edad")
     @GetMapping("/edad/{edad}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorEdadMinima(@PathVariable int edad) {

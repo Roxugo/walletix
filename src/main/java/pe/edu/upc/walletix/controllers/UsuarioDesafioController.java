@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Desafíos de usuario", description = "Participación de los usuarios en los desafíos")
 @RestController
 @RequestMapping("/usuariosdesafios")
 public class UsuarioDesafioController {
@@ -48,6 +51,7 @@ public class UsuarioDesafioController {
         return usuarioDesafioDTO;
     }
 
+    @Operation(summary = "Listar las participaciones en desafíos")
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<UsuarioDesafioDTO>> listar() {
@@ -58,6 +62,7 @@ public class UsuarioDesafioController {
         return ResponseEntity.ok(listaUsuarioDesafios);
     }
 
+    @Operation(summary = "Inscribir a un usuario en un desafío")
     @PostMapping("/web")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody UsuarioDesafioDTO usuarioDesafioDTO) {
@@ -83,6 +88,7 @@ public class UsuarioDesafioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(convertirADTO(usuarioDesafioRegistrado, modelMapper));
     }
 
+    @Operation(summary = "Buscar una participación por su id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id) {
@@ -95,6 +101,7 @@ public class UsuarioDesafioController {
         }
     }
 
+    @Operation(summary = "Actualizar el progreso de un usuario en un desafío")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> actualizar(@RequestBody UsuarioDesafioDTO usuarioDesafioDTO) {
@@ -127,6 +134,7 @@ public class UsuarioDesafioController {
         return ResponseEntity.ok("Usuario desafío actualizado correctamente");
     }
 
+    @Operation(summary = "Eliminar una participación (borrado lógico)")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int id) {
@@ -141,6 +149,7 @@ public class UsuarioDesafioController {
     }
 
     // Query nativo: desafíos de un usuario según su estado (US26). Ej: /usuariosdesafios/usuario/1?estadoDesafio=EN_PROGRESO
+    @Operation(summary = "Listar los desafíos de un usuario según su estado")
     @GetMapping("/usuario/{idUsuario}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorUsuarioYEstadoDesafio(@PathVariable int idUsuario,
@@ -156,6 +165,7 @@ public class UsuarioDesafioController {
     }
 
     // Query nativo: cantidad de usuarios inscritos en un desafío. Ej: /usuariosdesafios/desafio/1/cantidad
+    @Operation(summary = "Contar cuántos usuarios participan en un desafío")
     @GetMapping("/desafio/{idDesafio}/cantidad")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> contarUsuariosPorDesafio(@PathVariable int idDesafio) {

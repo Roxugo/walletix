@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import pe.edu.upc.walletix.securities.JwtTokenUtil;
 import pe.edu.upc.walletix.servicesimplements.JwtUserDetailsService;
 
 // Clase 3: inicio de sesión. Devuelve el token JWT si el correo y la contraseña son correctos
+@Tag(name = "Inicio de sesión", description = "Login con correo y contraseña que devuelve el token JWT")
 @RestController
 @CrossOrigin
 public class JwtAuthenticationController {
@@ -28,6 +31,7 @@ public class JwtAuthenticationController {
     @Autowired
     private JwtUserDetailsService userDetailsService;
 
+    @Operation(summary = "Iniciar sesión y obtener el token JWT para el botón Authorize")
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody JwtRequestDTO jwtRequestDTO) {
         try {

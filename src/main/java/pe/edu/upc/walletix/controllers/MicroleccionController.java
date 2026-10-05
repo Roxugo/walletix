@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Microlecciones", description = "Lecciones cortas de educación financiera")
 @RestController
 @RequestMapping("/microlecciones")
 public class MicroleccionController {
@@ -59,6 +62,7 @@ public class MicroleccionController {
         return null;
     }
 
+    @Operation(summary = "Listar las microlecciones activas")
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<MicroleccionDTO>> listar() {
@@ -69,6 +73,7 @@ public class MicroleccionController {
         return ResponseEntity.ok(listaMicrolecciones);
     }
 
+    @Operation(summary = "Registrar una microlección (solo ADMIN)")
     @PostMapping("/web")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> registrar(@RequestBody MicroleccionDTO microleccionDTO) {
@@ -83,6 +88,7 @@ public class MicroleccionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(modelMapper.map(microleccionRegistrada, MicroleccionDTO.class));
     }
 
+    @Operation(summary = "Buscar una microlección por su id")
     @GetMapping("/{idMicroleccion}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int idMicroleccion) {
@@ -96,6 +102,7 @@ public class MicroleccionController {
         }
     }
 
+    @Operation(summary = "Actualizar los datos de una microlección (solo ADMIN)")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> actualizar(@RequestBody MicroleccionDTO microleccionDTO) {
@@ -123,6 +130,7 @@ public class MicroleccionController {
         return ResponseEntity.ok("Microlección actualizada correctamente");
     }
 
+    @Operation(summary = "Eliminar una microlección (borrado lógico, solo ADMIN)")
     @DeleteMapping("/{idMicroleccion}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> eliminar(@PathVariable int idMicroleccion) {
@@ -140,6 +148,7 @@ public class MicroleccionController {
     }
 
     // JPQL: consejos y microlecciones por categoría (US31). Ej: /microlecciones/categoria?categoria=Ahorro
+    @Operation(summary = "Listar las microlecciones de una categoría educativa")
     @GetMapping("/categoria")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorCategoria(@RequestParam("categoria") String categoria) {
