@@ -13,4 +13,6 @@ public interface IDesafioService {
     public void eliminar(int id);
     public List<Desafio> buscarVigentes();
     public List<Desafio> buscarPorEdadMinima(int edad);
+    // true si todavía tiene participantes activos (no se puede eliminar)
+    public boolean tieneRegistrosActivos(int id);
 }

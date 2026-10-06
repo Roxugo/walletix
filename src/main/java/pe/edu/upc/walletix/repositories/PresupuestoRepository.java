@@ -4,6 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upc.walletix.entities.Presupuesto;
 
 
@@ -27,4 +29,13 @@ public interface PresupuestoRepository extends JpaRepository<Presupuesto, Intege
             @Param("mes") int mes,
             @Param("anio") int anio
     );
+
+    // Borrado lógico en cascada: al eliminar un usuario se dan de baja sus registros
+    @Transactional
+    @Modifying
+    @Query("UPDATE Presupuesto presupuesto SET presupuesto.estado = 0 WHERE presupuesto.usuario.idUsuario = :idUsuario")
+    void darDeBajaPorUsuario(@Param("idUsuario") int idUsuario);
+
+    // Para no eliminar una categoría que todavía tiene presupuestos activos
+    boolean existsByCategoriaIdCategoriaAndEstado(int idCategoria, int estado);
 }

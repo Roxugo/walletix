@@ -11,6 +11,7 @@ public class PreguntaQuizDTO {
     private String opcionDPreguntaQuiz;
     private String opcionCorrectaPreguntaQuiz;
     private String explicacionPreguntaQuiz;
+    private int estadoPreguntaQuiz = 1;
 
     public int getIdPreguntaQuiz() {
         return idPreguntaQuiz;
@@ -82,5 +83,13 @@ public class PreguntaQuizDTO {
 
     public void setExplicacionPreguntaQuiz(String explicacionPreguntaQuiz) {
         this.explicacionPreguntaQuiz = explicacionPreguntaQuiz;
+    }
+
+    public int getEstadoPreguntaQuiz() {
+        return estadoPreguntaQuiz;
+    }
+
+    public void setEstadoPreguntaQuiz(int estadoPreguntaQuiz) {
+        this.estadoPreguntaQuiz = estadoPreguntaQuiz;
     }
 }

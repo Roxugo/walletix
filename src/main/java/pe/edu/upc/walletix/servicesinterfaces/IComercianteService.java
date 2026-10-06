@@ -11,4 +11,6 @@ public interface IComercianteService {
     public Optional<Comerciante> listId(int id);
     public void update(Comerciante comerciante);
     public void delete(int id);
+    // true si todavía tiene gastos activos (no se puede eliminar)
+    public boolean tieneRegistrosActivos(int id);
 }

@@ -12,4 +12,6 @@ public interface ICategoriaService {
     public void update(Categoria categoria);
     public void delete(int id);
     public List<Categoria> buscarPorTipo(String tipo);
+    // true si todavía tiene comercios, gastos, ingresos o presupuestos activos (no se puede eliminar)
+    public boolean tieneRegistrosActivos(int id);
 }

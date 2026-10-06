@@ -7,6 +7,7 @@ public class IntentoQuizUsuarioDTO {
     private int idMicroleccion;
     private int puntajeIntentoQuizUsuario;
     private boolean aprobadoIntentoQuizUsuario;
+    private int estadoIntentoQuizUsuario = 1;
 
     public int getIdIntentoQuizUsuario() {
         return idIntentoQuizUsuario;
@@ -46,5 +47,13 @@ public class IntentoQuizUsuarioDTO {
 
     public void setAprobadoIntentoQuizUsuario(boolean aprobadoIntentoQuizUsuario) {
         this.aprobadoIntentoQuizUsuario = aprobadoIntentoQuizUsuario;
+    }
+
+    public int getEstadoIntentoQuizUsuario() {
+        return estadoIntentoQuizUsuario;
+    }
+
+    public void setEstadoIntentoQuizUsuario(int estadoIntentoQuizUsuario) {
+        this.estadoIntentoQuizUsuario = estadoIntentoQuizUsuario;
     }
 }

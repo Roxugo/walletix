@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pe.edu.upc.walletix.entities.Microleccion;
 import pe.edu.upc.walletix.repositories.IMicroleccionRepository;
+import pe.edu.upc.walletix.repositories.IPreguntaQuizRepository;
+import pe.edu.upc.walletix.repositories.IIntentoQuizUsuarioRepository;
 import pe.edu.upc.walletix.servicesinterfaces.IMicroleccionService;
 
 import java.util.List;
@@ -14,6 +16,10 @@ public class MicroleccionServiceImplement implements IMicroleccionService {
 
     @Autowired
     private IMicroleccionRepository microleccionRepository;
+    @Autowired
+    private IPreguntaQuizRepository preguntaQuizRepository;
+    @Autowired
+    private IIntentoQuizUsuarioRepository intentoQuizUsuarioRepository;
 
     @Override
     public List<Microleccion> list() {
@@ -50,5 +56,11 @@ public class MicroleccionServiceImplement implements IMicroleccionService {
     @Override
     public List<Microleccion> buscarPorCategoria(String categoria) {
         return microleccionRepository.buscarPorCategoria(categoria);
+    }
+
+    @Override
+    public boolean tieneRegistrosActivos(int id) {
+        return preguntaQuizRepository.existsByMicroleccionIdMicroleccionAndEstadoPreguntaQuiz(id, 1)
+                || intentoQuizUsuarioRepository.existsByMicroleccionIdMicroleccionAndEstadoIntentoQuizUsuario(id, 1);
     }
 }

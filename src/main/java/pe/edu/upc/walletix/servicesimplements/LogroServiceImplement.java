@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pe.edu.upc.walletix.entities.Logro;
 import pe.edu.upc.walletix.repositories.ILogroRepository;
+import pe.edu.upc.walletix.repositories.IUsuarioLogroRepository;
 import pe.edu.upc.walletix.servicesinterfaces.ILogroService;
 
 import java.util.List;
@@ -13,6 +14,8 @@ import java.util.Optional;
 public class LogroServiceImplement implements ILogroService {
     @Autowired
     private ILogroRepository logroRepository;
+    @Autowired
+    private IUsuarioLogroRepository usuarioLogroRepository;
 
     @Override
     public List<Logro> list() {
@@ -42,5 +45,10 @@ public class LogroServiceImplement implements ILogroService {
             logro.setEstadoLogro(0); // Inactivar con 0 (Soft delete)
             logroRepository.save(logro); // Guardar cambio
         }
+    }
+
+    @Override
+    public boolean tieneRegistrosActivos(int id) {
+        return usuarioLogroRepository.existsByLogroIdLogroAndEstadoUsuarioLogro(id, 1);
     }
 }

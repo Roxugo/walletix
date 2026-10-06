@@ -17,4 +17,7 @@ public interface IPreguntaQuizRepository extends JpaRepository<PreguntaQuiz, Int
 
     // Preguntas activas del quiz de una microlección (Spring arma la consulta por el nombre del método)
     List<PreguntaQuiz> findByMicroleccionIdMicroleccionAndEstadoPreguntaQuiz(int idMicroleccion, Integer estadoPreguntaQuiz);
+
+    // Para no eliminar una microlección que todavía tiene preguntas activas
+    boolean existsByMicroleccionIdMicroleccionAndEstadoPreguntaQuiz(int idMicroleccion, Integer estadoPreguntaQuiz);
 }

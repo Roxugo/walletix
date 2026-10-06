@@ -1,26 +1,27 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.MicroleccionDTO;
 import pe.edu.upc.walletix.entities.Microleccion;
 import pe.edu.upc.walletix.servicesinterfaces.IMicroleccionService;
-import pe.edu.upc.walletix.servicesinterfaces.IPreguntaQuizService;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Microlecciones", description = "Lecciones cortas de educación financiera")
 @RestController
 @RequestMapping("/microlecciones")
 public class MicroleccionController {
     @Autowired
     private IMicroleccionService microleccionService;
-    @Autowired
-    private IPreguntaQuizService preguntaQuizService;
 
     private boolean estaVacio(String texto) {
         return texto == null || texto.isBlank();
@@ -58,7 +59,9 @@ public class MicroleccionController {
         return null;
     }
 
+    @Operation(summary = "Listar las microlecciones activas")
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<MicroleccionDTO>> listar() {
         ModelMapper modelMapper = new ModelMapper();
         List<MicroleccionDTO> listaMicrolecciones = microleccionService.list().stream()
@@ -67,7 +70,9 @@ public class MicroleccionController {
         return ResponseEntity.ok(listaMicrolecciones);
     }
 
+    @Operation(summary = "Registrar una microlección (solo ADMIN)")
     @PostMapping("/web")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> registrar(@RequestBody MicroleccionDTO microleccionDTO) {
         String error = validar(microleccionDTO);
         if (error != null) {
@@ -80,7 +85,9 @@ public class MicroleccionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(modelMapper.map(microleccionRegistrada, MicroleccionDTO.class));
     }
 
+    @Operation(summary = "Buscar una microlección por su id")
     @GetMapping("/{idMicroleccion}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int idMicroleccion) {
         ModelMapper modelMapper = new ModelMapper();
         Optional<Microleccion> microleccion = microleccionService.listId(idMicroleccion);
@@ -92,7 +99,9 @@ public class MicroleccionController {
         }
     }
 
+    @Operation(summary = "Actualizar los datos de una microlección (solo ADMIN)")
     @PutMapping("/actualiza")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> actualizar(@RequestBody MicroleccionDTO microleccionDTO) {
         String error = validar(microleccionDTO);
         if (error != null) {
@@ -118,23 +127,28 @@ public class MicroleccionController {
         return ResponseEntity.ok("Microlección actualizada correctamente");
     }
 
+    @Operation(summary = "Eliminar una microlección (borrado lógico, solo ADMIN)")
     @DeleteMapping("/{idMicroleccion}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> eliminar(@PathVariable int idMicroleccion) {
         Optional<Microleccion> microleccion = microleccionService.listId(idMicroleccion);
         if (microleccion.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Microlección no encontrada");
         }
-        if (!preguntaQuizService.listarPorMicroleccion(idMicroleccion).isEmpty()) {
+        // No se elimina un catálogo del que todavía dependen registros activos
+        if (microleccionService.tieneRegistrosActivos(idMicroleccion)) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("No se puede eliminar: la microlección tiene preguntas activas");
+                    .body("No se puede eliminar: la microlección tiene preguntas o intentos de quiz activos");
         }
         microleccionService.delete(idMicroleccion);
         return ResponseEntity.ok("Microlección eliminada correctamente");
     }
 
     // JPQL: consejos y microlecciones por categoría (US31). Ej: /microlecciones/categoria?categoria=Ahorro
+    @Operation(summary = "Listar las microlecciones de una categoría educativa")
     @GetMapping("/categoria")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorCategoria(@RequestParam("categoria") String categoria) {
         ModelMapper modelMapper = new ModelMapper();
         List<MicroleccionDTO> listaMicrolecciones = microleccionService.buscarPorCategoria(categoria).stream()

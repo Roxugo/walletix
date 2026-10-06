@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -7,6 +9,9 @@ public class UsuarioDTO {
     private int idUsuario;
     private String nombreUsuario;
     private String correoUsuario;
+    // Solo se recibe (al registrarse); nunca se devuelve en las respuestas
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String contrasenaUsuario;
     private int telefonoUsuario;
     private LocalDate fechaNacimientoUsuario;
     private String segmentoUsuario;
@@ -84,5 +89,13 @@ public class UsuarioDTO {
 
     public void setEstadoUsuario(int estadoUsuario) {
         this.estadoUsuario = estadoUsuario;
+    }
+
+    public String getContrasenaUsuario() {
+        return contrasenaUsuario;
+    }
+
+    public void setContrasenaUsuario(String contrasenaUsuario) {
+        this.contrasenaUsuario = contrasenaUsuario;
     }
 }
