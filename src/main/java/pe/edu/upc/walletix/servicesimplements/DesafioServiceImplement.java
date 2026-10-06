@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pe.edu.upc.walletix.entities.Desafio;
 import pe.edu.upc.walletix.repositories.IDesafioRepository;
+import pe.edu.upc.walletix.repositories.IUsuarioDesafioRepository;
 import pe.edu.upc.walletix.servicesinterfaces.IDesafioService;
 
 import java.util.List;
@@ -14,6 +15,8 @@ public class DesafioServiceImplement implements IDesafioService {
 
     @Autowired
     private IDesafioRepository desafioRepository;
+    @Autowired
+    private IUsuarioDesafioRepository usuarioDesafioRepository;
 
     @Override
     public List<Desafio> listar() {
@@ -52,5 +55,10 @@ public class DesafioServiceImplement implements IDesafioService {
     @Override
     public List<Desafio> buscarPorEdadMinima(int edad) {
         return desafioRepository.buscarPorEdadMinima(edad);
+    }
+
+    @Override
+    public boolean tieneRegistrosActivos(int id) {
+        return usuarioDesafioRepository.existsByDesafioIdDesafioAndEstado(id, 1);
     }
 }

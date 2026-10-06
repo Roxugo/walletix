@@ -3,6 +3,9 @@ package pe.edu.upc.walletix.repositories;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upc.walletix.entities.UsuarioLogro;
 
 import java.util.List;
@@ -27,4 +30,13 @@ public interface IUsuarioLogroRepository extends JpaRepository<UsuarioLogro, Int
             "GROUP BY l.id_logro, l.nombre_logro " +
             "ORDER BY COUNT(ul.id_usuario_logro) DESC", nativeQuery = true)
     List<String[]> logrosMasObtenidos();
+
+    // Borrado lógico en cascada: al eliminar un usuario se dan de baja sus registros
+    @Transactional
+    @Modifying
+    @Query("UPDATE UsuarioLogro usuarioLogro SET usuarioLogro.estadoUsuarioLogro = 0 WHERE usuarioLogro.usuario.idUsuario = :idUsuario")
+    void darDeBajaPorUsuario(@Param("idUsuario") int idUsuario);
+
+    // Para no eliminar un logro que todavía tienen usuarios
+    boolean existsByLogroIdLogroAndEstadoUsuarioLogro(int idLogro, int estadoUsuarioLogro);
 }

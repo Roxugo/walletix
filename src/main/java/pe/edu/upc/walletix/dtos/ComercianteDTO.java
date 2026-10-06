@@ -6,6 +6,7 @@ public class ComercianteDTO {
     private int idCategoria;
     private String nombreComerciante;
     private String urlLogoComerciante;
+    private int estadoComerciante = 1;
 
     public int getIdComerciante() {
         return idComerciante;
@@ -37,5 +38,13 @@ public class ComercianteDTO {
 
     public void setUrlLogoComerciante(String urlLogoComerciante) {
         this.urlLogoComerciante = urlLogoComerciante;
+    }
+
+    public int getEstadoComerciante() {
+        return estadoComerciante;
+    }
+
+    public void setEstadoComerciante(int estadoComerciante) {
+        this.estadoComerciante = estadoComerciante;
     }
 }

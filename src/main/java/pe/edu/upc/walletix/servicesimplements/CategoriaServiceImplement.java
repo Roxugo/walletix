@@ -4,6 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pe.edu.upc.walletix.entities.Categoria;
 import pe.edu.upc.walletix.repositories.ICategoriaRepository;
+import pe.edu.upc.walletix.repositories.IComercianteRepository;
+import pe.edu.upc.walletix.repositories.IGastoRepository;
+import pe.edu.upc.walletix.repositories.IngresoRepository;
+import pe.edu.upc.walletix.repositories.PresupuestoRepository;
 import pe.edu.upc.walletix.servicesinterfaces.ICategoriaService;
 
 import java.util.List;
@@ -14,6 +18,14 @@ public class CategoriaServiceImplement implements ICategoriaService {
 
     @Autowired
     private ICategoriaRepository categoriaRepository;
+    @Autowired
+    private IComercianteRepository comercianteRepository;
+    @Autowired
+    private IGastoRepository gastoRepository;
+    @Autowired
+    private IngresoRepository ingresoRepository;
+    @Autowired
+    private PresupuestoRepository presupuestoRepository;
 
     @Override
     public List<Categoria> list() {
@@ -50,5 +62,13 @@ public class CategoriaServiceImplement implements ICategoriaService {
     @Override
     public List<Categoria> buscarPorTipo(String tipo) {
         return categoriaRepository.buscarPorTipo(tipo);
+    }
+
+    @Override
+    public boolean tieneRegistrosActivos(int id) {
+        return comercianteRepository.existsByCategoriaIdCategoriaAndEstadoComerciante(id, 1)
+                || gastoRepository.existsByCategoriaIdCategoriaAndEstadoGasto(id, 1)
+                || ingresoRepository.existsByCategoriaIdCategoriaAndEstado(id, 1)
+                || presupuestoRepository.existsByCategoriaIdCategoriaAndEstado(id, 1);
     }
 }

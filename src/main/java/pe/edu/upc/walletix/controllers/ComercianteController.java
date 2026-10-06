@@ -1,9 +1,12 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.ComercianteDTO;
 import pe.edu.upc.walletix.entities.Categoria;
@@ -15,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Comercios", description = "Comercios donde se realizan los gastos")
 @RestController
 @RequestMapping("/comercios")
 public class ComercianteController {
@@ -38,7 +42,9 @@ public class ComercianteController {
     }
 
 
+    @Operation(summary = "Listar los comercios activos")
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<List<ComercianteDTO>> listar() {
         ModelMapper modelMapper = new ModelMapper();
         List<ComercianteDTO> listaComerciantes = comercianteService.list().stream()
@@ -47,7 +53,9 @@ public class ComercianteController {
         return ResponseEntity.ok(listaComerciantes);
     }
 
+    @Operation(summary = "Registrar un comercio (solo ADMIN)")
     @PostMapping("/web")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> registrar(@RequestBody ComercianteDTO comercianteDTO) {
         String error = validar(comercianteDTO);
         if (error != null) {
@@ -66,7 +74,9 @@ public class ComercianteController {
         return ResponseEntity.status(HttpStatus.CREATED).body(modelMapper.map(comercianteRegistrado, ComercianteDTO.class));
     }
 
+    @Operation(summary = "Buscar un comercio por su id")
     @GetMapping("/{idComerciante}")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int idComerciante) {
         ModelMapper modelMapper = new ModelMapper();
         Optional<Comerciante> comerciante = comercianteService.listId(idComerciante);
@@ -78,7 +88,9 @@ public class ComercianteController {
         }
     }
 
+    @Operation(summary = "Actualizar los datos de un comercio (solo ADMIN)")
     @PutMapping("/actualiza")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> actualizar(@RequestBody ComercianteDTO comercianteDTO) {
         String error = validar(comercianteDTO);
         if (error != null) {
@@ -102,10 +114,17 @@ public class ComercianteController {
         return ResponseEntity.ok("Comercio actualizado correctamente");
     }
 
+    @Operation(summary = "Eliminar un comercio (borrado lógico, solo ADMIN)")
     @DeleteMapping("/{idComerciante}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> eliminar(@PathVariable int idComerciante) {
         Optional<Comerciante> comerciante = comercianteService.listId(idComerciante);
         if (comerciante.isPresent()) {
+            // No se elimina un catálogo del que todavía dependen registros activos
+            if (comercianteService.tieneRegistrosActivos(idComerciante)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("No se puede eliminar: el comercio tiene gastos activos");
+            }
             comercianteService.delete(idComerciante);
             return ResponseEntity.ok("Comercio eliminado correctamente");
         } else {

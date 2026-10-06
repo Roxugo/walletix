@@ -12,4 +12,6 @@ public interface IMicroleccionService {
     public void update(Microleccion microleccion);
     public void delete(int id);
     public List<Microleccion> buscarPorCategoria(String categoria);
+    // true si todavía tiene preguntas o intentos de quiz activos (no se puede eliminar)
+    public boolean tieneRegistrosActivos(int id);
 }

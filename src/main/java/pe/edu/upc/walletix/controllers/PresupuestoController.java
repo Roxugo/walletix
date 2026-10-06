@@ -1,9 +1,13 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.PresupuestoDto;
 import pe.edu.upc.walletix.entities.Presupuesto;
@@ -12,14 +16,19 @@ import pe.edu.upc.walletix.entities.Categoria;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
 import pe.edu.upc.walletix.servicesinterfaces.ICategoriaService;
 import pe.edu.upc.walletix.servicesinterfaces.PresupuestoServiceInterface;
+import pe.edu.upc.walletix.securities.UsuarioActual;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Presupuestos", description = "Presupuestos mensuales del usuario por categoría")
 @RestController
 @RequestMapping("/presupuestos")
 public class PresupuestoController {
+    // Usuario que inició sesión: un USUARIO solo trabaja con sus datos, un ADMIN con todos
+    @Autowired
+    private UsuarioActual usuarioActual;
     @Autowired
     private PresupuestoServiceInterface presupuestoService;
 
@@ -29,24 +38,35 @@ public class PresupuestoController {
     @Autowired
     private ICategoriaService categoriaService;
 
+    @Operation(summary = "Listar los presupuestos activos")
     @GetMapping
-    public ResponseEntity<List<PresupuestoDto>> listar() {
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    public ResponseEntity<List<PresupuestoDto>> listar(Authentication autenticacion) {
+        // Un USUARIO solo ve sus propios registros; un ADMIN ve todos
+        boolean esAdmin = usuarioActual.esAdmin(autenticacion);
+        int idActual = usuarioActual.id(autenticacion);
         ModelMapper mapper = new ModelMapper();
         List<PresupuestoDto> lista = presupuestoService.listar().stream()
+                .filter(presupuesto -> esAdmin || presupuesto.getUsuario().getIdUsuario() == idActual)
                 .map(presupuesto -> toDto(presupuesto, mapper))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(lista);
     }
 
+    @Operation(summary = "Registrar un presupuesto mensual")
     @PostMapping("/web")
-    public ResponseEntity<?> registrar(@RequestBody PresupuestoDto dto) {
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    public ResponseEntity<?> registrar(@RequestBody PresupuestoDto dto, Authentication autenticacion) {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
+        if (!usuarioActual.puedeGestionar(autenticacion, dto.getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
 
         Optional<Usuario> usuario = usuarioService.listId(dto.getIdUsuario());
         if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
         Optional<Categoria> categoria = categoriaService.listId(dto.getIdCategoria());
         if (categoria.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Categoría no encontrada");
+        if (!categoria.get().getTipoCategoria().equals("gasto")) return ResponseEntity.badRequest().body("La categoría debe ser de tipo gasto");
+        if (!usuarioActual.categoriaDisponible(categoria.get(), dto.getIdUsuario())) return ResponseEntity.badRequest().body("La categoría no pertenece al usuario");
 
         Presupuesto presupuesto = toEntity(dto);
         presupuesto.setUsuario(usuario.get());
@@ -55,24 +75,34 @@ public class PresupuestoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toDto(registrado, new ModelMapper()));
     }
 
+    @Operation(summary = "Buscar un presupuesto por su id")
     @GetMapping("/{id}")
-    public ResponseEntity<?> buscarPorId(@PathVariable int id) {
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    public ResponseEntity<?> buscarPorId(@PathVariable int id, Authentication autenticacion) {
         Optional<Presupuesto> presupuesto = presupuestoService.buscarPorId(id);
         if (presupuesto.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Presupuesto no encontrado");
+        if (!usuarioActual.puedeGestionar(autenticacion, presupuesto.get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
         return ResponseEntity.ok(toDto(presupuesto.get(), new ModelMapper()));
     }
 
+    @Operation(summary = "Actualizar los datos de un presupuesto")
     @PutMapping("/actualiza")
-    public ResponseEntity<String> actualizar(@RequestBody PresupuestoDto dto) {
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    public ResponseEntity<String> actualizar(@RequestBody PresupuestoDto dto, Authentication autenticacion) {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
 
         Optional<Presupuesto> existente = presupuestoService.buscarPorId(dto.getIdPresupuesto());
         if (existente.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Presupuesto no encontrado");
+        // Debe ser dueño del registro y no puede pasárselo a otro usuario
+        if (!usuarioActual.puedeGestionar(autenticacion, existente.get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+        if (!usuarioActual.puedeGestionar(autenticacion, dto.getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
         Optional<Usuario> usuario = usuarioService.listId(dto.getIdUsuario());
         if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
         Optional<Categoria> categoria = categoriaService.listId(dto.getIdCategoria());
         if (categoria.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Categoría no encontrada");
+        if (!categoria.get().getTipoCategoria().equals("gasto")) return ResponseEntity.badRequest().body("La categoría debe ser de tipo gasto");
+        if (!usuarioActual.categoriaDisponible(categoria.get(), dto.getIdUsuario())) return ResponseEntity.badRequest().body("La categoría no pertenece al usuario");
 
         Presupuesto presupuesto = existente.get();
         presupuesto.setMes(dto.getMes());
@@ -84,11 +114,14 @@ public class PresupuestoController {
         return ResponseEntity.ok("Presupuesto actualizado correctamente");
     }
 
+    @Operation(summary = "Eliminar un presupuesto (borrado lógico)")
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> eliminar(@PathVariable int id) {
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    public ResponseEntity<String> eliminar(@PathVariable int id, Authentication autenticacion) {
         if (presupuestoService.buscarPorId(id).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Presupuesto no encontrado");
         }
+        if (!usuarioActual.puedeGestionar(autenticacion, presupuestoService.buscarPorId(id).get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
         presupuestoService.eliminar(id);
         return ResponseEntity.ok("Presupuesto eliminado correctamente");
     }

@@ -14,4 +14,7 @@ public interface IComercianteRepository extends JpaRepository<Comerciante, Integ
     List<Comerciante> findByEstadoComerciante(Integer estadoComerciante);
 
     Optional<Comerciante> findByIdComercianteAndEstadoComerciante(int idComerciante, Integer estadoComerciante);
+
+    // Para no eliminar una categoría que todavía tiene comercios activos
+    boolean existsByCategoriaIdCategoriaAndEstadoComerciante(int idCategoria, Integer estadoComerciante);
 }

@@ -1,43 +1,61 @@
 package pe.edu.upc.walletix.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.MetaAhorroDto;
 import pe.edu.upc.walletix.entities.MetaAhorro;
 import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
 import pe.edu.upc.walletix.servicesinterfaces.MetaAhorroServiceInterface;
+import pe.edu.upc.walletix.securities.UsuarioActual;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Tag(name = "Metas de ahorro", description = "Metas de ahorro del usuario")
 @RestController
 @RequestMapping("/metas-ahorro")
 public class MetaAhorroController {
+    // Usuario que inició sesión: un USUARIO solo trabaja con sus datos, un ADMIN con todos
+    @Autowired
+    private UsuarioActual usuarioActual;
     @Autowired
     private MetaAhorroServiceInterface metaAhorroService;
 
     @Autowired
     private IUsuarioService usuarioService;
 
+    @Operation(summary = "Listar las metas de ahorro activas")
     @GetMapping
-    public ResponseEntity<List<MetaAhorroDto>> listar() {
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    public ResponseEntity<List<MetaAhorroDto>> listar(Authentication autenticacion) {
+        // Un USUARIO solo ve sus propios registros; un ADMIN ve todos
+        boolean esAdmin = usuarioActual.esAdmin(autenticacion);
+        int idActual = usuarioActual.id(autenticacion);
         ModelMapper mapper = new ModelMapper();
         List<MetaAhorroDto> lista = metaAhorroService.listar().stream()
+                .filter(meta -> esAdmin || meta.getUsuario().getIdUsuario() == idActual)
                 .map(meta -> toDto(meta, mapper))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(lista);
     }
 
+    @Operation(summary = "Registrar una meta de ahorro")
     @PostMapping("/web")
-    public ResponseEntity<?> registrar(@RequestBody MetaAhorroDto dto) {
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    public ResponseEntity<?> registrar(@RequestBody MetaAhorroDto dto, Authentication autenticacion) {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
+        if (!usuarioActual.puedeGestionar(autenticacion, dto.getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
 
         Optional<Usuario> usuario = usuarioService.listId(dto.getIdUsuario());
         if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
@@ -47,20 +65,28 @@ public class MetaAhorroController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toDto(registrada, new ModelMapper()));
     }
 
+    @Operation(summary = "Buscar una meta de ahorro por su id")
     @GetMapping("/{id}")
-    public ResponseEntity<?> buscarPorId(@PathVariable int id) {
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    public ResponseEntity<?> buscarPorId(@PathVariable int id, Authentication autenticacion) {
         Optional<MetaAhorro> meta = metaAhorroService.buscarPorId(id);
         if (meta.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Meta de ahorro no encontrada");
+        if (!usuarioActual.puedeGestionar(autenticacion, meta.get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
         return ResponseEntity.ok(toDto(meta.get(), new ModelMapper()));
     }
 
+    @Operation(summary = "Actualizar los datos de una meta de ahorro")
     @PutMapping("/actualiza")
-    public ResponseEntity<String> actualizar(@RequestBody MetaAhorroDto dto) {
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    public ResponseEntity<String> actualizar(@RequestBody MetaAhorroDto dto, Authentication autenticacion) {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
 
         Optional<MetaAhorro> existente = metaAhorroService.buscarPorId(dto.getIdMetaAhorro());
         if (existente.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Meta de ahorro no encontrada");
+        // Debe ser dueño del registro y no puede pasárselo a otro usuario
+        if (!usuarioActual.puedeGestionar(autenticacion, existente.get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+        if (!usuarioActual.puedeGestionar(autenticacion, dto.getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
         Optional<Usuario> usuario = usuarioService.listId(dto.getIdUsuario());
         if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
 
@@ -75,11 +101,14 @@ public class MetaAhorroController {
         return ResponseEntity.ok("Meta de ahorro actualizada correctamente");
     }
 
+    @Operation(summary = "Eliminar una meta de ahorro (borrado lógico)")
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> eliminar(@PathVariable int id) {
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    public ResponseEntity<String> eliminar(@PathVariable int id, Authentication autenticacion) {
         if (metaAhorroService.buscarPorId(id).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Meta de ahorro no encontrada");
         }
+        if (!usuarioActual.puedeGestionar(autenticacion, metaAhorroService.buscarPorId(id).get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
         metaAhorroService.eliminar(id);
         return ResponseEntity.ok("Meta de ahorro eliminada correctamente");
     }

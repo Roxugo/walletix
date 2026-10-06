@@ -4,6 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upc.walletix.entities.IntentoQuizUsuario;
 
 import java.util.List;
@@ -30,4 +32,13 @@ public interface IIntentoQuizUsuarioRepository extends JpaRepository<IntentoQuiz
             "GROUP BY microleccion.id_microleccion, microleccion.titulo_microleccion " +
             "ORDER BY microleccion.id_microleccion", nativeQuery = true)
     List<Object[]> progresoPorUsuario(@Param("idUsuario") int idUsuario);
+
+    // Borrado lógico en cascada: al eliminar un usuario se dan de baja sus registros
+    @Transactional
+    @Modifying
+    @Query("UPDATE IntentoQuizUsuario intento SET intento.estadoIntentoQuizUsuario = 0 WHERE intento.usuario.idUsuario = :idUsuario")
+    void darDeBajaPorUsuario(@Param("idUsuario") int idUsuario);
+
+    // Para no eliminar una microlección que todavía tiene intentos activos
+    boolean existsByMicroleccionIdMicroleccionAndEstadoIntentoQuizUsuario(int idMicroleccion, Integer estadoIntentoQuizUsuario);
 }

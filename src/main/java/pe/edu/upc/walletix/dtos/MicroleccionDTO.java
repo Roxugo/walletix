@@ -13,6 +13,7 @@ public class MicroleccionDTO {
     private String tituloQuizMicroleccion;
     private int puntajeAprobatorioMicroleccion;
     private int puntosRecompensaMicroleccion;
+    private int estadoMicroleccion = 1;
 
     public int getIdMicroleccion() {
         return idMicroleccion;
@@ -100,5 +101,13 @@ public class MicroleccionDTO {
 
     public void setPuntosRecompensaMicroleccion(int puntosRecompensaMicroleccion) {
         this.puntosRecompensaMicroleccion = puntosRecompensaMicroleccion;
+    }
+
+    public int getEstadoMicroleccion() {
+        return estadoMicroleccion;
+    }
+
+    public void setEstadoMicroleccion(int estadoMicroleccion) {
+        this.estadoMicroleccion = estadoMicroleccion;
     }
 }

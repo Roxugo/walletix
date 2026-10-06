@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pe.edu.upc.walletix.entities.Comerciante;
 import pe.edu.upc.walletix.repositories.IComercianteRepository;
+import pe.edu.upc.walletix.repositories.IGastoRepository;
 import pe.edu.upc.walletix.servicesinterfaces.IComercianteService;
 
 import java.util.List;
@@ -14,6 +15,8 @@ public class ComercianteServiceImplement implements IComercianteService {
 
     @Autowired
     private IComercianteRepository comercianteRepository;
+    @Autowired
+    private IGastoRepository gastoRepository;
 
     @Override
     public List<Comerciante> list() {
@@ -45,5 +48,10 @@ public class ComercianteServiceImplement implements IComercianteService {
             comerciante.get().setEstadoComerciante(0);
             comercianteRepository.save(comerciante.get());
         }
+    }
+
+    @Override
+    public boolean tieneRegistrosActivos(int id) {
+        return gastoRepository.existsByComercianteIdComercianteAndEstadoGasto(id, 1);
     }
 }

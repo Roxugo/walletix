@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "Usuario")
@@ -15,7 +17,7 @@ public class Usuario {
     @Column(name = "nombreUsuario", length = 50, nullable = false)
     private String nombreUsuario;
 
-    @Column(name = "correoUsuario", length = 50, nullable = false)
+    @Column(name = "correoUsuario", length = 50, nullable = false, unique = true)
     private String correoUsuario;
 
     @Column(name = "telefonoUsuario", nullable = false)
@@ -35,6 +37,14 @@ public class Usuario {
 
     @Column(name = "estadoUsuario", nullable = false)
     private int estadoUsuario = 1;
+
+    // Se guarda cifrada con BCrypt; el correo funciona como usuario para el login
+    @Column(name = "contrasenaUsuario", length = 200)
+    private String contrasenaUsuario;
+
+    // Roles del usuario (USUARIO, ADMIN). Se cargan junto al usuario para el login
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.EAGER)
+    private List<Rol> roles = new ArrayList<>();
 
     public Usuario() {
     }
@@ -121,5 +131,21 @@ public class Usuario {
 
     public void setEstadoUsuario(int estadoUsuario) {
         this.estadoUsuario = estadoUsuario;
+    }
+
+    public String getContrasenaUsuario() {
+        return contrasenaUsuario;
+    }
+
+    public void setContrasenaUsuario(String contrasenaUsuario) {
+        this.contrasenaUsuario = contrasenaUsuario;
+    }
+
+    public List<Rol> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Rol> roles) {
+        this.roles = roles;
     }
 }
