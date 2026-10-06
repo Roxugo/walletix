@@ -120,6 +120,11 @@ public class ComercianteController {
     public ResponseEntity<String> eliminar(@PathVariable int idComerciante) {
         Optional<Comerciante> comerciante = comercianteService.listId(idComerciante);
         if (comerciante.isPresent()) {
+            // No se elimina un catálogo del que todavía dependen registros activos
+            if (comercianteService.tieneRegistrosActivos(idComerciante)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("No se puede eliminar: el comercio tiene gastos activos");
+            }
             comercianteService.delete(idComerciante);
             return ResponseEntity.ok("Comercio eliminado correctamente");
         } else {

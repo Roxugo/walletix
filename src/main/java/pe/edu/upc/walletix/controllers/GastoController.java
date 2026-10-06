@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.GastoDTO;
 import pe.edu.upc.walletix.entities.Categoria;
@@ -17,6 +18,7 @@ import pe.edu.upc.walletix.servicesinterfaces.ICategoriaService;
 import pe.edu.upc.walletix.servicesinterfaces.IComercianteService;
 import pe.edu.upc.walletix.servicesinterfaces.IGastoService;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
+import pe.edu.upc.walletix.securities.UsuarioActual;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -28,6 +30,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/gastos")
 public class GastoController {
+    // Usuario que inició sesión: un USUARIO solo trabaja con sus datos, un ADMIN con todos
+    @Autowired
+    private UsuarioActual usuarioActual;
     @Autowired
     private IGastoService gastoService;
     @Autowired
@@ -78,8 +83,12 @@ public class GastoController {
     @Operation(summary = "Listar los gastos activos")
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
-    public ResponseEntity<List<GastoDTO>> listar() {
+    public ResponseEntity<List<GastoDTO>> listar(Authentication autenticacion) {
+        // Un USUARIO solo ve sus propios registros; un ADMIN ve todos
+        boolean esAdmin = usuarioActual.esAdmin(autenticacion);
+        int idActual = usuarioActual.id(autenticacion);
         List<GastoDTO> listaGastos = gastoService.list().stream()
+                .filter(gasto -> esAdmin || gasto.getUsuario().getIdUsuario() == idActual)
                 .map(gasto -> convertirADTO(gasto))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(listaGastos);
@@ -88,10 +97,13 @@ public class GastoController {
     @Operation(summary = "Registrar un gasto")
     @PostMapping("/web")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
-    public ResponseEntity<?> registrar(@RequestBody GastoDTO gastoDTO) {
+    public ResponseEntity<?> registrar(@RequestBody GastoDTO gastoDTO, Authentication autenticacion) {
         String error = validar(gastoDTO);
         if (error != null) {
             return ResponseEntity.badRequest().body(error);
+        }
+        if (!usuarioActual.puedeGestionar(autenticacion, gastoDTO.getIdUsuario())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
         }
         Optional<Usuario> usuario = usuarioService.listId(gastoDTO.getIdUsuario());
         if (usuario.isEmpty()) {
@@ -106,6 +118,9 @@ public class GastoController {
         if (!categoria.get().getTipoCategoria().equals("gasto")) {
             return ResponseEntity.badRequest()
                     .body("La categoría debe ser de tipo gasto");
+        }
+        if (!usuarioActual.categoriaDisponible(categoria.get(), gastoDTO.getIdUsuario())) {
+            return ResponseEntity.badRequest().body("La categoría no pertenece al usuario");
         }
         Optional<Comerciante> comerciante = comercianteService.listId(gastoDTO.getIdComerciante());
         if (comerciante.isEmpty()) {
@@ -125,9 +140,12 @@ public class GastoController {
     @Operation(summary = "Buscar un gasto por su id")
     @GetMapping("/{idGasto}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
-    public ResponseEntity<?> buscarPorId(@PathVariable int idGasto) {
+    public ResponseEntity<?> buscarPorId(@PathVariable int idGasto, Authentication autenticacion) {
         Optional<Gasto> gasto = gastoService.listId(idGasto);
         if (gasto.isPresent()) {
+            if (!usuarioActual.puedeGestionar(autenticacion, gasto.get().getUsuario().getIdUsuario())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            }
             return ResponseEntity.ok(convertirADTO(gasto.get()));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -138,7 +156,7 @@ public class GastoController {
     @Operation(summary = "Actualizar los datos de un gasto")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
-    public ResponseEntity<String> actualizar(@RequestBody GastoDTO gastoDTO) {
+    public ResponseEntity<String> actualizar(@RequestBody GastoDTO gastoDTO, Authentication autenticacion) {
         String error = validar(gastoDTO);
         if (error != null) {
             return ResponseEntity.badRequest().body(error);
@@ -148,6 +166,9 @@ public class GastoController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Gasto no encontrado");
         }
+        if (!usuarioActual.puedeGestionar(autenticacion, gastoExistente.get().getUsuario().getIdUsuario())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+        }
         Optional<Categoria> categoria = categoriaService.listId(gastoDTO.getIdCategoria());
         if (categoria.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -156,6 +177,9 @@ public class GastoController {
         if (!categoria.get().getTipoCategoria().equals("gasto")) {
             return ResponseEntity.badRequest()
                     .body("La categoría debe ser de tipo gasto");
+        }
+        if (!usuarioActual.categoriaDisponible(categoria.get(), gastoExistente.get().getUsuario().getIdUsuario())) {
+            return ResponseEntity.badRequest().body("La categoría no pertenece al usuario");
         }
         Optional<Comerciante> comerciante = comercianteService.listId(gastoDTO.getIdComerciante());
         if (comerciante.isEmpty()) {
@@ -178,9 +202,12 @@ public class GastoController {
     @Operation(summary = "Eliminar un gasto (borrado lógico)")
     @DeleteMapping("/{idGasto}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
-    public ResponseEntity<String> eliminar(@PathVariable int idGasto) {
+    public ResponseEntity<String> eliminar(@PathVariable int idGasto, Authentication autenticacion) {
         Optional<Gasto> gasto = gastoService.listId(idGasto);
         if (gasto.isPresent()) {
+            if (!usuarioActual.puedeGestionar(autenticacion, gasto.get().getUsuario().getIdUsuario())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            }
             gastoService.delete(idGasto);
             return ResponseEntity.ok("Gasto eliminado correctamente");
         } else {
@@ -196,7 +223,11 @@ public class GastoController {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorUsuarioYRango(@PathVariable int idUsuario,
                                                     @RequestParam LocalDate fechaInicio,
-                                                    @RequestParam LocalDate fechaFin) {
+                                                    @RequestParam LocalDate fechaFin,
+                                                    Authentication autenticacion) {
+        if (!usuarioActual.puedeGestionar(autenticacion, idUsuario)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+        }
         if (fechaInicio.isAfter(fechaFin)) {
             return ResponseEntity.badRequest()
                     .body("La fecha de inicio no puede ser posterior a la fecha de fin");

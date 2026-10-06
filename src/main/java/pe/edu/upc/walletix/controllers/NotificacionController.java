@@ -8,12 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.NotificacionDTO;
 import pe.edu.upc.walletix.entities.Notificacion;
 import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.servicesinterfaces.INotificacionService;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
+import pe.edu.upc.walletix.securities.UsuarioActual;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,10 +25,30 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/notificaciones")
 public class NotificacionController {
+    // Usuario que inició sesión: un USUARIO solo trabaja con sus datos, un ADMIN con todos
+    @Autowired
+    private UsuarioActual usuarioActual;
     @Autowired
     private INotificacionService notificacionService;
     @Autowired
     private IUsuarioService usuarioService;
+
+    private boolean estaVacio(String texto) {
+        return texto == null || texto.isBlank();
+    }
+
+    private String validar(NotificacionDTO dto) {
+        if (estaVacio(dto.getTitulo())) {
+            return "El título es obligatorio";
+        }
+        if (estaVacio(dto.getTipo())) {
+            return "El tipo es obligatorio";
+        }
+        if (estaVacio(dto.getMensaje())) {
+            return "El mensaje es obligatorio";
+        }
+        return null;
+    }
 
     private ModelMapper crearModelMapper() {
         ModelMapper modelMapper = new ModelMapper();
@@ -46,9 +68,13 @@ public class NotificacionController {
     @Operation(summary = "Listar las notificaciones activas")
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
-    public ResponseEntity<List<NotificacionDTO>> listar() {
+    public ResponseEntity<List<NotificacionDTO>> listar(Authentication autenticacion) {
+        // Un USUARIO solo ve sus propios registros; un ADMIN ve todos
+        boolean esAdmin = usuarioActual.esAdmin(autenticacion);
+        int idActual = usuarioActual.id(autenticacion);
         ModelMapper modelMapper = crearModelMapper();
         List<NotificacionDTO> listaNotificaciones = notificacionService.listar().stream()
+                .filter(notificacion -> esAdmin || notificacion.getUsuario().getIdUsuario() == idActual)
                 .map(notificacion -> convertirADTO(notificacion, modelMapper))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(listaNotificaciones);
@@ -57,7 +83,14 @@ public class NotificacionController {
     @Operation(summary = "Registrar una notificación")
     @PostMapping("/web")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
-    public ResponseEntity<?> registrar(@RequestBody NotificacionDTO notificacionDTO) {
+    public ResponseEntity<?> registrar(@RequestBody NotificacionDTO notificacionDTO, Authentication autenticacion) {
+        String errorTexto = validar(notificacionDTO);
+        if (errorTexto != null) {
+            return ResponseEntity.badRequest().body(errorTexto);
+        }
+        if (!usuarioActual.puedeGestionar(autenticacion, notificacionDTO.getIdUsuario())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+        }
         Optional<Usuario> usuario = usuarioService.listId(notificacionDTO.getIdUsuario());
         if (usuario.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -74,9 +107,12 @@ public class NotificacionController {
     @Operation(summary = "Buscar una notificación por su id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
-    public ResponseEntity<?> buscarPorId(@PathVariable int id) {
+    public ResponseEntity<?> buscarPorId(@PathVariable int id, Authentication autenticacion) {
         Optional<Notificacion> notificacion = notificacionService.buscarPorId(id);
         if (notificacion.isPresent()) {
+            if (!usuarioActual.puedeGestionar(autenticacion, notificacion.get().getUsuario().getIdUsuario())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            }
             return ResponseEntity.ok(convertirADTO(notificacion.get(), crearModelMapper()));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -87,11 +123,21 @@ public class NotificacionController {
     @Operation(summary = "Actualizar una notificación (por ejemplo, marcarla como leída)")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
-    public ResponseEntity<String> actualizar(@RequestBody NotificacionDTO notificacionDTO) {
+    public ResponseEntity<String> actualizar(@RequestBody NotificacionDTO notificacionDTO, Authentication autenticacion) {
+        String errorTexto = validar(notificacionDTO);
+        if (errorTexto != null) {
+            return ResponseEntity.badRequest().body(errorTexto);
+        }
         Optional<Notificacion> notificacionExistente = notificacionService.buscarPorId(notificacionDTO.getIdNotificacion());
         if (notificacionExistente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Notificación no encontrada");
+        }
+        if (!usuarioActual.puedeGestionar(autenticacion, notificacionExistente.get().getUsuario().getIdUsuario())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+        }
+        if (!usuarioActual.puedeGestionar(autenticacion, notificacionDTO.getIdUsuario())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
         }
         Optional<Usuario> usuario = usuarioService.listId(notificacionDTO.getIdUsuario());
         if (usuario.isEmpty()) {
@@ -111,9 +157,12 @@ public class NotificacionController {
     @Operation(summary = "Eliminar una notificación (borrado lógico)")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
-    public ResponseEntity<String> eliminar(@PathVariable int id) {
+    public ResponseEntity<String> eliminar(@PathVariable int id, Authentication autenticacion) {
         Optional<Notificacion> notificacion = notificacionService.buscarPorId(id);
         if (notificacion.isPresent()) {
+            if (!usuarioActual.puedeGestionar(autenticacion, notificacion.get().getUsuario().getIdUsuario())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            }
             notificacionService.eliminar(id);
             return ResponseEntity.ok("Notificación eliminada correctamente");
         } else {
@@ -126,7 +175,10 @@ public class NotificacionController {
     @Operation(summary = "Listar las notificaciones no leídas de un usuario")
     @GetMapping("/no-leidas/{idUsuario}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
-    public ResponseEntity<?> buscarNoLeidasPorUsuario(@PathVariable int idUsuario) {
+    public ResponseEntity<?> buscarNoLeidasPorUsuario(@PathVariable int idUsuario, Authentication autenticacion) {
+        if (!usuarioActual.puedeGestionar(autenticacion, idUsuario)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+        }
         if (usuarioService.listId(idUsuario).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
         }
@@ -141,7 +193,10 @@ public class NotificacionController {
     @Operation(summary = "Contar las notificaciones no leídas de un usuario")
     @GetMapping("/no-leidas/{idUsuario}/cantidad")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
-    public ResponseEntity<?> contarNoLeidasPorUsuario(@PathVariable int idUsuario) {
+    public ResponseEntity<?> contarNoLeidasPorUsuario(@PathVariable int idUsuario, Authentication autenticacion) {
+        if (!usuarioActual.puedeGestionar(autenticacion, idUsuario)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+        }
         if (usuarioService.listId(idUsuario).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
         }

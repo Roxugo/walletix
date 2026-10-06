@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.MicroleccionDTO;
 import pe.edu.upc.walletix.entities.Microleccion;
 import pe.edu.upc.walletix.servicesinterfaces.IMicroleccionService;
-import pe.edu.upc.walletix.servicesinterfaces.IPreguntaQuizService;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,8 +22,6 @@ import java.util.stream.Collectors;
 public class MicroleccionController {
     @Autowired
     private IMicroleccionService microleccionService;
-    @Autowired
-    private IPreguntaQuizService preguntaQuizService;
 
     private boolean estaVacio(String texto) {
         return texto == null || texto.isBlank();
@@ -139,9 +136,10 @@ public class MicroleccionController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Microlección no encontrada");
         }
-        if (!preguntaQuizService.listarPorMicroleccion(idMicroleccion).isEmpty()) {
+        // No se elimina un catálogo del que todavía dependen registros activos
+        if (microleccionService.tieneRegistrosActivos(idMicroleccion)) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("No se puede eliminar: la microlección tiene preguntas activas");
+                    .body("No se puede eliminar: la microlección tiene preguntas o intentos de quiz activos");
         }
         microleccionService.delete(idMicroleccion);
         return ResponseEntity.ok("Microlección eliminada correctamente");

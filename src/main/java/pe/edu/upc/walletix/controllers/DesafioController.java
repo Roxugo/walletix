@@ -102,6 +102,11 @@ public class DesafioController {
     public ResponseEntity<String> eliminar(@PathVariable int id) {
         Optional<Desafio> desafio = desafioService.buscarPorId(id);
         if (desafio.isPresent()) {
+            // No se elimina un catálogo del que todavía dependen registros activos
+            if (desafioService.tieneRegistrosActivos(id)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("No se puede eliminar: el desafío tiene participantes activos");
+            }
             desafioService.eliminar(id);
             return ResponseEntity.ok("Desafío eliminado correctamente");
         } else {
@@ -137,6 +142,21 @@ public class DesafioController {
     }
 
     private String validar(DesafioDTO desafioDTO) {
+        if (desafioDTO.getTitulo() == null || desafioDTO.getTitulo().isBlank()) {
+            return "El título es obligatorio";
+        }
+        if (desafioDTO.getDescripcion() == null || desafioDTO.getDescripcion().isBlank()) {
+            return "La descripción es obligatoria";
+        }
+        if (desafioDTO.getPuntosRecompensa() < 0) {
+            return "Los puntos de recompensa no pueden ser negativos";
+        }
+        if (desafioDTO.getEdadMinima() < 0) {
+            return "La edad mínima no puede ser negativa";
+        }
+        if (desafioDTO.getFechaInicio() == null || desafioDTO.getFechaFin() == null) {
+            return "Las fechas de inicio y fin son obligatorias";
+        }
         if (desafioDTO.getMontoObjetivo() == null || desafioDTO.getMontoObjetivo().compareTo(BigDecimal.ZERO) <= 0) {
             return "El monto objetivo debe ser mayor a 0";
         }

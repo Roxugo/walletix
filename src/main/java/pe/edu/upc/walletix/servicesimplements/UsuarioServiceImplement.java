@@ -8,7 +8,16 @@ import org.springframework.stereotype.Service;
 import pe.edu.upc.walletix.entities.Auditoria;
 import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.repositories.IAuditoriaRepository;
+import pe.edu.upc.walletix.repositories.ICategoriaRepository;
+import pe.edu.upc.walletix.repositories.IGastoRepository;
+import pe.edu.upc.walletix.repositories.IIntentoQuizUsuarioRepository;
+import pe.edu.upc.walletix.repositories.INotificacionRepository;
+import pe.edu.upc.walletix.repositories.IUsuarioDesafioRepository;
+import pe.edu.upc.walletix.repositories.IUsuarioLogroRepository;
 import pe.edu.upc.walletix.repositories.IUsuarioRepository;
+import pe.edu.upc.walletix.repositories.IngresoRepository;
+import pe.edu.upc.walletix.repositories.MetaAhorroRepository;
+import pe.edu.upc.walletix.repositories.PresupuestoRepository;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
 
 import java.time.LocalDateTime;
@@ -23,6 +32,26 @@ public class UsuarioServiceImplement implements IUsuarioService {
 
     @Autowired
     private IAuditoriaRepository auditoriaRepository;
+
+    // Registros que pertenecen a un usuario: se dan de baja junto con él
+    @Autowired
+    private IGastoRepository gastoRepository;
+    @Autowired
+    private IngresoRepository ingresoRepository;
+    @Autowired
+    private PresupuestoRepository presupuestoRepository;
+    @Autowired
+    private MetaAhorroRepository metaAhorroRepository;
+    @Autowired
+    private ICategoriaRepository categoriaRepository;
+    @Autowired
+    private INotificacionRepository notificacionRepository;
+    @Autowired
+    private IUsuarioLogroRepository usuarioLogroRepository;
+    @Autowired
+    private IUsuarioDesafioRepository usuarioDesafioRepository;
+    @Autowired
+    private IIntentoQuizUsuarioRepository intentoQuizUsuarioRepository;
 
     // Usuario que inició sesión y está haciendo la acción (sale del token JWT).
     // Si no hay sesión, se usa el usuario afectado
@@ -84,6 +113,18 @@ public class UsuarioServiceImplement implements IUsuarioService {
             Usuario eliminadoPor = usuarioQueRealizaLaAccion(usuario);
             usuario.setEstadoUsuario(0); // Inactivar usuario (Soft delete con 0)
             usuarioRepository.save(usuario); // Guardar cambio
+
+            // Borrado lógico en cascada: sus datos dejan de aparecer junto con él
+            // (las categorías predeterminadas no se tocan porque las usan todos)
+            gastoRepository.darDeBajaPorUsuario(id);
+            ingresoRepository.darDeBajaPorUsuario(id);
+            presupuestoRepository.darDeBajaPorUsuario(id);
+            metaAhorroRepository.darDeBajaPorUsuario(id);
+            categoriaRepository.darDeBajaPorUsuario(id);
+            notificacionRepository.darDeBajaPorUsuario(id);
+            usuarioLogroRepository.darDeBajaPorUsuario(id);
+            usuarioDesafioRepository.darDeBajaPorUsuario(id);
+            intentoQuizUsuarioRepository.darDeBajaPorUsuario(id);
 
             // Registro automático en Auditoría (Fase 3: Eliminación / Baja lógica)
             List<Auditoria> auditorias = auditoriaRepository.findByUsuarioRegistroIdUsuario(id);

@@ -4,6 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upc.walletix.entities.Gasto;
 
 import java.time.LocalDate;
@@ -27,4 +29,15 @@ public interface IGastoRepository extends JpaRepository<Gasto, Integer> {
     List<Gasto> buscarPorUsuarioYRango(@Param("idUsuario") int idUsuario,
                                        @Param("fechaInicio") LocalDate fechaInicio,
                                        @Param("fechaFin") LocalDate fechaFin);
+
+    // Borrado lógico en cascada: al eliminar un usuario se dan de baja sus registros
+    @Transactional
+    @Modifying
+    @Query("UPDATE Gasto gasto SET gasto.estadoGasto = 0 WHERE gasto.usuario.idUsuario = :idUsuario")
+    void darDeBajaPorUsuario(@Param("idUsuario") int idUsuario);
+
+    // Para no eliminar una categoría o un comercio que todavía tiene gastos activos
+    boolean existsByCategoriaIdCategoriaAndEstadoGasto(int idCategoria, Integer estadoGasto);
+
+    boolean existsByComercianteIdComercianteAndEstadoGasto(int idComerciante, Integer estadoGasto);
 }

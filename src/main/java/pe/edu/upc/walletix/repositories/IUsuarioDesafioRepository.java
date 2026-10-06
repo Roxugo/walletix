@@ -4,6 +4,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.NativeQuery;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upc.walletix.entities.UsuarioDesafio;
 
 import java.util.List;
@@ -26,4 +29,13 @@ public interface IUsuarioDesafioRepository extends JpaRepository<UsuarioDesafio,
     @NativeQuery("SELECT COUNT(*) FROM usuario_desafio " +
             "WHERE id_desafio = :idDesafio AND estado = 1")
     int contarUsuariosPorDesafio(@Param("idDesafio") int idDesafio);
+
+    // Borrado lógico en cascada: al eliminar un usuario se dan de baja sus registros
+    @Transactional
+    @Modifying
+    @Query("UPDATE UsuarioDesafio usuarioDesafio SET usuarioDesafio.estado = 0 WHERE usuarioDesafio.usuario.idUsuario = :idUsuario")
+    void darDeBajaPorUsuario(@Param("idUsuario") int idUsuario);
+
+    // Para no eliminar un desafío que todavía tiene participantes
+    boolean existsByDesafioIdDesafioAndEstado(int idDesafio, int estado);
 }

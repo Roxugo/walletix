@@ -20,6 +20,26 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/logros")
 public class LogroController {
+    private boolean estaVacio(String texto) {
+        return texto == null || texto.isBlank();
+    }
+
+    private String validar(LogroDTO dto) {
+        if (estaVacio(dto.getNombreLogro())) {
+            return "El nombre del logro es obligatorio";
+        }
+        if (estaVacio(dto.getDescripcionLogro())) {
+            return "La descripción del logro es obligatoria";
+        }
+        if (estaVacio(dto.getUrlIconoLogro())) {
+            return "La URL del ícono es obligatoria";
+        }
+        if (dto.getPuntosLogro() < 0) {
+            return "Los puntos del logro no pueden ser negativos";
+        }
+        return null;
+    }
+
     @Autowired
     private ILogroService logroService;
 
@@ -37,6 +57,10 @@ public class LogroController {
     @PostMapping("/web")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> registrar(@RequestBody LogroDTO dto){
+        String errorTexto = validar(dto);
+        if (errorTexto != null) {
+            return ResponseEntity.badRequest().body(errorTexto);
+        }
         ModelMapper m=new ModelMapper();
         Logro c=m.map(dto, Logro.class);
         c.setEstadoLogro(1); // Siempre nace en 1 al registrar
@@ -62,6 +86,10 @@ public class LogroController {
     @PutMapping("/actualiza")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> actualizar(@RequestBody LogroDTO dto) {
+        String errorTexto = validar(dto);
+        if (errorTexto != null) {
+            return ResponseEntity.badRequest().body(errorTexto);
+        }
         Optional<Logro> existente = logroService.listId(dto.getIdLogro());
         if (existente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -81,6 +109,11 @@ public class LogroController {
     public ResponseEntity<String> eliminar(@PathVariable int id) {
         Optional<Logro> achievement = logroService.listId(id);
         if (achievement.isPresent()) {
+            // No se elimina un catálogo del que todavía dependen registros activos
+            if (logroService.tieneRegistrosActivos(id)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body("No se puede eliminar: hay usuarios que ya obtuvieron este logro");
+            }
             logroService.delete(id);
             return ResponseEntity.ok("Logro eliminado correctamente");
         } else {

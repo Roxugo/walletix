@@ -13,8 +13,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 // Atrapa los errores de toda la API y responde un mensaje claro en vez de un error 500 con todo el detalle
 @RestControllerAdvice
@@ -44,10 +47,24 @@ public class GlobalExceptionHandler {
         return responder(HttpStatus.BAD_REQUEST, "Falta el parámetro obligatorio '" + e.getParameterName() + "'");
     }
 
-    // Se rompe una regla de la base de datos (ej. correo repetido o un campo obligatorio vacío)
+    // Se rompe una regla de la base de datos. Según el código de PostgreSQL se da un mensaje específico
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, String>> manejarIntegridad(DataIntegrityViolationException e) {
-        return responder(HttpStatus.CONFLICT, "El registro no cumple las reglas de la base de datos (dato repetido o campo obligatorio vacío)");
+        Throwable causa = e.getMostSpecificCause();
+        String codigo = causa instanceof SQLException ? ((SQLException) causa).getSQLState() : "";
+        if ("22001".equals(codigo)) {
+            // Texto más largo que la columna, ej. "character varying(50)"
+            Matcher largo = Pattern.compile("character varying\\((\\d+)\\)").matcher(String.valueOf(causa.getMessage()));
+            String maximo = largo.find() ? " de " + largo.group(1) : "";
+            return responder(HttpStatus.BAD_REQUEST, "Uno de los textos supera el máximo" + maximo + " caracteres permitido");
+        }
+        if ("23505".equals(codigo)) {
+            return responder(HttpStatus.CONFLICT, "Ya existe un registro con ese dato (no se puede repetir)");
+        }
+        if ("23502".equals(codigo)) {
+            return responder(HttpStatus.BAD_REQUEST, "Falta un campo obligatorio");
+        }
+        return responder(HttpStatus.CONFLICT, "El registro no cumple las reglas de la base de datos");
     }
 
     // El usuario tiene token, pero su rol no le permite esta acción
