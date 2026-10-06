@@ -22,27 +22,7 @@ public class AuditoriaServiceImplement implements IAuditoriaService {
     }
 
     @Override
-    public Auditoria insert(Auditoria auditoria) {
-        return auditoriaRepository.save(auditoria);
-    }
-
-    @Override
     public Optional<Auditoria> listId(int id) {
         return auditoriaRepository.findById(id);
-    }
-
-    @Override
-    public void update(Auditoria auditoria) {
-        auditoriaRepository.save(auditoria);
-    }
-
-    @Override
-    public void delete(int id) {
-        Optional<Auditoria> opt = auditoriaRepository.findById(id);
-        if (opt.isPresent()) {
-            Auditoria auditoria = opt.get();
-            auditoria.setEstado(0); // Baja lógica con 0
-            auditoriaRepository.save(auditoria);
-        }
     }
 }
