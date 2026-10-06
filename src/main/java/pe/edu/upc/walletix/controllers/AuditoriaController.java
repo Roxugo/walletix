@@ -11,25 +11,21 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.AuditoriaDTO;
 import pe.edu.upc.walletix.entities.Auditoria;
-import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.servicesinterfaces.IAuditoriaService;
-import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Tag(name = "Auditoría", description = "Historial de quién registró, editó o eliminó cada usuario (solo ADMIN)")
+// Solo lectura: las auditorías se crean y actualizan solas al registrar, editar o eliminar un usuario.
+// No se pueden crear ni borrar a mano, para que el historial sea confiable
+@Tag(name = "Auditoría", description = "Historial automático de quién registró, editó o eliminó cada usuario (solo lectura, solo ADMIN)")
 @RestController
 @RequestMapping("/auditorias")
 public class AuditoriaController {
 
     @Autowired
     private IAuditoriaService auditoriaService;
-
-    @Autowired
-    private IUsuarioService usuarioService;
 
     @Operation(summary = "Listar todo el historial de auditoría, incluidos los registros dados de baja")
     @GetMapping
@@ -57,50 +53,6 @@ public class AuditoriaController {
         return ResponseEntity.ok(lista);
     }
 
-    @Operation(summary = "Registrar una auditoría manualmente")
-    @PostMapping("/web")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<?> registrar(@RequestBody AuditoriaDTO dto) {
-        // Validar que el usuario que registra exista
-        Optional<Usuario> usuarioRegistroOpt = usuarioService.listId(dto.getIdUsuarioRegistro());
-        if (usuarioRegistroOpt.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("El usuario con ID " + dto.getIdUsuarioRegistro() + " no existe.");
-        }
-
-        ModelMapper m = new ModelMapper();
-        m.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        Auditoria auditoria = m.map(dto, Auditoria.class);
-
-        auditoria.setUsuarioRegistro(usuarioRegistroOpt.get());
-        if (auditoria.getFechaRegistro() == null) {
-            auditoria.setFechaRegistro(LocalDateTime.now());
-        }
-        auditoria.setEstado(1);
-
-        if (dto.getIdUsuarioEditar() != null) {
-            Optional<Usuario> editorOpt = usuarioService.listId(dto.getIdUsuarioEditar());
-            editorOpt.ifPresent(auditoria::setUsuarioEditar);
-        }
-
-        if (dto.getIdUsuarioEliminar() != null) {
-            Optional<Usuario> eliminadorOpt = usuarioService.listId(dto.getIdUsuarioEliminar());
-            eliminadorOpt.ifPresent(auditoria::setUsuarioEliminar);
-        }
-
-        Auditoria guardada = auditoriaService.insert(auditoria);
-        AuditoriaDTO responseDTO = m.map(guardada, AuditoriaDTO.class);
-        responseDTO.setIdUsuarioRegistro(guardada.getUsuarioRegistro().getIdUsuario());
-        if (guardada.getUsuarioEditar() != null) {
-            responseDTO.setIdUsuarioEditar(guardada.getUsuarioEditar().getIdUsuario());
-        }
-        if (guardada.getUsuarioEliminar() != null) {
-            responseDTO.setIdUsuarioEliminar(guardada.getUsuarioEliminar().getIdUsuario());
-        }
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
-    }
-
     @Operation(summary = "Buscar una auditoría por su id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -122,20 +74,6 @@ public class AuditoriaController {
                 dto.setIdUsuarioEliminar(a.getUsuarioEliminar().getIdUsuario());
             }
             return ResponseEntity.ok(dto);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Registro de auditoría no encontrado");
-        }
-    }
-
-    @Operation(summary = "Dar de baja una auditoría (borrado lógico)")
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<String> eliminar(@PathVariable int id) {
-        Optional<Auditoria> auditoria = auditoriaService.listId(id);
-        if (auditoria.isPresent()) {
-            auditoriaService.delete(id);
-            return ResponseEntity.ok("Auditoría inactivada correctamente");
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Registro de auditoría no encontrado");
