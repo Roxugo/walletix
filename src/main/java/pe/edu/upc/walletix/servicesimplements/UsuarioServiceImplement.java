@@ -144,6 +144,11 @@ public class UsuarioServiceImplement implements IUsuarioService {
     }
 
     @Override
+    public boolean existeTelefono(int telefono) {
+        return usuarioRepository.existsByTelefonoUsuario(telefono);
+    }
+
+    @Override
     public Optional<Usuario> buscarPorCorreo(String correo) {
         return usuarioRepository.findByCorreoUsuarioIgnoreCaseAndEstadoUsuario(correo, 1);
     }

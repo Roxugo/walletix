@@ -109,6 +109,10 @@ public class UsuarioController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("El correo ya está registrado");
         }
+        if (usuarioService.existeTelefono(dto.getTelefonoUsuario())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("El teléfono ya está registrado");
+        }
 
         ModelMapper m=new ModelMapper();
         Usuario c=m.map(dto, Usuario.class);
@@ -163,6 +167,11 @@ public class UsuarioController {
         if (!us.getCorreoUsuario().equalsIgnoreCase(dto.getCorreoUsuario()) && usuarioService.existeCorreo(dto.getCorreoUsuario())) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body("El correo ya está registrado");
+        }
+        // Si cambia el teléfono, el nuevo no puede pertenecer a otra cuenta
+        if (us.getTelefonoUsuario() != dto.getTelefonoUsuario() && usuarioService.existeTelefono(dto.getTelefonoUsuario())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("El teléfono ya está registrado");
         }
         us.setNombreUsuario(dto.getNombreUsuario());
         us.setCorreoUsuario(dto.getCorreoUsuario());

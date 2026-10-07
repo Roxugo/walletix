@@ -12,5 +12,6 @@ public interface IUsuarioService {
     public void update(Usuario usuario);
     public void delete(int id);
     public boolean existeCorreo(String correo);
+    public boolean existeTelefono(int telefono);
     public Optional<Usuario> buscarPorCorreo(String correo);
 }

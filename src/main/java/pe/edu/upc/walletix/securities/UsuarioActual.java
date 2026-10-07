@@ -1,5 +1,6 @@
 package pe.edu.upc.walletix.securities;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -20,7 +21,7 @@ public class UsuarioActual {
     }
 
     // Id del usuario que inició sesión (0 si ya no existe)
-    public int id(Authentication autenticacion) {
+    public int id( Authentication autenticacion) {
         return usuarioService.buscarPorCorreo(autenticacion.getName())
                 .map(Usuario::getIdUsuario)
                 .orElse(0);

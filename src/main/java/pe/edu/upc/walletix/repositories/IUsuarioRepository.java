@@ -16,4 +16,7 @@ public interface IUsuarioRepository extends JpaRepository<Usuario, Integer> {
     Optional<Usuario> findByCorreoUsuarioIgnoreCaseAndEstadoUsuario(String correoUsuario, int estadoUsuario);
 
     boolean existsByCorreoUsuarioIgnoreCase(String correoUsuario);
+
+    // El teléfono tampoco se puede repetir entre cuentas
+    boolean existsByTelefonoUsuario(int telefonoUsuario);
 }
