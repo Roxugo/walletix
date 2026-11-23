@@ -55,6 +55,8 @@ public class WebSecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // /error libre para que un 403 o 404 no se convierta en 401
                         .requestMatchers("/error").permitAll()
+                        // Libres: bienvenida y health check (no muestran datos de usuarios)
+                        .requestMatchers(HttpMethod.GET, "/", "/health").permitAll()
                         // Libres: login, registro de usuarios y la documentación de Swagger
                         .requestMatchers("/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuarios/web").permitAll()

@@ -106,6 +106,16 @@ class SeguridadTests {
     }
 
     @Test
+    @DisplayName("La bienvenida y el health check son públicos y no muestran datos de usuarios")
+    void rutasPublicasSinDatos() throws Exception {
+        mockMvc.perform(get("/"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("ok"))
+                .andExpect(content().string(not(containsString("@"))));
+        mockMvc.perform(get("/health")).andExpect(status().isOk());
+    }
+
+    @Test
     @DisplayName("Con un token inventado (basura) responde 401")
     void tokenBasura_401() throws Exception {
         mockMvc.perform(get("/gastos").header("Authorization", "Bearer esto.no.esuntoken"))
