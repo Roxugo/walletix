@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.exceptions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +24,7 @@ import java.util.regex.Pattern;
 // Atrapa los errores de toda la API y responde un mensaje claro en vez de un error 500 con todo el detalle
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     private ResponseEntity<Map<String, String>> responder(HttpStatus estado, String mensaje) {
         Map<String, String> respuesta = new HashMap<>();
@@ -85,9 +88,11 @@ public class GlobalExceptionHandler {
         return responder(HttpStatus.METHOD_NOT_ALLOWED, "Método " + e.getMethod() + " no permitido en esta ruta");
     }
 
-    // Cualquier otro error inesperado (como en el proyecto del profe)
+    // Cualquier otro error inesperado (como en el proyecto del profe).
+    // Seguridad: el detalle (SQL, nombres de tablas) solo va al log del servidor, nunca al cliente
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> manejarErrorGeneral(Exception e) {
-        return responder(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno: " + e.getMessage());
+        log.error("Error no controlado", e);
+        return responder(HttpStatus.INTERNAL_SERVER_ERROR, "Ocurrió un error interno. Inténtelo nuevamente.");
     }
 }

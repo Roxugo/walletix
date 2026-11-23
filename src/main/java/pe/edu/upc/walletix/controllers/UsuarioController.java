@@ -129,6 +129,18 @@ public class UsuarioController {
         UsuarioDTO responseDTO=m.map(cur, UsuarioDTO.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
+    @Operation(summary = "Datos de la cuenta con la que se inició sesión (los saca del token)")
+    @GetMapping("/yo")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    public ResponseEntity<?> miCuenta(Authentication autenticacion) {
+        // El subject del token es el correo, por eso se busca por correo
+        Optional<Usuario> usuario = usuarioService.buscarPorCorreo(autenticacion.getName());
+        if (usuario.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        }
+        ModelMapper m = new ModelMapper();
+        return ResponseEntity.ok(m.map(usuario.get(), UsuarioDTO.class));
+    }
     @Operation(summary = "Buscar un usuario por su id (un USUARIO solo puede ver su propia cuenta)")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
