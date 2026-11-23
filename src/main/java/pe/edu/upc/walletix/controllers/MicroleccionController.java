@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.MicroleccionDTO;
 import pe.edu.upc.walletix.entities.Microleccion;
+import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.servicesinterfaces.IMicroleccionService;
 
 import java.util.List;
@@ -21,6 +22,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/microlecciones")
 public class MicroleccionController {
     @Autowired
+    private Mensajes mensajes;
+    @Autowired
     private IMicroleccionService microleccionService;
 
     private boolean estaVacio(String texto) {
@@ -29,32 +32,32 @@ public class MicroleccionController {
 
     private String validar(MicroleccionDTO microleccionDTO) {
         if (estaVacio(microleccionDTO.getTituloMicroleccion())) {
-            return "El título es obligatorio";
+            return mensajes.get("titulo.obligatorio");
         }
         if (estaVacio(microleccionDTO.getDescripcionMicroleccion())) {
-            return "La descripción es obligatoria";
+            return mensajes.get("descripcion.obligatoria");
         }
         if (estaVacio(microleccionDTO.getContenidoMicroleccion())) {
-            return "El contenido es obligatorio";
+            return mensajes.get("contenido.obligatorio");
         }
         if (estaVacio(microleccionDTO.getUrlMediaMicroleccion())) {
-            return "La URL de la imagen o video es obligatoria";
+            return mensajes.get("url.imagen.video.obligatoria");
         }
         if (estaVacio(microleccionDTO.getCategoriaEducativaMicroleccion())) {
-            return "La categoría educativa es obligatoria";
+            return mensajes.get("categoria.educativa.obligatoria");
         }
         if (microleccionDTO.getTipoMicroleccion() == null
                 || !(microleccionDTO.getTipoMicroleccion().equalsIgnoreCase("tip") || microleccionDTO.getTipoMicroleccion().equalsIgnoreCase("leccion"))) {
-            return "El tipo debe ser tip o leccion";
+            return mensajes.get("tipo.debe.ser.tip.leccion");
         }
         if (estaVacio(microleccionDTO.getTituloQuizMicroleccion())) {
-            return "El título del quiz es obligatorio";
+            return mensajes.get("titulo.quiz.obligatorio");
         }
         if (microleccionDTO.getPuntajeAprobatorioMicroleccion() < 0 || microleccionDTO.getPuntajeAprobatorioMicroleccion() > 100) {
-            return "El puntaje aprobatorio debe estar entre 0 y 100";
+            return mensajes.get("puntaje.aprobatorio.debe.estar.entre");
         }
         if (microleccionDTO.getPuntosRecompensaMicroleccion() < 0) {
-            return "Los puntos de recompensa no pueden ser negativos";
+            return mensajes.get("puntos.recompensa.no.pueden.ser");
         }
         return null;
     }
@@ -95,7 +98,7 @@ public class MicroleccionController {
             return ResponseEntity.ok(modelMapper.map(microleccion.get(), MicroleccionDTO.class));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Microlección no encontrada");
+                    .body(mensajes.get("microleccion.no.encontrada"));
         }
     }
 
@@ -110,7 +113,7 @@ public class MicroleccionController {
         Optional<Microleccion> microleccionExistente = microleccionService.listId(microleccionDTO.getIdMicroleccion());
         if (microleccionExistente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Microlección no encontrada");
+                    .body(mensajes.get("microleccion.no.encontrada"));
         }
         Microleccion microleccion = microleccionExistente.get();
         microleccion.setTituloMicroleccion(microleccionDTO.getTituloMicroleccion());
@@ -124,7 +127,7 @@ public class MicroleccionController {
         microleccion.setPuntajeAprobatorioMicroleccion(microleccionDTO.getPuntajeAprobatorioMicroleccion());
         microleccion.setPuntosRecompensaMicroleccion(microleccionDTO.getPuntosRecompensaMicroleccion());
         microleccionService.update(microleccion);
-        return ResponseEntity.ok("Microlección actualizada correctamente");
+        return ResponseEntity.ok(mensajes.get("microleccion.actualizada.correctamente"));
     }
 
     @Operation(summary = "Eliminar una microlección (borrado lógico, solo ADMIN)")
@@ -134,15 +137,15 @@ public class MicroleccionController {
         Optional<Microleccion> microleccion = microleccionService.listId(idMicroleccion);
         if (microleccion.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Microlección no encontrada");
+                    .body(mensajes.get("microleccion.no.encontrada"));
         }
         // No se elimina un catálogo del que todavía dependen registros activos
         if (microleccionService.tieneRegistrosActivos(idMicroleccion)) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("No se puede eliminar: la microlección tiene preguntas o intentos de quiz activos");
+                    .body(mensajes.get("no.puede.eliminar.microleccion.tiene"));
         }
         microleccionService.delete(idMicroleccion);
-        return ResponseEntity.ok("Microlección eliminada correctamente");
+        return ResponseEntity.ok(mensajes.get("microleccion.eliminada.correctamente"));
     }
 
     // JPQL: consejos y microlecciones por categoría (US31). Ej: /microlecciones/categoria?categoria=Ahorro
@@ -156,7 +159,7 @@ public class MicroleccionController {
                 .collect(Collectors.toList());
         if (listaMicrolecciones.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("No hay microlecciones en la categoría " + categoria);
+                    .body(mensajes.get("microleccion.categoria.sin.resultados", String.valueOf(categoria)));
         }
         return ResponseEntity.ok(listaMicrolecciones);
     }

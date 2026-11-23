@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import pe.edu.upc.walletix.dtos.JwtRequestDTO;
 import pe.edu.upc.walletix.dtos.JwtResponseDTO;
+import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.securities.JwtTokenUtil;
 import pe.edu.upc.walletix.servicesimplements.JwtUserDetailsService;
 
@@ -24,6 +25,8 @@ import pe.edu.upc.walletix.servicesimplements.JwtUserDetailsService;
 @RestController
 @CrossOrigin
 public class JwtAuthenticationController {
+    @Autowired
+    private Mensajes mensajes;
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
@@ -38,9 +41,9 @@ public class JwtAuthenticationController {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(jwtRequestDTO.getCorreo(), jwtRequestDTO.getContrasena()));
         } catch (DisabledException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("El usuario está deshabilitado");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mensajes.get("usuario.esta.deshabilitado"));
         } catch (BadCredentialsException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Correo o contraseña incorrectos");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(mensajes.get("correo.contrasena.incorrectos"));
         }
         final UserDetails userDetails = userDetailsService.loadUserByUsername(jwtRequestDTO.getCorreo());
         final String token = jwtTokenUtil.generateToken(userDetails);

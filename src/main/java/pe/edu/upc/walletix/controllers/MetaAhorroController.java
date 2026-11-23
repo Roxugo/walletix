@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.MetaAhorroDto;
 import pe.edu.upc.walletix.entities.MetaAhorro;
 import pe.edu.upc.walletix.entities.Usuario;
+import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
 import pe.edu.upc.walletix.servicesinterfaces.MetaAhorroServiceInterface;
 import pe.edu.upc.walletix.securities.UsuarioActual;
@@ -25,6 +26,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/metas-ahorro")
 public class MetaAhorroController {
+    @Autowired
+    private Mensajes mensajes;
     // Usuario que inició sesión: un USUARIO solo trabaja con sus datos, un ADMIN con todos
     @Autowired
     private UsuarioActual usuarioActual;
@@ -55,10 +58,10 @@ public class MetaAhorroController {
     public ResponseEntity<?> registrar(@RequestBody MetaAhorroDto dto, Authentication autenticacion) {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
-        if (!usuarioActual.puedeGestionar(autenticacion, dto.getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+        if (!usuarioActual.puedeGestionar(autenticacion, dto.getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
 
         Optional<Usuario> usuario = usuarioService.listId(dto.getIdUsuario());
-        if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("usuario.no.encontrado"));
         MetaAhorro meta = toEntity(dto);
         meta.setUsuario(usuario.get());
         MetaAhorro registrada = metaAhorroService.registrar(meta);
@@ -70,8 +73,8 @@ public class MetaAhorroController {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id, Authentication autenticacion) {
         Optional<MetaAhorro> meta = metaAhorroService.buscarPorId(id);
-        if (meta.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Meta de ahorro no encontrada");
-        if (!usuarioActual.puedeGestionar(autenticacion, meta.get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+        if (meta.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("meta.ahorro.no.encontrada"));
+        if (!usuarioActual.puedeGestionar(autenticacion, meta.get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         return ResponseEntity.ok(toDto(meta.get(), new ModelMapper()));
     }
 
@@ -83,12 +86,12 @@ public class MetaAhorroController {
         if (error != null) return ResponseEntity.badRequest().body(error);
 
         Optional<MetaAhorro> existente = metaAhorroService.buscarPorId(dto.getIdMetaAhorro());
-        if (existente.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Meta de ahorro no encontrada");
+        if (existente.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("meta.ahorro.no.encontrada"));
         // Debe ser dueño del registro y no puede pasárselo a otro usuario
-        if (!usuarioActual.puedeGestionar(autenticacion, existente.get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
-        if (!usuarioActual.puedeGestionar(autenticacion, dto.getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+        if (!usuarioActual.puedeGestionar(autenticacion, existente.get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
+        if (!usuarioActual.puedeGestionar(autenticacion, dto.getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         Optional<Usuario> usuario = usuarioService.listId(dto.getIdUsuario());
-        if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("usuario.no.encontrado"));
 
         MetaAhorro meta = existente.get();
         meta.setTitulo(dto.getTitulo());
@@ -98,7 +101,7 @@ public class MetaAhorroController {
         meta.setEstadoMetaAhorro(dto.getEstadoMetaAhorro());
         meta.setUsuario(usuario.get());
         metaAhorroService.actualizar(meta);
-        return ResponseEntity.ok("Meta de ahorro actualizada correctamente");
+        return ResponseEntity.ok(mensajes.get("meta.ahorro.actualizada.correctamente"));
     }
 
     @Operation(summary = "Eliminar una meta de ahorro (borrado lógico)")
@@ -106,11 +109,11 @@ public class MetaAhorroController {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int id, Authentication autenticacion) {
         if (metaAhorroService.buscarPorId(id).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Meta de ahorro no encontrada");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("meta.ahorro.no.encontrada"));
         }
-        if (!usuarioActual.puedeGestionar(autenticacion, metaAhorroService.buscarPorId(id).get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+        if (!usuarioActual.puedeGestionar(autenticacion, metaAhorroService.buscarPorId(id).get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         metaAhorroService.eliminar(id);
-        return ResponseEntity.ok("Meta de ahorro eliminada correctamente");
+        return ResponseEntity.ok(mensajes.get("meta.ahorro.eliminada.correctamente"));
     }
 
     private MetaAhorro toEntity(MetaAhorroDto dto) {
@@ -132,14 +135,14 @@ public class MetaAhorroController {
     }
 
     private String validar(MetaAhorroDto dto) {
-        if (dto == null) return "Se requiere información de la meta";
-        if (dto.getIdMetaAhorro() < 0) return "El id de la meta no puede ser negativo";
-        if (dto.getTitulo() == null || dto.getTitulo().isBlank()) return "Se requiere un título";
-        if (dto.getMontoObjetivo() == null || dto.getMontoObjetivo().compareTo(BigDecimal.ZERO) <= 0) return "El monto objetivo debe ser mayor que cero";
-        if (dto.getMontoActual() == null || dto.getMontoActual().compareTo(BigDecimal.ZERO) < 0) return "El monto actual no puede ser negativo";
-        if (dto.getFechaLimite() == null) return "Se requiere una fecha límite";
-        if (dto.getEstadoMetaAhorro() == null || dto.getEstadoMetaAhorro().isBlank()) return "Se requiere el estado de la meta";
-        if (dto.getIdUsuario() <= 0) return "Se requiere un id de usuario válido";
+        if (dto == null) return mensajes.get("requiere.informacion.meta");
+        if (dto.getIdMetaAhorro() < 0) return mensajes.get("id.meta.no.puede.ser");
+        if (dto.getTitulo() == null || dto.getTitulo().isBlank()) return mensajes.get("requiere.titulo");
+        if (dto.getMontoObjetivo() == null || dto.getMontoObjetivo().compareTo(BigDecimal.ZERO) <= 0) return mensajes.get("monto.objetivo.debe.ser.mayor.2");
+        if (dto.getMontoActual() == null || dto.getMontoActual().compareTo(BigDecimal.ZERO) < 0) return mensajes.get("monto.actual.no.puede.ser");
+        if (dto.getFechaLimite() == null) return mensajes.get("requiere.fecha.limite");
+        if (dto.getEstadoMetaAhorro() == null || dto.getEstadoMetaAhorro().isBlank()) return mensajes.get("requiere.estado.meta");
+        if (dto.getIdUsuario() <= 0) return mensajes.get("requiere.id.usuario.valido");
         return null;
     }
 }

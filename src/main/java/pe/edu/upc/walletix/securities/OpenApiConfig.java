@@ -8,8 +8,11 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import io.swagger.v3.oas.models.Operation;
 import io.swagger.v3.oas.models.PathItem;
 import io.swagger.v3.oas.models.Paths;
+import io.swagger.v3.oas.models.media.StringSchema;
+import io.swagger.v3.oas.models.parameters.HeaderParameter;
 import io.swagger.v3.oas.models.tags.Tag;
 import org.springdoc.core.customizers.OpenApiCustomizer;
+import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -54,6 +57,16 @@ public class OpenApiConfig {
         if (ruta.matches("^/[^/]+$")) return 0;
         if (ruta.matches("^/[^/]+/\\{[^/]+}$")) return 2;
         return 4;
+    }
+
+    // i18n: en cada endpoint de Swagger aparece la cabecera Accept-Language para elegir el idioma de la respuesta
+    @Bean
+    public OperationCustomizer cabeceraIdioma() {
+        return (operacion, metodo) -> operacion.addParametersItem(new HeaderParameter()
+                .name("Accept-Language")
+                .description("Idioma de los mensajes / Language of the messages: es-419 (default) o en-US")
+                .required(false)
+                .schema(new StringSchema()._enum(List.of("es-419", "en-US"))));
     }
 
     @Bean

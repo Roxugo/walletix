@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.RolDTO;
 import pe.edu.upc.walletix.entities.Rol;
 import pe.edu.upc.walletix.entities.Usuario;
+import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.servicesinterfaces.IRolService;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
 
@@ -23,6 +24,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/roles")
 public class RolController {
+    @Autowired
+    private Mensajes mensajes;
     @Autowired
     private IRolService rolService;
     @Autowired
@@ -61,7 +64,7 @@ public class RolController {
         if (rol.isPresent()) {
             return ResponseEntity.ok(convertirADTO(rol.get()));
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Rol no encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("rol.no.encontrado"));
         }
     }
 
@@ -71,23 +74,23 @@ public class RolController {
     public ResponseEntity<String> actualizar(@RequestBody RolDTO rolDTO) {
         String nuevoRol = normalizarRol(rolDTO.getRol());
         if (nuevoRol == null) {
-            return ResponseEntity.badRequest().body("El rol debe ser USUARIO o ADMIN");
+            return ResponseEntity.badRequest().body(mensajes.get("rol.debe.ser.usuario.admin"));
         }
         Optional<Usuario> usuario = usuarioService.listId(rolDTO.getIdUsuario());
         if (usuario.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("El usuario con ID " + rolDTO.getIdUsuario() + " no existe.");
+                    .body(mensajes.get("usuario.id.no.existe", String.valueOf(rolDTO.getIdUsuario())));
         }
         int idUsuario = rolDTO.getIdUsuario();
         List<Rol> rolesActuales = rolService.listarActivosDeUsuario(idUsuario);
         if (rolesActuales.size() == 1 && rolesActuales.get(0).getRol().equals(nuevoRol)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("El usuario ya tiene el rol " + nuevoRol);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(mensajes.get("rol.ya.asignado", String.valueOf(nuevoRol)));
         }
         // Evita que el sistema se quede sin ningún ADMIN activo
         boolean eraAdmin = rolesActuales.stream().anyMatch(rol -> rol.getRol().equals("ADMIN"));
         if (eraAdmin && nuevoRol.equals("USUARIO") && rolService.contarUsuariosActivosConRol("ADMIN") <= 1) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("No se puede quitar el rol ADMIN al único administrador del sistema");
+                    .body(mensajes.get("no.puede.quitar.rol.admin"));
         }
         // Se activa el nuevo rol (reutilizando su fila si ya existía dada de baja, para no duplicarla)
         Optional<Rol> filaNuevoRol = rolService.buscarPorUsuarioYRol(idUsuario, nuevoRol);
@@ -107,6 +110,6 @@ public class RolController {
                 rolService.update(rolAnterior);
             }
         }
-        return ResponseEntity.ok("Rol actualizado: el usuario ahora es " + nuevoRol);
+        return ResponseEntity.ok(mensajes.get("rol.actualizado", String.valueOf(nuevoRol)));
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.ComercianteDTO;
 import pe.edu.upc.walletix.entities.Categoria;
 import pe.edu.upc.walletix.entities.Comerciante;
+import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.servicesinterfaces.ICategoriaService;
 import pe.edu.upc.walletix.servicesinterfaces.IComercianteService;
 
@@ -23,6 +24,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/comercios")
 public class ComercianteController {
     @Autowired
+    private Mensajes mensajes;
+    @Autowired
     private IComercianteService comercianteService;
     @Autowired
     private ICategoriaService categoriaService;
@@ -33,10 +36,10 @@ public class ComercianteController {
 
     private String validar(ComercianteDTO comercianteDTO) {
         if (estaVacio(comercianteDTO.getNombreComerciante())) {
-            return "El nombre es obligatorio";
+            return mensajes.get("nombre.obligatorio");
         }
         if (estaVacio(comercianteDTO.getUrlLogoComerciante())) {
-            return "La URL del logo es obligatoria";
+            return mensajes.get("url.logo.obligatoria");
         }
         return null;
     }
@@ -64,7 +67,7 @@ public class ComercianteController {
         Optional<Categoria> categoria = categoriaService.listId(comercianteDTO.getIdCategoria());
         if (categoria.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Categoría no encontrada");
+                    .body(mensajes.get("categoria.no.encontrada"));
         }
         ModelMapper modelMapper = new ModelMapper();
         Comerciante nuevoComerciante = modelMapper.map(comercianteDTO, Comerciante.class);
@@ -84,7 +87,7 @@ public class ComercianteController {
             return ResponseEntity.ok(modelMapper.map(comerciante.get(), ComercianteDTO.class));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Comercio no encontrado");
+                    .body(mensajes.get("comercio.no.encontrado"));
         }
     }
 
@@ -99,19 +102,19 @@ public class ComercianteController {
         Optional<Comerciante> comercianteExistente = comercianteService.listId(comercianteDTO.getIdComerciante());
         if (comercianteExistente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Comercio no encontrado");
+                    .body(mensajes.get("comercio.no.encontrado"));
         }
         Optional<Categoria> categoria = categoriaService.listId(comercianteDTO.getIdCategoria());
         if (categoria.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Categoría no encontrada");
+                    .body(mensajes.get("categoria.no.encontrada"));
         }
         Comerciante comerciante = comercianteExistente.get();
         comerciante.setCategoria(categoria.get());
         comerciante.setNombreComerciante(comercianteDTO.getNombreComerciante());
         comerciante.setUrlLogoComerciante(comercianteDTO.getUrlLogoComerciante());
         comercianteService.update(comerciante);
-        return ResponseEntity.ok("Comercio actualizado correctamente");
+        return ResponseEntity.ok(mensajes.get("comercio.actualizado.correctamente"));
     }
 
     @Operation(summary = "Eliminar un comercio (borrado lógico, solo ADMIN)")
@@ -123,13 +126,13 @@ public class ComercianteController {
             // No se elimina un catálogo del que todavía dependen registros activos
             if (comercianteService.tieneRegistrosActivos(idComerciante)) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body("No se puede eliminar: el comercio tiene gastos activos");
+                        .body(mensajes.get("no.puede.eliminar.comercio.tiene"));
             }
             comercianteService.delete(idComerciante);
-            return ResponseEntity.ok("Comercio eliminado correctamente");
+            return ResponseEntity.ok(mensajes.get("comercio.eliminado.correctamente"));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Comercio no encontrado");
+                    .body(mensajes.get("comercio.no.encontrado"));
         }
     }
 }

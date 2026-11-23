@@ -14,6 +14,7 @@ import pe.edu.upc.walletix.dtos.ProgresoAprendizajeDTO;
 import pe.edu.upc.walletix.entities.IntentoQuizUsuario;
 import pe.edu.upc.walletix.entities.Microleccion;
 import pe.edu.upc.walletix.entities.Usuario;
+import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.servicesinterfaces.IIntentoQuizUsuarioService;
 import pe.edu.upc.walletix.servicesinterfaces.IMicroleccionService;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
@@ -28,6 +29,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/intentos-quiz")
 public class IntentoQuizUsuarioController {
+    @Autowired
+    private Mensajes mensajes;
     // Usuario que inició sesión: un USUARIO solo trabaja con sus datos, un ADMIN con todos
     @Autowired
     private UsuarioActual usuarioActual;
@@ -58,25 +61,25 @@ public class IntentoQuizUsuarioController {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody IntentoQuizUsuarioDTO intentoQuizUsuarioDTO, Authentication autenticacion) {
         if (!usuarioActual.puedeGestionar(autenticacion, intentoQuizUsuarioDTO.getIdUsuario())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         }
         if (intentoQuizUsuarioDTO.getPuntajeIntentoQuizUsuario() < 0 || intentoQuizUsuarioDTO.getPuntajeIntentoQuizUsuario() > 100) {
             return ResponseEntity.badRequest()
-                    .body("El puntaje debe estar entre 0 y 100");
+                    .body(mensajes.get("puntaje.debe.estar.entre.0"));
         }
         Optional<Usuario> usuario = usuarioService.listId(intentoQuizUsuarioDTO.getIdUsuario());
         if (usuario.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Usuario no encontrado");
+                    .body(mensajes.get("usuario.no.encontrado"));
         }
         Optional<Microleccion> microleccion = microleccionService.listId(intentoQuizUsuarioDTO.getIdMicroleccion());
         if (microleccion.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Microlección no encontrada");
+                    .body(mensajes.get("microleccion.no.encontrada"));
         }
         if (!microleccion.get().getTipoMicroleccion().equals("leccion")) {
             return ResponseEntity.badRequest()
-                    .body("Solo las microlecciones de tipo leccion tienen quiz");
+                    .body(mensajes.get("solo.microlecciones.tipo.leccion.tienen"));
         }
 
         ModelMapper modelMapper = new ModelMapper();
@@ -98,13 +101,13 @@ public class IntentoQuizUsuarioController {
         Optional<IntentoQuizUsuario> intentoQuizUsuario = intentoQuizUsuarioService.listId(idIntentoQuizUsuario);
         if (intentoQuizUsuario.isPresent()) {
             if (!usuarioActual.puedeGestionar(autenticacion, intentoQuizUsuario.get().getUsuario().getIdUsuario())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
             }
             IntentoQuizUsuarioDTO intentoQuizUsuarioDTO = modelMapper.map(intentoQuizUsuario.get(), IntentoQuizUsuarioDTO.class);
             return ResponseEntity.ok(intentoQuizUsuarioDTO);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Intento no encontrado");
+                    .body(mensajes.get("intento.no.encontrado"));
         }
     }
 
@@ -114,18 +117,18 @@ public class IntentoQuizUsuarioController {
     public ResponseEntity<String> actualizar(@RequestBody IntentoQuizUsuarioDTO intentoQuizUsuarioDTO) {
         if (intentoQuizUsuarioDTO.getPuntajeIntentoQuizUsuario() < 0 || intentoQuizUsuarioDTO.getPuntajeIntentoQuizUsuario() > 100) {
             return ResponseEntity.badRequest()
-                    .body("El puntaje debe estar entre 0 y 100");
+                    .body(mensajes.get("puntaje.debe.estar.entre.0"));
         }
         Optional<IntentoQuizUsuario> intentoExistente = intentoQuizUsuarioService.listId(intentoQuizUsuarioDTO.getIdIntentoQuizUsuario());
         if (intentoExistente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Intento no encontrado");
+                    .body(mensajes.get("intento.no.encontrado"));
         }
         IntentoQuizUsuario intentoQuizUsuario = intentoExistente.get();
         intentoQuizUsuario.setPuntajeIntentoQuizUsuario(intentoQuizUsuarioDTO.getPuntajeIntentoQuizUsuario());
         intentoQuizUsuario.setAprobadoIntentoQuizUsuario(intentoQuizUsuarioDTO.getPuntajeIntentoQuizUsuario() >= intentoQuizUsuario.getMicroleccion().getPuntajeAprobatorioMicroleccion());
         intentoQuizUsuarioService.update(intentoQuizUsuario);
-        return ResponseEntity.ok("Intento actualizado correctamente");
+        return ResponseEntity.ok(mensajes.get("intento.actualizado.correctamente"));
     }
 
     @Operation(summary = "Eliminar un intento de quiz (borrado lógico)")
@@ -135,13 +138,13 @@ public class IntentoQuizUsuarioController {
         Optional<IntentoQuizUsuario> intentoQuizUsuario = intentoQuizUsuarioService.listId(idIntentoQuizUsuario);
         if (intentoQuizUsuario.isPresent()) {
             if (!usuarioActual.puedeGestionar(autenticacion, intentoQuizUsuario.get().getUsuario().getIdUsuario())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
             }
             intentoQuizUsuarioService.delete(idIntentoQuizUsuario);
-            return ResponseEntity.ok("Intento eliminado correctamente");
+            return ResponseEntity.ok(mensajes.get("intento.eliminado.correctamente"));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Intento no encontrado");
+                    .body(mensajes.get("intento.no.encontrado"));
         }
     }
 
@@ -151,11 +154,11 @@ public class IntentoQuizUsuarioController {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> progreso(@PathVariable int idUsuario, Authentication autenticacion) {
         if (!usuarioActual.puedeGestionar(autenticacion, idUsuario)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         }
         if (usuarioService.listId(idUsuario).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Usuario no encontrado");
+                    .body(mensajes.get("usuario.no.encontrado"));
         }
         List<Object[]> filasProgreso = intentoQuizUsuarioService.progresoPorUsuario(idUsuario);
         List<ProgresoAprendizajeDTO> listaProgreso = new ArrayList<>();

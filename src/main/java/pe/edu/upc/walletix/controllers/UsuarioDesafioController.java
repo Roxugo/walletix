@@ -14,6 +14,7 @@ import pe.edu.upc.walletix.dtos.UsuarioDesafioDTO;
 import pe.edu.upc.walletix.entities.Desafio;
 import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.entities.UsuarioDesafio;
+import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.servicesinterfaces.IDesafioService;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioDesafioService;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
@@ -28,6 +29,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/usuariosdesafios")
 public class UsuarioDesafioController {
+    @Autowired
+    private Mensajes mensajes;
     // Usuario que inició sesión: un USUARIO solo trabaja con sus datos, un ADMIN con todos
     @Autowired
     private UsuarioActual usuarioActual;
@@ -76,23 +79,23 @@ public class UsuarioDesafioController {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> registrar(@RequestBody UsuarioDesafioDTO usuarioDesafioDTO, Authentication autenticacion) {
         if (!usuarioActual.puedeGestionar(autenticacion, usuarioDesafioDTO.getIdUsuario())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         }
         Optional<Usuario> usuario = usuarioService.listId(usuarioDesafioDTO.getIdUsuario());
         if (usuario.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("El usuario con ID " + usuarioDesafioDTO.getIdUsuario() + " no existe.");
+                    .body(mensajes.get("usuario.id.no.existe", String.valueOf(usuarioDesafioDTO.getIdUsuario())));
         }
         Optional<Desafio> desafio = desafioService.buscarPorId(usuarioDesafioDTO.getIdDesafio());
         if (desafio.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("El desafío con ID " + usuarioDesafioDTO.getIdDesafio() + " no existe.");
+                    .body(mensajes.get("desafio.id.no.existe", String.valueOf(usuarioDesafioDTO.getIdDesafio())));
         }
         if (!porcentajeValido(usuarioDesafioDTO.getPorcentajeProgreso())) {
-            return ResponseEntity.badRequest().body("El porcentaje debe estar entre 0 y 100");
+            return ResponseEntity.badRequest().body(mensajes.get("porcentaje.debe.estar.entre.0"));
         }
         if (usuarioDesafioDTO.getEstadoDesafio() == null || usuarioDesafioDTO.getEstadoDesafio().isBlank()) {
-            return ResponseEntity.badRequest().body("El estado del desafío es obligatorio");
+            return ResponseEntity.badRequest().body(mensajes.get("estado.desafio.obligatorio"));
         }
         ModelMapper modelMapper = crearModelMapper();
         UsuarioDesafio nuevoUsuarioDesafio = modelMapper.map(usuarioDesafioDTO, UsuarioDesafio.class);
@@ -110,12 +113,12 @@ public class UsuarioDesafioController {
         Optional<UsuarioDesafio> usuarioDesafio = usuarioDesafioService.buscarPorId(id);
         if (usuarioDesafio.isPresent()) {
             if (!usuarioActual.puedeGestionar(autenticacion, usuarioDesafio.get().getUsuario().getIdUsuario())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
             }
             return ResponseEntity.ok(convertirADTO(usuarioDesafio.get(), crearModelMapper()));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Usuario desafío no encontrado");
+                    .body(mensajes.get("usuario.desafio.no.encontrado"));
         }
     }
 
@@ -126,29 +129,29 @@ public class UsuarioDesafioController {
         Optional<UsuarioDesafio> usuarioDesafioExistente = usuarioDesafioService.buscarPorId(usuarioDesafioDTO.getIdUsuarioDesafio());
         if (usuarioDesafioExistente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Usuario desafío no encontrado");
+                    .body(mensajes.get("usuario.desafio.no.encontrado"));
         }
         if (!usuarioActual.puedeGestionar(autenticacion, usuarioDesafioExistente.get().getUsuario().getIdUsuario())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         }
         if (!usuarioActual.puedeGestionar(autenticacion, usuarioDesafioDTO.getIdUsuario())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         }
         Optional<Usuario> usuario = usuarioService.listId(usuarioDesafioDTO.getIdUsuario());
         if (usuario.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("El usuario con ID " + usuarioDesafioDTO.getIdUsuario() + " no existe.");
+                    .body(mensajes.get("usuario.id.no.existe", String.valueOf(usuarioDesafioDTO.getIdUsuario())));
         }
         Optional<Desafio> desafio = desafioService.buscarPorId(usuarioDesafioDTO.getIdDesafio());
         if (desafio.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("El desafío con ID " + usuarioDesafioDTO.getIdDesafio() + " no existe.");
+                    .body(mensajes.get("desafio.id.no.existe", String.valueOf(usuarioDesafioDTO.getIdDesafio())));
         }
         if (!porcentajeValido(usuarioDesafioDTO.getPorcentajeProgreso())) {
-            return ResponseEntity.badRequest().body("El porcentaje debe estar entre 0 y 100");
+            return ResponseEntity.badRequest().body(mensajes.get("porcentaje.debe.estar.entre.0"));
         }
         if (usuarioDesafioDTO.getEstadoDesafio() == null || usuarioDesafioDTO.getEstadoDesafio().isBlank()) {
-            return ResponseEntity.badRequest().body("El estado del desafío es obligatorio");
+            return ResponseEntity.badRequest().body(mensajes.get("estado.desafio.obligatorio"));
         }
         UsuarioDesafio usuarioDesafio = usuarioDesafioExistente.get();
         usuarioDesafio.setUsuario(usuario.get());
@@ -158,7 +161,7 @@ public class UsuarioDesafioController {
         usuarioDesafio.setPorcentajeProgreso(usuarioDesafioDTO.getPorcentajeProgreso());
         usuarioDesafio.setEstadoDesafio(usuarioDesafioDTO.getEstadoDesafio());
         usuarioDesafioService.actualizar(usuarioDesafio);
-        return ResponseEntity.ok("Usuario desafío actualizado correctamente");
+        return ResponseEntity.ok(mensajes.get("usuario.desafio.actualizado.correctamente"));
     }
 
     @Operation(summary = "Eliminar una participación (borrado lógico)")
@@ -168,13 +171,13 @@ public class UsuarioDesafioController {
         Optional<UsuarioDesafio> usuarioDesafio = usuarioDesafioService.buscarPorId(id);
         if (usuarioDesafio.isPresent()) {
             if (!usuarioActual.puedeGestionar(autenticacion, usuarioDesafio.get().getUsuario().getIdUsuario())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
             }
             usuarioDesafioService.eliminar(id);
-            return ResponseEntity.ok("Usuario desafío eliminado correctamente");
+            return ResponseEntity.ok(mensajes.get("usuario.desafio.eliminado.correctamente"));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Usuario desafío no encontrado");
+                    .body(mensajes.get("usuario.desafio.no.encontrado"));
         }
     }
 
@@ -186,10 +189,10 @@ public class UsuarioDesafioController {
                                                             @RequestParam String estadoDesafio,
                                                             Authentication autenticacion) {
         if (!usuarioActual.puedeGestionar(autenticacion, idUsuario)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         }
         if (usuarioService.listId(idUsuario).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("usuario.no.encontrado"));
         }
         ModelMapper modelMapper = crearModelMapper();
         List<UsuarioDesafioDTO> listaUsuarioDesafios = usuarioDesafioService.buscarPorUsuarioYEstadoDesafio(idUsuario, estadoDesafio).stream()
@@ -204,7 +207,7 @@ public class UsuarioDesafioController {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> contarUsuariosPorDesafio(@PathVariable int idDesafio) {
         if (desafioService.buscarPorId(idDesafio).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Desafío no encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("desafio.no.encontrado"));
         }
         return ResponseEntity.ok(usuarioDesafioService.contarUsuariosPorDesafio(idDesafio));
     }

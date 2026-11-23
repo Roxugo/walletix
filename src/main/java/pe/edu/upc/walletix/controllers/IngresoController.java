@@ -13,6 +13,7 @@ import pe.edu.upc.walletix.dtos.IngresoDto;
 import pe.edu.upc.walletix.entities.Ingreso;
 import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.entities.Categoria;
+import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
 import pe.edu.upc.walletix.servicesinterfaces.ICategoriaService;
 import pe.edu.upc.walletix.servicesinterfaces.IngresoServiceInterface;
@@ -26,6 +27,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/ingresos")
 public class IngresoController {
+    @Autowired
+    private Mensajes mensajes;
     // Usuario que inició sesión: un USUARIO solo trabaja con sus datos, un ADMIN con todos
     @Autowired
     private UsuarioActual usuarioActual;
@@ -59,14 +62,14 @@ public class IngresoController {
     public ResponseEntity<?> registrar(@RequestBody IngresoDto dto, Authentication autenticacion) {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
-        if (!usuarioActual.puedeGestionar(autenticacion, dto.getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+        if (!usuarioActual.puedeGestionar(autenticacion, dto.getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
 
         Optional<Usuario> usuario = usuarioService.listId(dto.getIdUsuario());
-        if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("usuario.no.encontrado"));
         Optional<Categoria> categoria = categoriaService.listId(dto.getIdCategoria());
-        if (categoria.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Categoría no encontrada");
-        if (!categoria.get().getTipoCategoria().equals("ingreso")) return ResponseEntity.badRequest().body("La categoría debe ser de tipo ingreso");
-        if (!usuarioActual.categoriaDisponible(categoria.get(), dto.getIdUsuario())) return ResponseEntity.badRequest().body("La categoría no pertenece al usuario");
+        if (categoria.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("categoria.no.encontrada"));
+        if (!categoria.get().getTipoCategoria().equals("ingreso")) return ResponseEntity.badRequest().body(mensajes.get("categoria.debe.ser.tipo.ingreso"));
+        if (!usuarioActual.categoriaDisponible(categoria.get(), dto.getIdUsuario())) return ResponseEntity.badRequest().body(mensajes.get("categoria.no.pertenece.usuario"));
 
         Ingreso ingreso = toEntity(dto);
         ingreso.setUsuario(usuario.get());
@@ -80,8 +83,8 @@ public class IngresoController {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorId(@PathVariable int id, Authentication autenticacion) {
         Optional<Ingreso> ingreso = ingresoService.buscarPorId(id);
-        if (ingreso.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ingreso no encontrado");
-        if (!usuarioActual.puedeGestionar(autenticacion, ingreso.get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+        if (ingreso.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("ingreso.no.encontrado"));
+        if (!usuarioActual.puedeGestionar(autenticacion, ingreso.get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         return ResponseEntity.ok(toDto(ingreso.get(), new ModelMapper()));
     }
 
@@ -93,16 +96,16 @@ public class IngresoController {
         if (error != null) return ResponseEntity.badRequest().body(error);
 
         Optional<Ingreso> existente = ingresoService.buscarPorId(dto.getIdIngreso());
-        if (existente.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ingreso no encontrado");
+        if (existente.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("ingreso.no.encontrado"));
         // Debe ser dueño del registro y no puede pasárselo a otro usuario
-        if (!usuarioActual.puedeGestionar(autenticacion, existente.get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
-        if (!usuarioActual.puedeGestionar(autenticacion, dto.getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+        if (!usuarioActual.puedeGestionar(autenticacion, existente.get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
+        if (!usuarioActual.puedeGestionar(autenticacion, dto.getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         Optional<Usuario> usuario = usuarioService.listId(dto.getIdUsuario());
-        if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+        if (usuario.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("usuario.no.encontrado"));
         Optional<Categoria> categoria = categoriaService.listId(dto.getIdCategoria());
-        if (categoria.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Categoría no encontrada");
-        if (!categoria.get().getTipoCategoria().equals("ingreso")) return ResponseEntity.badRequest().body("La categoría debe ser de tipo ingreso");
-        if (!usuarioActual.categoriaDisponible(categoria.get(), dto.getIdUsuario())) return ResponseEntity.badRequest().body("La categoría no pertenece al usuario");
+        if (categoria.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("categoria.no.encontrada"));
+        if (!categoria.get().getTipoCategoria().equals("ingreso")) return ResponseEntity.badRequest().body(mensajes.get("categoria.debe.ser.tipo.ingreso"));
+        if (!usuarioActual.categoriaDisponible(categoria.get(), dto.getIdUsuario())) return ResponseEntity.badRequest().body(mensajes.get("categoria.no.pertenece.usuario"));
 
         Ingreso ingreso = existente.get();
         ingreso.setMonto(dto.getMonto());
@@ -114,7 +117,7 @@ public class IngresoController {
         ingreso.setUsuario(usuario.get());
         ingreso.setCategoria(categoria.get());
         ingresoService.actualizar(ingreso);
-        return ResponseEntity.ok("Ingreso actualizado correctamente");
+        return ResponseEntity.ok(mensajes.get("ingreso.actualizado.correctamente"));
     }
 
     @Operation(summary = "Eliminar un ingreso (borrado lógico)")
@@ -122,11 +125,11 @@ public class IngresoController {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<String> eliminar(@PathVariable int id, Authentication autenticacion) {
         if (ingresoService.buscarPorId(id).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Ingreso no encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("ingreso.no.encontrado"));
         }
-        if (!usuarioActual.puedeGestionar(autenticacion, ingresoService.buscarPorId(id).get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+        if (!usuarioActual.puedeGestionar(autenticacion, ingresoService.buscarPorId(id).get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         ingresoService.eliminar(id);
-        return ResponseEntity.ok("Ingreso eliminado correctamente");
+        return ResponseEntity.ok(mensajes.get("ingreso.eliminado.correctamente"));
     }
 
     private Ingreso toEntity(IngresoDto dto) {
@@ -150,15 +153,15 @@ public class IngresoController {
     }
 
     private String validar(IngresoDto dto) {
-        if (dto == null) return "Se requiere información del ingreso";
-        if (dto.getIdIngreso() < 0) return "El id del ingreso no puede ser negativo";
-        if (dto.getMonto() <= 0) return "El monto debe ser mayor que cero";
-        if (dto.getFecha() == null) return "Se requiere una fecha";
-        if (dto.getTipoIngreso() == null || dto.getTipoIngreso().isBlank()) return "Se requiere el tipo de ingreso";
-        if (dto.getFrecuencia() == null || dto.getFrecuencia().isBlank()) return "Se requiere la frecuencia";
-        if (dto.getFuente() == null || dto.getFuente().isBlank()) return "Se requiere la fuente";
-        if (dto.getIdUsuario() <= 0) return "Se requiere un id de usuario válido";
-        if (dto.getIdCategoria() <= 0) return "Se requiere un id de categoría válido";
+        if (dto == null) return mensajes.get("requiere.informacion.ingreso");
+        if (dto.getIdIngreso() < 0) return mensajes.get("id.ingreso.no.puede.ser");
+        if (dto.getMonto() <= 0) return mensajes.get("monto.debe.ser.mayor.cero");
+        if (dto.getFecha() == null) return mensajes.get("requiere.fecha");
+        if (dto.getTipoIngreso() == null || dto.getTipoIngreso().isBlank()) return mensajes.get("requiere.tipo.ingreso");
+        if (dto.getFrecuencia() == null || dto.getFrecuencia().isBlank()) return mensajes.get("requiere.frecuencia");
+        if (dto.getFuente() == null || dto.getFuente().isBlank()) return mensajes.get("requiere.fuente");
+        if (dto.getIdUsuario() <= 0) return mensajes.get("requiere.id.usuario.valido");
+        if (dto.getIdCategoria() <= 0) return mensajes.get("requiere.id.categoria.valido");
         return null;
     }
 }

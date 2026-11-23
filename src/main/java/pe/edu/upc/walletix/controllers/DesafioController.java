@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.DesafioDTO;
 import pe.edu.upc.walletix.entities.Desafio;
+import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.servicesinterfaces.IDesafioService;
 
 import java.math.BigDecimal;
@@ -22,6 +23,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/desafios")
 public class DesafioController {
+    @Autowired
+    private Mensajes mensajes;
     @Autowired
     private IDesafioService desafioService;
 
@@ -66,7 +69,7 @@ public class DesafioController {
         if (desafio.isPresent()) {
             return ResponseEntity.ok(modelMapper.map(desafio.get(), DesafioDTO.class));
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Desafío no encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("desafio.no.encontrado"));
         }
     }
 
@@ -76,7 +79,7 @@ public class DesafioController {
     public ResponseEntity<String> actualizar(@RequestBody DesafioDTO desafioDTO) {
         Optional<Desafio> desafioExistente = desafioService.buscarPorId(desafioDTO.getIdDesafio());
         if (desafioExistente.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Desafío no encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("desafio.no.encontrado"));
         }
         String error = validar(desafioDTO);
         if (error != null) {
@@ -93,7 +96,7 @@ public class DesafioController {
         desafio.setEdadMinima(desafioDTO.getEdadMinima());
         desafio.setSaldoProyectado(desafioDTO.getSaldoProyectado());
         desafioService.actualizar(desafio);
-        return ResponseEntity.ok("Desafío actualizado correctamente");
+        return ResponseEntity.ok(mensajes.get("desafio.actualizado.correctamente"));
     }
 
     @Operation(summary = "Eliminar un desafío (borrado lógico, solo ADMIN)")
@@ -105,12 +108,12 @@ public class DesafioController {
             // No se elimina un catálogo del que todavía dependen registros activos
             if (desafioService.tieneRegistrosActivos(id)) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body("No se puede eliminar: el desafío tiene participantes activos");
+                        .body(mensajes.get("no.puede.eliminar.desafio.tiene"));
             }
             desafioService.eliminar(id);
-            return ResponseEntity.ok("Desafío eliminado correctamente");
+            return ResponseEntity.ok(mensajes.get("desafio.eliminado.correctamente"));
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Desafío no encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("desafio.no.encontrado"));
         }
     }
 
@@ -132,7 +135,7 @@ public class DesafioController {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarPorEdadMinima(@PathVariable int edad) {
         if (edad < 0) {
-            return ResponseEntity.badRequest().body("La edad no puede ser negativa");
+            return ResponseEntity.badRequest().body(mensajes.get("edad.no.puede.ser.negativa"));
         }
         ModelMapper modelMapper = crearModelMapper();
         List<DesafioDTO> listaDesafios = desafioService.buscarPorEdadMinima(edad).stream()
@@ -143,26 +146,26 @@ public class DesafioController {
 
     private String validar(DesafioDTO desafioDTO) {
         if (desafioDTO.getTitulo() == null || desafioDTO.getTitulo().isBlank()) {
-            return "El título es obligatorio";
+            return mensajes.get("titulo.obligatorio");
         }
         if (desafioDTO.getDescripcion() == null || desafioDTO.getDescripcion().isBlank()) {
-            return "La descripción es obligatoria";
+            return mensajes.get("descripcion.obligatoria");
         }
         if (desafioDTO.getPuntosRecompensa() < 0) {
-            return "Los puntos de recompensa no pueden ser negativos";
+            return mensajes.get("puntos.recompensa.no.pueden.ser");
         }
         if (desafioDTO.getEdadMinima() < 0) {
-            return "La edad mínima no puede ser negativa";
+            return mensajes.get("edad.minima.no.puede.ser");
         }
         if (desafioDTO.getFechaInicio() == null || desafioDTO.getFechaFin() == null) {
-            return "Las fechas de inicio y fin son obligatorias";
+            return mensajes.get("fechas.inicio.fin.son.obligatorias");
         }
         if (desafioDTO.getMontoObjetivo() == null || desafioDTO.getMontoObjetivo().compareTo(BigDecimal.ZERO) <= 0) {
-            return "El monto objetivo debe ser mayor a 0";
+            return mensajes.get("monto.objetivo.debe.ser.mayor");
         }
         if (desafioDTO.getFechaInicio() != null && desafioDTO.getFechaFin() != null
                 && desafioDTO.getFechaFin().isBefore(desafioDTO.getFechaInicio())) {
-            return "La fecha fin no puede ser anterior a la fecha inicio";
+            return mensajes.get("fecha.fin.no.puede.ser");
         }
         return null;
     }

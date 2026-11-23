@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.NotificacionDTO;
 import pe.edu.upc.walletix.entities.Notificacion;
 import pe.edu.upc.walletix.entities.Usuario;
+import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.servicesinterfaces.INotificacionService;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
 import pe.edu.upc.walletix.securities.UsuarioActual;
@@ -25,6 +26,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/notificaciones")
 public class NotificacionController {
+    @Autowired
+    private Mensajes mensajes;
     // Usuario que inició sesión: un USUARIO solo trabaja con sus datos, un ADMIN con todos
     @Autowired
     private UsuarioActual usuarioActual;
@@ -39,13 +42,13 @@ public class NotificacionController {
 
     private String validar(NotificacionDTO dto) {
         if (estaVacio(dto.getTitulo())) {
-            return "El título es obligatorio";
+            return mensajes.get("titulo.obligatorio");
         }
         if (estaVacio(dto.getTipo())) {
-            return "El tipo es obligatorio";
+            return mensajes.get("tipo.obligatorio");
         }
         if (estaVacio(dto.getMensaje())) {
-            return "El mensaje es obligatorio";
+            return mensajes.get("mensaje.obligatorio");
         }
         return null;
     }
@@ -89,12 +92,12 @@ public class NotificacionController {
             return ResponseEntity.badRequest().body(errorTexto);
         }
         if (!usuarioActual.puedeGestionar(autenticacion, notificacionDTO.getIdUsuario())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         }
         Optional<Usuario> usuario = usuarioService.listId(notificacionDTO.getIdUsuario());
         if (usuario.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("El usuario con ID " + notificacionDTO.getIdUsuario() + " no existe.");
+                    .body(mensajes.get("usuario.id.no.existe", String.valueOf(notificacionDTO.getIdUsuario())));
         }
         ModelMapper modelMapper = crearModelMapper();
         Notificacion nuevaNotificacion = modelMapper.map(notificacionDTO, Notificacion.class);
@@ -111,12 +114,12 @@ public class NotificacionController {
         Optional<Notificacion> notificacion = notificacionService.buscarPorId(id);
         if (notificacion.isPresent()) {
             if (!usuarioActual.puedeGestionar(autenticacion, notificacion.get().getUsuario().getIdUsuario())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
             }
             return ResponseEntity.ok(convertirADTO(notificacion.get(), crearModelMapper()));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Notificación no encontrada");
+                    .body(mensajes.get("notificacion.no.encontrada"));
         }
     }
 
@@ -131,18 +134,18 @@ public class NotificacionController {
         Optional<Notificacion> notificacionExistente = notificacionService.buscarPorId(notificacionDTO.getIdNotificacion());
         if (notificacionExistente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Notificación no encontrada");
+                    .body(mensajes.get("notificacion.no.encontrada"));
         }
         if (!usuarioActual.puedeGestionar(autenticacion, notificacionExistente.get().getUsuario().getIdUsuario())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         }
         if (!usuarioActual.puedeGestionar(autenticacion, notificacionDTO.getIdUsuario())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         }
         Optional<Usuario> usuario = usuarioService.listId(notificacionDTO.getIdUsuario());
         if (usuario.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("El usuario con ID " + notificacionDTO.getIdUsuario() + " no existe.");
+                    .body(mensajes.get("usuario.id.no.existe", String.valueOf(notificacionDTO.getIdUsuario())));
         }
         Notificacion notificacion = notificacionExistente.get();
         notificacion.setUsuario(usuario.get());
@@ -151,7 +154,7 @@ public class NotificacionController {
         notificacion.setMensaje(notificacionDTO.getMensaje());
         notificacion.setEstadoNotificacion(notificacionDTO.isEstadoNotificacion());
         notificacionService.actualizar(notificacion);
-        return ResponseEntity.ok("Notificación actualizada correctamente");
+        return ResponseEntity.ok(mensajes.get("notificacion.actualizada.correctamente"));
     }
 
     @Operation(summary = "Eliminar una notificación (borrado lógico)")
@@ -161,13 +164,13 @@ public class NotificacionController {
         Optional<Notificacion> notificacion = notificacionService.buscarPorId(id);
         if (notificacion.isPresent()) {
             if (!usuarioActual.puedeGestionar(autenticacion, notificacion.get().getUsuario().getIdUsuario())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
             }
             notificacionService.eliminar(id);
-            return ResponseEntity.ok("Notificación eliminada correctamente");
+            return ResponseEntity.ok(mensajes.get("notificacion.eliminada.correctamente"));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Notificación no encontrada");
+                    .body(mensajes.get("notificacion.no.encontrada"));
         }
     }
 
@@ -177,10 +180,10 @@ public class NotificacionController {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> buscarNoLeidasPorUsuario(@PathVariable int idUsuario, Authentication autenticacion) {
         if (!usuarioActual.puedeGestionar(autenticacion, idUsuario)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         }
         if (usuarioService.listId(idUsuario).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("usuario.no.encontrado"));
         }
         ModelMapper modelMapper = crearModelMapper();
         List<NotificacionDTO> listaNotificaciones = notificacionService.buscarNoLeidasPorUsuario(idUsuario).stream()
@@ -195,10 +198,10 @@ public class NotificacionController {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     public ResponseEntity<?> contarNoLeidasPorUsuario(@PathVariable int idUsuario, Authentication autenticacion) {
         if (!usuarioActual.puedeGestionar(autenticacion, idUsuario)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         }
         if (usuarioService.listId(idUsuario).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("usuario.no.encontrado"));
         }
         return ResponseEntity.ok(notificacionService.contarNoLeidasPorUsuario(idUsuario));
     }

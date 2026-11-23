@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.PreguntaQuizDTO;
 import pe.edu.upc.walletix.entities.Microleccion;
 import pe.edu.upc.walletix.entities.PreguntaQuiz;
+import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.servicesinterfaces.IMicroleccionService;
 import pe.edu.upc.walletix.servicesinterfaces.IPreguntaQuizService;
 
@@ -23,6 +24,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/preguntas-quiz")
 public class PreguntaQuizController {
     @Autowired
+    private Mensajes mensajes;
+    @Autowired
     private IPreguntaQuizService preguntaQuizService;
     @Autowired
     private IMicroleccionService microleccionService;
@@ -33,23 +36,23 @@ public class PreguntaQuizController {
 
     private String validar(PreguntaQuizDTO preguntaQuizDTO) {
         if (estaVacio(preguntaQuizDTO.getEnunciadoPreguntaQuiz())) {
-            return "El enunciado es obligatorio";
+            return mensajes.get("enunciado.obligatorio");
         }
         if (estaVacio(preguntaQuizDTO.getOpcionAPreguntaQuiz()) || estaVacio(preguntaQuizDTO.getOpcionBPreguntaQuiz())) {
-            return "Las opciones A y B son obligatorias";
+            return mensajes.get("opciones.b.son.obligatorias");
         }
         String opcionCorrecta = preguntaQuizDTO.getOpcionCorrectaPreguntaQuiz();
         if (opcionCorrecta == null || !opcionCorrecta.toUpperCase().matches("[ABCD]")) {
-            return "La opción correcta debe ser A, B, C o D";
+            return mensajes.get("opcion.correcta.debe.ser.b");
         }
         if (opcionCorrecta.equalsIgnoreCase("C") && estaVacio(preguntaQuizDTO.getOpcionCPreguntaQuiz())) {
-            return "La opción correcta es C, pero la opción C está vacía";
+            return mensajes.get("opcion.correcta.c.pero.opcion");
         }
         if (opcionCorrecta.equalsIgnoreCase("D") && estaVacio(preguntaQuizDTO.getOpcionDPreguntaQuiz())) {
-            return "La opción correcta es D, pero la opción D está vacía";
+            return mensajes.get("opcion.correcta.d.pero.opcion");
         }
         if (estaVacio(preguntaQuizDTO.getExplicacionPreguntaQuiz())) {
-            return "La explicación es obligatoria";
+            return mensajes.get("explicacion.obligatoria");
         }
         return null;
     }
@@ -76,11 +79,11 @@ public class PreguntaQuizController {
         Optional<Microleccion> microleccion = microleccionService.listId(preguntaQuizDTO.getIdMicroleccion());
         if (microleccion.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Microlección no encontrada");
+                    .body(mensajes.get("microleccion.no.encontrada"));
         }
         if (!microleccion.get().getTipoMicroleccion().equals("leccion")) {
             return ResponseEntity.badRequest()
-                    .body("Solo las microlecciones de tipo leccion tienen quiz");
+                    .body(mensajes.get("solo.microlecciones.tipo.leccion.tienen"));
         }
 
         ModelMapper modelMapper = new ModelMapper();
@@ -103,7 +106,7 @@ public class PreguntaQuizController {
             return ResponseEntity.ok(preguntaQuizDTO);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Pregunta no encontrada");
+                    .body(mensajes.get("pregunta.no.encontrada"));
         }
     }
 
@@ -118,12 +121,12 @@ public class PreguntaQuizController {
         Optional<PreguntaQuiz> preguntaExistente = preguntaQuizService.listId(preguntaQuizDTO.getIdPreguntaQuiz());
         if (preguntaExistente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Pregunta no encontrada");
+                    .body(mensajes.get("pregunta.no.encontrada"));
         }
         Optional<Microleccion> microleccion = microleccionService.listId(preguntaQuizDTO.getIdMicroleccion());
         if (microleccion.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Microlección no encontrada");
+                    .body(mensajes.get("microleccion.no.encontrada"));
         }
         PreguntaQuiz preguntaQuiz = preguntaExistente.get();
         preguntaQuiz.setMicroleccion(microleccion.get());
@@ -135,7 +138,7 @@ public class PreguntaQuizController {
         preguntaQuiz.setOpcionCorrectaPreguntaQuiz(preguntaQuizDTO.getOpcionCorrectaPreguntaQuiz().toUpperCase());
         preguntaQuiz.setExplicacionPreguntaQuiz(preguntaQuizDTO.getExplicacionPreguntaQuiz());
         preguntaQuizService.update(preguntaQuiz);
-        return ResponseEntity.ok("Pregunta actualizada correctamente");
+        return ResponseEntity.ok(mensajes.get("pregunta.actualizada.correctamente"));
     }
 
     @Operation(summary = "Eliminar una pregunta de quiz (borrado lógico, solo ADMIN)")
@@ -145,10 +148,10 @@ public class PreguntaQuizController {
         Optional<PreguntaQuiz> preguntaQuiz = preguntaQuizService.listId(idPreguntaQuiz);
         if (preguntaQuiz.isPresent()) {
             preguntaQuizService.delete(idPreguntaQuiz);
-            return ResponseEntity.ok("Pregunta eliminada correctamente");
+            return ResponseEntity.ok(mensajes.get("pregunta.eliminada.correctamente"));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Pregunta no encontrada");
+                    .body(mensajes.get("pregunta.no.encontrada"));
         }
     }
 
@@ -159,7 +162,7 @@ public class PreguntaQuizController {
     public ResponseEntity<?> listarPorMicroleccion(@PathVariable int idMicroleccion) {
         if (microleccionService.listId(idMicroleccion).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Microlección no encontrada");
+                    .body(mensajes.get("microleccion.no.encontrada"));
         }
         ModelMapper modelMapper = new ModelMapper();
         List<PreguntaQuizDTO> listaPreguntas = preguntaQuizService.listarPorMicroleccion(idMicroleccion).stream()

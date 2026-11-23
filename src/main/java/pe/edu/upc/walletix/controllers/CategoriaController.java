@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.CategoriaDTO;
 import pe.edu.upc.walletix.entities.Categoria;
 import pe.edu.upc.walletix.entities.Usuario;
+import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.servicesinterfaces.ICategoriaService;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
 import pe.edu.upc.walletix.securities.UsuarioActual;
@@ -24,6 +25,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/categorias")
 public class CategoriaController {
+    @Autowired
+    private Mensajes mensajes;
     // Usuario que inició sesión: un USUARIO solo trabaja con sus datos, un ADMIN con todos
     @Autowired
     private UsuarioActual usuarioActual;
@@ -38,17 +41,17 @@ public class CategoriaController {
 
     private String validar(CategoriaDTO categoriaDTO) {
         if (estaVacio(categoriaDTO.getNombreCategoria())) {
-            return "El nombre es obligatorio";
+            return mensajes.get("nombre.obligatorio");
         }
         if (categoriaDTO.getTipoCategoria() == null
                 || !(categoriaDTO.getTipoCategoria().equalsIgnoreCase("gasto") || categoriaDTO.getTipoCategoria().equalsIgnoreCase("ingreso"))) {
-            return "El tipo debe ser gasto o ingreso";
+            return mensajes.get("tipo.debe.ser.gasto.ingreso");
         }
         if (estaVacio(categoriaDTO.getUrlIconoCategoria())) {
-            return "La URL del ícono es obligatoria";
+            return mensajes.get("url.icono.obligatoria");
         }
         if (categoriaDTO.getColorHexCategoria() == null || !categoriaDTO.getColorHexCategoria().matches("#[0-9A-Fa-f]{6}")) {
-            return "El color debe tener el formato #RRGGBB, por ejemplo #FF5733";
+            return mensajes.get("color.debe.tener.formato.rrggbb");
         }
         return null;
     }
@@ -78,12 +81,12 @@ public class CategoriaController {
             return ResponseEntity.badRequest().body(error);
         }
         if (!usuarioActual.puedeGestionar(autenticacion, categoriaDTO.getIdUsuario())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         }
         Optional<Usuario> usuario = usuarioService.listId(categoriaDTO.getIdUsuario());
         if (usuario.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Usuario no encontrado");
+                    .body(mensajes.get("usuario.no.encontrado"));
         }
         ModelMapper modelMapper = new ModelMapper();
         categoriaDTO.setTipoCategoria(categoriaDTO.getTipoCategoria().toLowerCase());
@@ -106,12 +109,12 @@ public class CategoriaController {
         Optional<Categoria> categoria = categoriaService.listId(idCategoria);
         if (categoria.isPresent()) {
             if (!categoria.get().isPredeterminadoCategoria() && !usuarioActual.puedeGestionar(autenticacion, categoria.get().getUsuario().getIdUsuario())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
             }
             return ResponseEntity.ok(modelMapper.map(categoria.get(), CategoriaDTO.class));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Categoría no encontrada");
+                    .body(mensajes.get("categoria.no.encontrada"));
         }
     }
 
@@ -126,19 +129,19 @@ public class CategoriaController {
         Optional<Categoria> categoriaExistente = categoriaService.listId(categoriaDTO.getIdCategoria());
         if (categoriaExistente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Categoría no encontrada");
+                    .body(mensajes.get("categoria.no.encontrada"));
         }
         // Las predeterminadas son del ADMIN, así que un USUARIO no puede editarlas
         if (!usuarioActual.puedeGestionar(autenticacion, categoriaExistente.get().getUsuario().getIdUsuario())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         }
         if (!usuarioActual.puedeGestionar(autenticacion, categoriaDTO.getIdUsuario())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         }
         Optional<Usuario> usuario = usuarioService.listId(categoriaDTO.getIdUsuario());
         if (usuario.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Usuario no encontrado");
+                    .body(mensajes.get("usuario.no.encontrado"));
         }
         Categoria categoria = categoriaExistente.get();
         categoria.setUsuario(usuario.get());
@@ -150,7 +153,7 @@ public class CategoriaController {
             categoria.setPredeterminadoCategoria(categoriaDTO.isPredeterminadoCategoria());
         }
         categoriaService.update(categoria);
-        return ResponseEntity.ok("Categoría actualizada correctamente");
+        return ResponseEntity.ok(mensajes.get("categoria.actualizada.correctamente"));
     }
 
     @Operation(summary = "Eliminar una categoría (borrado lógico)")
@@ -160,18 +163,18 @@ public class CategoriaController {
         Optional<Categoria> categoria = categoriaService.listId(idCategoria);
         if (categoria.isPresent()) {
             if (!usuarioActual.puedeGestionar(autenticacion, categoria.get().getUsuario().getIdUsuario())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
             }
             // No se elimina un catálogo del que todavía dependen registros activos
             if (categoriaService.tieneRegistrosActivos(idCategoria)) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body("No se puede eliminar: la categoría tiene comercios, gastos, ingresos o presupuestos activos");
+                        .body(mensajes.get("no.puede.eliminar.categoria.tiene"));
             }
             categoriaService.delete(idCategoria);
-            return ResponseEntity.ok("Categoría eliminada correctamente");
+            return ResponseEntity.ok(mensajes.get("categoria.eliminada.correctamente"));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Categoría no encontrada");
+                    .body(mensajes.get("categoria.no.encontrada"));
         }
     }
 

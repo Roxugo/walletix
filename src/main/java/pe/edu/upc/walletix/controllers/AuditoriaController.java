@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.AuditoriaDTO;
 import pe.edu.upc.walletix.entities.Auditoria;
+import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.servicesinterfaces.IAuditoriaService;
 
 import java.util.List;
@@ -23,6 +24,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/auditorias")
 public class AuditoriaController {
+    @Autowired
+    private Mensajes mensajes;
 
     @Autowired
     private IAuditoriaService auditoriaService;
@@ -76,7 +79,7 @@ public class AuditoriaController {
             return ResponseEntity.ok(dto);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Registro de auditoría no encontrado");
+                    .body(mensajes.get("registro.auditoria.no.encontrado"));
         }
     }
 }

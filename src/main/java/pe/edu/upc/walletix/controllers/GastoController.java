@@ -14,6 +14,7 @@ import pe.edu.upc.walletix.entities.Categoria;
 import pe.edu.upc.walletix.entities.Comerciante;
 import pe.edu.upc.walletix.entities.Gasto;
 import pe.edu.upc.walletix.entities.Usuario;
+import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.servicesinterfaces.ICategoriaService;
 import pe.edu.upc.walletix.servicesinterfaces.IComercianteService;
 import pe.edu.upc.walletix.servicesinterfaces.IGastoService;
@@ -30,6 +31,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/gastos")
 public class GastoController {
+    @Autowired
+    private Mensajes mensajes;
     // Usuario que inició sesión: un USUARIO solo trabaja con sus datos, un ADMIN con todos
     @Autowired
     private UsuarioActual usuarioActual;
@@ -48,19 +51,19 @@ public class GastoController {
 
     private String validar(GastoDTO gastoDTO) {
         if (gastoDTO.getMontoGasto() == null || gastoDTO.getMontoGasto().compareTo(BigDecimal.ZERO) <= 0) {
-            return "El monto debe ser mayor que cero";
+            return mensajes.get("monto.debe.ser.mayor.cero");
         }
         if (gastoDTO.getFechaGasto() == null) {
-            return "La fecha es obligatoria";
+            return mensajes.get("fecha.obligatoria");
         }
         if (gastoDTO.getFechaGasto().isAfter(LocalDate.now())) {
-            return "La fecha del gasto no puede ser futura";
+            return mensajes.get("fecha.gasto.no.puede.ser");
         }
         if (estaVacio(gastoDTO.getDescripcionGasto())) {
-            return "La descripción es obligatoria";
+            return mensajes.get("descripcion.obligatoria");
         }
         if (estaVacio(gastoDTO.getMetodoPagoGasto())) {
-            return "El método de pago es obligatorio";
+            return mensajes.get("metodo.pago.obligatorio");
         }
         return null;
     }
@@ -103,29 +106,29 @@ public class GastoController {
             return ResponseEntity.badRequest().body(error);
         }
         if (!usuarioActual.puedeGestionar(autenticacion, gastoDTO.getIdUsuario())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         }
         Optional<Usuario> usuario = usuarioService.listId(gastoDTO.getIdUsuario());
         if (usuario.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Usuario no encontrado");
+                    .body(mensajes.get("usuario.no.encontrado"));
         }
         Optional<Categoria> categoria = categoriaService.listId(gastoDTO.getIdCategoria());
         if (categoria.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Categoría no encontrada");
+                    .body(mensajes.get("categoria.no.encontrada"));
         }
         if (!categoria.get().getTipoCategoria().equals("gasto")) {
             return ResponseEntity.badRequest()
-                    .body("La categoría debe ser de tipo gasto");
+                    .body(mensajes.get("categoria.debe.ser.tipo.gasto"));
         }
         if (!usuarioActual.categoriaDisponible(categoria.get(), gastoDTO.getIdUsuario())) {
-            return ResponseEntity.badRequest().body("La categoría no pertenece al usuario");
+            return ResponseEntity.badRequest().body(mensajes.get("categoria.no.pertenece.usuario"));
         }
         Optional<Comerciante> comerciante = comercianteService.listId(gastoDTO.getIdComerciante());
         if (comerciante.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Comercio no encontrado");
+                    .body(mensajes.get("comercio.no.encontrado"));
         }
 
         ModelMapper modelMapper = new ModelMapper();
@@ -144,12 +147,12 @@ public class GastoController {
         Optional<Gasto> gasto = gastoService.listId(idGasto);
         if (gasto.isPresent()) {
             if (!usuarioActual.puedeGestionar(autenticacion, gasto.get().getUsuario().getIdUsuario())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
             }
             return ResponseEntity.ok(convertirADTO(gasto.get()));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Gasto no encontrado");
+                    .body(mensajes.get("gasto.no.encontrado"));
         }
     }
 
@@ -164,27 +167,27 @@ public class GastoController {
         Optional<Gasto> gastoExistente = gastoService.listId(gastoDTO.getIdGasto());
         if (gastoExistente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Gasto no encontrado");
+                    .body(mensajes.get("gasto.no.encontrado"));
         }
         if (!usuarioActual.puedeGestionar(autenticacion, gastoExistente.get().getUsuario().getIdUsuario())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         }
         Optional<Categoria> categoria = categoriaService.listId(gastoDTO.getIdCategoria());
         if (categoria.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Categoría no encontrada");
+                    .body(mensajes.get("categoria.no.encontrada"));
         }
         if (!categoria.get().getTipoCategoria().equals("gasto")) {
             return ResponseEntity.badRequest()
-                    .body("La categoría debe ser de tipo gasto");
+                    .body(mensajes.get("categoria.debe.ser.tipo.gasto"));
         }
         if (!usuarioActual.categoriaDisponible(categoria.get(), gastoExistente.get().getUsuario().getIdUsuario())) {
-            return ResponseEntity.badRequest().body("La categoría no pertenece al usuario");
+            return ResponseEntity.badRequest().body(mensajes.get("categoria.no.pertenece.usuario"));
         }
         Optional<Comerciante> comerciante = comercianteService.listId(gastoDTO.getIdComerciante());
         if (comerciante.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Comercio no encontrado");
+                    .body(mensajes.get("comercio.no.encontrado"));
         }
         // El dueño del gasto no cambia al editarlo
         Gasto gasto = gastoExistente.get();
@@ -196,7 +199,7 @@ public class GastoController {
         gasto.setMetodoPagoGasto(gastoDTO.getMetodoPagoGasto());
         gasto.setFijoGasto(gastoDTO.isFijoGasto());
         gastoService.update(gasto);
-        return ResponseEntity.ok("Gasto actualizado correctamente");
+        return ResponseEntity.ok(mensajes.get("gasto.actualizado.correctamente"));
     }
 
     @Operation(summary = "Eliminar un gasto (borrado lógico)")
@@ -206,13 +209,13 @@ public class GastoController {
         Optional<Gasto> gasto = gastoService.listId(idGasto);
         if (gasto.isPresent()) {
             if (!usuarioActual.puedeGestionar(autenticacion, gasto.get().getUsuario().getIdUsuario())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
             }
             gastoService.delete(idGasto);
-            return ResponseEntity.ok("Gasto eliminado correctamente");
+            return ResponseEntity.ok(mensajes.get("gasto.eliminado.correctamente"));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Gasto no encontrado");
+                    .body(mensajes.get("gasto.no.encontrado"));
         }
     }
 
@@ -226,15 +229,15 @@ public class GastoController {
                                                     @RequestParam LocalDate fechaFin,
                                                     Authentication autenticacion) {
         if (!usuarioActual.puedeGestionar(autenticacion, idUsuario)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         }
         if (fechaInicio.isAfter(fechaFin)) {
             return ResponseEntity.badRequest()
-                    .body("La fecha de inicio no puede ser posterior a la fecha de fin");
+                    .body(mensajes.get("fecha.inicio.no.puede.ser"));
         }
         if (usuarioService.listId(idUsuario).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Usuario no encontrado");
+                    .body(mensajes.get("usuario.no.encontrado"));
         }
         List<GastoDTO> listaGastos = gastoService.buscarPorUsuarioYRango(idUsuario, fechaInicio, fechaFin).stream()
                 .map(gasto -> convertirADTO(gasto))

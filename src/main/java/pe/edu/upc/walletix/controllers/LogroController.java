@@ -10,6 +10,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.LogroDTO;
 import pe.edu.upc.walletix.entities.Logro;
+import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.servicesinterfaces.ILogroService;
 
 import java.util.List;
@@ -20,22 +21,24 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/logros")
 public class LogroController {
+    @Autowired
+    private Mensajes mensajes;
     private boolean estaVacio(String texto) {
         return texto == null || texto.isBlank();
     }
 
     private String validar(LogroDTO dto) {
         if (estaVacio(dto.getNombreLogro())) {
-            return "El nombre del logro es obligatorio";
+            return mensajes.get("nombre.logro.obligatorio");
         }
         if (estaVacio(dto.getDescripcionLogro())) {
-            return "La descripción del logro es obligatoria";
+            return mensajes.get("descripcion.logro.obligatoria");
         }
         if (estaVacio(dto.getUrlIconoLogro())) {
-            return "La URL del ícono es obligatoria";
+            return mensajes.get("url.icono.obligatoria");
         }
         if (dto.getPuntosLogro() < 0) {
-            return "Los puntos del logro no pueden ser negativos";
+            return mensajes.get("puntos.logro.no.pueden.ser");
         }
         return null;
     }
@@ -79,7 +82,7 @@ public class LogroController {
             return ResponseEntity.ok(dto);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Logro no encontrado");
+                    .body(mensajes.get("logro.no.encontrado"));
         }
     }
     @Operation(summary = "Actualizar los datos de un logro (solo ADMIN)")
@@ -93,7 +96,7 @@ public class LogroController {
         Optional<Logro> existente = logroService.listId(dto.getIdLogro());
         if (existente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Logro no encontrado");
+                    .body(mensajes.get("logro.no.encontrado"));
         }
         Logro ac = existente.get();
         ac.setNombreLogro(dto.getNombreLogro());
@@ -101,7 +104,7 @@ public class LogroController {
         ac.setUrlIconoLogro(dto.getUrlIconoLogro());
         ac.setPuntosLogro(dto.getPuntosLogro());
         logroService.update(ac);
-        return ResponseEntity.ok("Logro actualizado correctamente");
+        return ResponseEntity.ok(mensajes.get("logro.actualizado.correctamente"));
     }
     @Operation(summary = "Eliminar un logro (borrado lógico, solo ADMIN)")
     @DeleteMapping("/{id}")
@@ -112,13 +115,13 @@ public class LogroController {
             // No se elimina un catálogo del que todavía dependen registros activos
             if (logroService.tieneRegistrosActivos(id)) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body("No se puede eliminar: hay usuarios que ya obtuvieron este logro");
+                        .body(mensajes.get("no.puede.eliminar.hay.usuarios"));
             }
             logroService.delete(id);
-            return ResponseEntity.ok("Logro eliminado correctamente");
+            return ResponseEntity.ok(mensajes.get("logro.eliminado.correctamente"));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Logro no encontrado");
+                    .body(mensajes.get("logro.no.encontrado"));
         }
     }
 }

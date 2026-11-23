@@ -15,6 +15,7 @@ import pe.edu.upc.walletix.dtos.UsuarioLogrosCountDTO;
 import pe.edu.upc.walletix.entities.Logro;
 import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.entities.UsuarioLogro;
+import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.servicesinterfaces.ILogroService;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioLogroService;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
@@ -29,6 +30,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/usuarioslogros")
 public class UsuarioLogroController {
+    @Autowired
+    private Mensajes mensajes;
     // Usuario que inició sesión: un USUARIO solo trabaja con sus datos, un ADMIN con todos
     @Autowired
     private UsuarioActual usuarioActual;
@@ -72,14 +75,14 @@ public class UsuarioLogroController {
         Optional<Usuario> usuarioOpt = usuarioService.listId(dto.getIdUsuario());
         if (usuarioOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("El usuario con ID " + dto.getIdUsuario() + " no existe.");
+                    .body(mensajes.get("usuario.id.no.existe", String.valueOf(dto.getIdUsuario())));
         }
 
         // 2. Validar que el Logro foráneo exista y esté activo (si no existe, responde 404)
         Optional<Logro> logroOpt = logroService.listId(dto.getIdLogro());
         if (logroOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("El logro con ID " + dto.getIdLogro() + " no existe.");
+                    .body(mensajes.get("logro.id.no.existe", String.valueOf(dto.getIdLogro())));
         }
 
         ModelMapper m = new ModelMapper();
@@ -107,7 +110,7 @@ public class UsuarioLogroController {
         if (mach.isPresent()) {
             UsuarioLogro ul = mach.get();
             if (!usuarioActual.puedeGestionar(autenticacion, ul.getUsuario().getIdUsuario())) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("No tiene permiso sobre los datos de otro usuario");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
             }
             UsuarioLogroDTO dto = m.map(ul, UsuarioLogroDTO.class);
             if (ul.getUsuario() != null) dto.setIdUsuario(ul.getUsuario().getIdUsuario());
@@ -115,7 +118,7 @@ public class UsuarioLogroController {
             return ResponseEntity.ok(dto);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Registro no encontrado");
+                    .body(mensajes.get("registro.no.encontrado"));
         }
     }
     @Operation(summary = "Actualizar un logro de usuario (solo ADMIN)")
@@ -125,28 +128,28 @@ public class UsuarioLogroController {
         Optional<UsuarioLogro> existente = usuariologroService.listId(dto.getIdUsuarioLogro());
         if (existente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Registro no encontrado");
+                    .body(mensajes.get("registro.no.encontrado"));
         }
 
         // Validar que el Usuario foráneo exista y esté activo (si no existe, responde 404)
         Optional<Usuario> usuarioOpt = usuarioService.listId(dto.getIdUsuario());
         if (usuarioOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("El usuario con ID " + dto.getIdUsuario() + " no existe.");
+                    .body(mensajes.get("usuario.id.no.existe", String.valueOf(dto.getIdUsuario())));
         }
 
         // Validar que el Logro foráneo exista y esté activo (si no existe, responde 404)
         Optional<Logro> logroOpt = logroService.listId(dto.getIdLogro());
         if (logroOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("El logro con ID " + dto.getIdLogro() + " no existe.");
+                    .body(mensajes.get("logro.id.no.existe", String.valueOf(dto.getIdLogro())));
         }
 
         UsuarioLogro ah = existente.get();
         ah.setUsuario(usuarioOpt.get());
         ah.setLogro(logroOpt.get());
         usuariologroService.update(ah);
-        return ResponseEntity.ok("Registro actualizado correctamente");
+        return ResponseEntity.ok(mensajes.get("registro.actualizado.correctamente"));
     }
     @Operation(summary = "Quitar un logro a un usuario (borrado lógico, solo ADMIN)")
     @DeleteMapping("/{id}")
@@ -155,10 +158,10 @@ public class UsuarioLogroController {
         Optional<UsuarioLogro> usersAchiev = usuariologroService.listId(id);
         if (usersAchiev.isPresent()) {
             usuariologroService.delete(id);
-            return ResponseEntity.ok("Registro eliminado correctamente");
+            return ResponseEntity.ok(mensajes.get("registro.eliminado.correctamente"));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Registro no encontrado");
+                    .body(mensajes.get("registro.no.encontrado"));
         }
     }
     @Operation(summary = "Ranking de usuarios según la cantidad de logros obtenidos")
