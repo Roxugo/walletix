@@ -22,6 +22,7 @@ import pe.edu.upc.walletix.securities.UsuarioActual;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -195,6 +196,13 @@ public class IngresoController {
         if (dto.getIdIngreso() < 0) return mensajes.get("id.ingreso.no.puede.ser");
         if (dto.getMonto() <= 0) return mensajes.get("monto.debe.ser.mayor.cero");
         if (dto.getFecha() == null) return mensajes.get("requiere.fecha");
+        // Igual que los gastos: no futura (sumaría al saldo dinero que aún no llegó)
+        // y como mínimo el 1 de enero del año anterior
+        if (dto.getFecha().isAfter(LocalDate.now())) return mensajes.get("fecha.ingreso.no.puede.ser.futura");
+        int anioMinimo = LocalDate.now().getYear() - 1;
+        if (dto.getFecha().isBefore(LocalDate.of(anioMinimo, 1, 1))) {
+            return mensajes.get("fecha.anterior.al.permitido", String.valueOf(anioMinimo));
+        }
         if (dto.getTipoIngreso() == null || dto.getTipoIngreso().isBlank()) return mensajes.get("requiere.tipo.ingreso");
         if (dto.getFrecuencia() == null || dto.getFrecuencia().isBlank()) return mensajes.get("requiere.frecuencia");
         if (dto.getFuente() == null || dto.getFuente().isBlank()) return mensajes.get("requiere.fuente");

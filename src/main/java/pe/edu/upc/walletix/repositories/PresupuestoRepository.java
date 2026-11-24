@@ -16,6 +16,11 @@ public interface PresupuestoRepository extends JpaRepository<Presupuesto, Intege
     List<Presupuesto> findAllByEstado(int estado);
     java.util.Optional<Presupuesto> findByIdPresupuestoAndEstado(int idPresupuesto, int estado);
 
+    // Un solo presupuesto activo por usuario, categoría, mes y año.
+    // IdPresupuestoNot: al editar se ignora el mismo presupuesto (al registrar se pasa 0, que no existe)
+    boolean existsByUsuarioIdUsuarioAndCategoriaIdCategoriaAndMesAndAnioAndEstadoAndIdPresupuestoNot(
+            int idUsuario, int idCategoria, int mes, int anio, int estado, int idPresupuesto);
+
     // US15: presupuesto activo de un usuario para una categoría en un mes y año (Spring arma la consulta por el nombre)
     java.util.Optional<Presupuesto> findFirstByUsuarioIdUsuarioAndCategoriaIdCategoriaAndMesAndAnioAndEstado(
             int idUsuario, int idCategoria, int mes, int anio, int estado);

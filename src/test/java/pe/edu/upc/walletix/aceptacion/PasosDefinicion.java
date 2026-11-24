@@ -233,6 +233,15 @@ public class PasosDefinicion {
         api.crearPresupuesto(token, idUsuario, idCategoria, String.valueOf(monto));
     }
 
+    @When("the user creates another budget of {double} for the same category this month")
+    public void creaOtroPresupuesto(double monto) throws Exception {
+        LocalDate hoy = LocalDate.now();
+        String json = """
+                {"mes":%d,"anio":%d,"montoAsignado":%s,"idUsuario":%d,"idCategoria":%d}
+                """.formatted(hoy.getMonthValue(), hoy.getYear(), monto, idUsuario, idCategoria);
+        respuesta = enviar(post("/presupuestos/web").contentType(MediaType.APPLICATION_JSON).content(json));
+    }
+
     @Given("the user has registered an expense of {double}")
     public void yaRegistroUnGasto(double monto) throws Exception {
         api.crearGasto(token, jsonGasto(0, "Previous expense", monto, LocalDate.now()));

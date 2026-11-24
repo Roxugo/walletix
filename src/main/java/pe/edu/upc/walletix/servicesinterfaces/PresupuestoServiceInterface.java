@@ -13,4 +13,6 @@ public interface PresupuestoServiceInterface {
     public Optional<Presupuesto> buscarPorId(int id);
     public void actualizar(Presupuesto b);
     public void eliminar(int id);
+    // true si el usuario ya tiene otro presupuesto activo para esa categoría en ese mes y año
+    public boolean existeDuplicado(int idUsuario, int idCategoria, int mes, int anio, int idPresupuestoExcluido);
 }

@@ -43,4 +43,10 @@ public class PresupuestoServiceImplement implements PresupuestoServiceInterface 
             presupuestoRepository.save(presupuesto);
         });
     }
+
+    @Override
+    public boolean existeDuplicado(int idUsuario, int idCategoria, int mes, int anio, int idPresupuestoExcluido) {
+        return presupuestoRepository.existsByUsuarioIdUsuarioAndCategoriaIdCategoriaAndMesAndAnioAndEstadoAndIdPresupuestoNot(
+                idUsuario, idCategoria, mes, anio, 1, idPresupuestoExcluido);
+    }
 }

@@ -18,6 +18,7 @@ import pe.edu.upc.walletix.servicesinterfaces.MetaAhorroServiceInterface;
 import pe.edu.upc.walletix.securities.UsuarioActual;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -58,6 +59,10 @@ public class MetaAhorroController {
     public ResponseEntity<?> registrar(@RequestBody MetaAhorroDto dto, Authentication autenticacion) {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
+        // Solo al crear: una meta nueva no puede vencer en el pasado (al editar se permite, por las metas antiguas)
+        if (dto.getFechaLimite().isBefore(LocalDate.now())) {
+            return ResponseEntity.badRequest().body(mensajes.get("fecha.limite.no.puede.ser.pasada"));
+        }
         if (!usuarioActual.puedeGestionar(autenticacion, dto.getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
 
         Optional<Usuario> usuario = usuarioService.listId(dto.getIdUsuario());

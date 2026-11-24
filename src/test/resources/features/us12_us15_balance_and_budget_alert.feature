@@ -39,6 +39,13 @@ Feature: Balance and budget alerts
     Then the expense is saved with status 201
     And the response includes the budget alert "S/ 110.00 of S/ 100.00"
 
+  # US15 - Un solo presupuesto por categoría y mes (si no, la alerta no sabría con cuál comparar)
+  Scenario: A second budget for the same category and month is rejected
+    Given the user has a budget of 400 for the expense category this month
+    When the user creates another budget of 800 for the same category this month
+    Then the request is rejected with status 409
+    And the message "You already have a budget for that category in that month" is shown
+
   # US15 - Sin alerta mientras no se supere el presupuesto
   Scenario: An expense within the monthly budget shows no alert
     Given the user has a budget of 100 for the expense category this month

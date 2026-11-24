@@ -19,6 +19,7 @@ import pe.edu.upc.walletix.servicesinterfaces.ICategoriaService;
 import pe.edu.upc.walletix.servicesinterfaces.PresupuestoServiceInterface;
 import pe.edu.upc.walletix.securities.UsuarioActual;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -70,6 +71,10 @@ public class PresupuestoController {
         if (categoria.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("categoria.no.encontrada"));
         if (!categoria.get().getTipoCategoria().equals("gasto")) return ResponseEntity.badRequest().body(mensajes.get("categoria.debe.ser.tipo.gasto"));
         if (!usuarioActual.categoriaDisponible(categoria.get(), dto.getIdUsuario())) return ResponseEntity.badRequest().body(mensajes.get("categoria.no.pertenece.usuario"));
+        // Un solo presupuesto por categoría en cada mes (0 = no hay presupuesto que excluir porque es nuevo)
+        if (presupuestoService.existeDuplicado(dto.getIdUsuario(), dto.getIdCategoria(), dto.getMes(), dto.getAnio(), 0)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(mensajes.get("presupuesto.duplicado"));
+        }
 
         Presupuesto presupuesto = toEntity(dto);
         presupuesto.setUsuario(usuario.get());
@@ -106,6 +111,10 @@ public class PresupuestoController {
         if (categoria.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("categoria.no.encontrada"));
         if (!categoria.get().getTipoCategoria().equals("gasto")) return ResponseEntity.badRequest().body(mensajes.get("categoria.debe.ser.tipo.gasto"));
         if (!usuarioActual.categoriaDisponible(categoria.get(), dto.getIdUsuario())) return ResponseEntity.badRequest().body(mensajes.get("categoria.no.pertenece.usuario"));
+        // Al editar se ignora este mismo presupuesto; solo choca con OTRO de la misma categoría y mes
+        if (presupuestoService.existeDuplicado(dto.getIdUsuario(), dto.getIdCategoria(), dto.getMes(), dto.getAnio(), dto.getIdPresupuesto())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(mensajes.get("presupuesto.duplicado"));
+        }
 
         Presupuesto presupuesto = existente.get();
         presupuesto.setMes(dto.getMes());
@@ -146,12 +155,21 @@ public class PresupuestoController {
         return dto;
     }
 
+    // Límites de un presupuesto: desde el año actual hasta 5 años después, y hasta S/ 1 000 000
+    private static final int ANIOS_A_FUTURO = 5;
+    private static final float MONTO_MAXIMO = 1_000_000f;
+
     private String validar(PresupuestoDto dto) {
         if (dto == null) return mensajes.get("requiere.informacion.presupuesto");
         if (dto.getIdPresupuesto() < 0) return mensajes.get("id.presupuesto.no.puede.ser");
         if (dto.getMes() < 1 || dto.getMes() > 12) return mensajes.get("mes.debe.estar.entre.1");
-        if (dto.getAnio() <= 0) return mensajes.get("ano.debe.ser.positivo");
+        int anioActual = LocalDate.now().getYear();
+        if (dto.getAnio() < anioActual || dto.getAnio() > anioActual + ANIOS_A_FUTURO) {
+            return mensajes.get("anio.presupuesto.fuera.de.rango",
+                    String.valueOf(anioActual), String.valueOf(anioActual + ANIOS_A_FUTURO));
+        }
         if (dto.getMontoAsignado() <= 0) return mensajes.get("monto.asignado.debe.ser.mayor");
+        if (dto.getMontoAsignado() > MONTO_MAXIMO) return mensajes.get("monto.asignado.maximo");
         if (dto.getIdUsuario() <= 0) return mensajes.get("requiere.id.usuario.valido");
         if (dto.getIdCategoria() <= 0) return mensajes.get("requiere.id.categoria.valido");
         return null;

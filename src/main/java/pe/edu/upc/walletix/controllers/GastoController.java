@@ -74,6 +74,11 @@ public class GastoController {
         if (gastoDTO.getFechaGasto().isAfter(LocalDate.now())) {
             return mensajes.get("fecha.gasto.no.puede.ser");
         }
+        // Como mínimo el 1 de enero del año anterior (ej. en 2026, desde el 01/01/2025)
+        int anioMinimo = LocalDate.now().getYear() - 1;
+        if (gastoDTO.getFechaGasto().isBefore(LocalDate.of(anioMinimo, 1, 1))) {
+            return mensajes.get("fecha.anterior.al.permitido", String.valueOf(anioMinimo));
+        }
         if (estaVacio(gastoDTO.getDescripcionGasto())) {
             return mensajes.get("descripcion.obligatoria");
         }
