@@ -1,13 +1,28 @@
 package pe.edu.upc.walletix.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.time.LocalDateTime;
+
 public class NotificacionDTO {
     private int idNotificacion;
     private int idUsuario;
     private String titulo;
     private String tipo;
     private String mensaje;
-    private boolean estadoNotificacion;
+    private boolean estadoNotificacion; // true = leída, false = no leída
     private int estado = 1;
+    // La pone la API al registrar la notificación
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private LocalDateTime fechaNotificacion;
+
+    public LocalDateTime getFechaNotificacion() {
+        return fechaNotificacion;
+    }
+
+    public void setFechaNotificacion(LocalDateTime fechaNotificacion) {
+        this.fechaNotificacion = fechaNotificacion;
+    }
 
     public int getIdNotificacion() {
         return idNotificacion;

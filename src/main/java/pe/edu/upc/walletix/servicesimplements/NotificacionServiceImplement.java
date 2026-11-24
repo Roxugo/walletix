@@ -6,6 +6,7 @@ import pe.edu.upc.walletix.entities.Notificacion;
 import pe.edu.upc.walletix.repositories.INotificacionRepository;
 import pe.edu.upc.walletix.servicesinterfaces.INotificacionService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,12 +18,22 @@ public class NotificacionServiceImplement implements INotificacionService {
 
     @Override
     public List<Notificacion> listar() {
-        return notificacionRepository.findByEstado(1);
+        // De la más reciente a la más antigua (por id: el id crece con cada notificación nueva)
+        return notificacionRepository.findByEstadoOrderByIdNotificacionDesc(1);
     }
 
     @Override
     public Notificacion registrar(Notificacion notificacion) {
+        // Toda notificación nueva lleva la fecha y hora en que se generó
+        if (notificacion.getFechaNotificacion() == null) {
+            notificacion.setFechaNotificacion(LocalDateTime.now());
+        }
         return notificacionRepository.save(notificacion);
+    }
+
+    @Override
+    public int marcarTodasComoLeidas(int idUsuario) {
+        return notificacionRepository.marcarTodasComoLeidas(idUsuario);
     }
 
     @Override

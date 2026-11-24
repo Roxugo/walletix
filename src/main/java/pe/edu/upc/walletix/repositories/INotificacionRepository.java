@@ -14,7 +14,16 @@ import java.util.Optional;
 
 @Repository
 public interface INotificacionRepository extends JpaRepository<Notificacion, Integer> {
-    List<Notificacion> findByEstado(int estado);
+    // Activas, de la más reciente a la más antigua
+    List<Notificacion> findByEstadoOrderByIdNotificacionDesc(int estado);
+
+    // US24: "Marcar todas como leídas" (solo las activas del usuario que aún no estaban leídas)
+    @Transactional
+    @Modifying
+    @Query("UPDATE Notificacion notificacion SET notificacion.estadoNotificacion = true " +
+            "WHERE notificacion.usuario.idUsuario = :idUsuario AND notificacion.estado = 1 " +
+            "AND notificacion.estadoNotificacion = false")
+    int marcarTodasComoLeidas(@Param("idUsuario") int idUsuario);
 
     Optional<Notificacion> findByIdNotificacionAndEstado(int idNotificacion, int estado);
 

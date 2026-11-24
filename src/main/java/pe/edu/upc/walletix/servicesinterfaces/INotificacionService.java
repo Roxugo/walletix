@@ -13,4 +13,6 @@ public interface INotificacionService {
     public void eliminar(int id);
     public List<Notificacion> buscarNoLeidasPorUsuario(int idUsuario);
     public int contarNoLeidasPorUsuario(int idUsuario);
+    // Marca como leídas todas las notificaciones activas del usuario; devuelve cuántas cambió
+    public int marcarTodasComoLeidas(int idUsuario);
 }

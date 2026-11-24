@@ -2,6 +2,8 @@ package pe.edu.upc.walletix.entities;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "notificacion")
 public class Notificacion {
@@ -28,7 +30,20 @@ public class Notificacion {
     @Column(name = "estado", nullable = false)
     private int estado = 1;
 
+    // Cuándo se generó (US22: el panel las muestra de la más reciente a la más antigua).
+    // Acepta null: las notificaciones que ya existían no tienen fecha.
+    @Column(name = "fechaNotificacion")
+    private LocalDateTime fechaNotificacion;
+
     public Notificacion() {
+    }
+
+    public LocalDateTime getFechaNotificacion() {
+        return fechaNotificacion;
+    }
+
+    public void setFechaNotificacion(LocalDateTime fechaNotificacion) {
+        this.fechaNotificacion = fechaNotificacion;
     }
 
     public Notificacion(int idNotificacion, Usuario usuario, String titulo, String tipo, String mensaje, boolean estadoNotificacion, int estado) {

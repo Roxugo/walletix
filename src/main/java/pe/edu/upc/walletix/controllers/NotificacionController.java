@@ -19,6 +19,7 @@ import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
 import pe.edu.upc.walletix.securities.UsuarioActual;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -155,6 +156,33 @@ public class NotificacionController {
         notificacion.setEstadoNotificacion(notificacionDTO.isEstadoNotificacion());
         notificacionService.actualizar(notificacion);
         return ResponseEntity.ok(mensajes.get("notificacion.actualizada.correctamente"));
+    }
+
+    // US24: marcar UNA notificación como leída (leida=true) o como no leída (leida=false).
+    // Solo cambia ese dato, así el frontend no tiene que reenviar título y mensaje.
+    @Operation(summary = "Marcar una notificación como leída o no leída (US24)")
+    @PutMapping("/{id}/leida")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    public ResponseEntity<?> marcarLeida(@PathVariable int id, @RequestParam boolean leida, Authentication autenticacion) {
+        Optional<Notificacion> notificacion = notificacionService.buscarPorId(id);
+        if (notificacion.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("notificacion.no.encontrada"));
+        }
+        if (!usuarioActual.puedeGestionar(autenticacion, notificacion.get().getUsuario().getIdUsuario())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
+        }
+        notificacion.get().setEstadoNotificacion(leida);
+        notificacionService.actualizar(notificacion.get());
+        return ResponseEntity.ok(convertirADTO(notificacion.get(), crearModelMapper()));
+    }
+
+    // US24: "Marcar todas como leídas" del usuario que inició sesión (sale del token, no de la URL)
+    @Operation(summary = "Marcar como leídas todas mis notificaciones (US24)")
+    @PutMapping("/leer-todas")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    public ResponseEntity<Map<String, Integer>> marcarTodasLeidas(Authentication autenticacion) {
+        int marcadas = notificacionService.marcarTodasComoLeidas(usuarioActual.id(autenticacion));
+        return ResponseEntity.ok(Map.of("marcadas", marcadas));
     }
 
     @Operation(summary = "Eliminar una notificación (borrado lógico)")
