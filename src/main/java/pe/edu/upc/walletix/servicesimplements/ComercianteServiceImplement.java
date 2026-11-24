@@ -54,4 +54,9 @@ public class ComercianteServiceImplement implements IComercianteService {
     public boolean tieneRegistrosActivos(int id) {
         return gastoRepository.existsByComercianteIdComercianteAndEstadoGasto(id, 1);
     }
+
+    @Override
+    public boolean existeNombre(String nombre, int idUsuario, int idComercianteExcluido) {
+        return comercianteRepository.existeNombreVisible(nombre, idUsuario, idComercianteExcluido);
+    }
 }

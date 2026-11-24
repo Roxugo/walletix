@@ -15,6 +15,13 @@ public class Comerciante {
     @JoinColumn(name = "idCategoria", nullable = false)
     private Categoria categoria;
 
+    // Dueño del comercio. Vacío (null) = predeterminado: lo creó un ADMIN y lo ven todos.
+    // Con dueño = comercio propio de un cliente, solo lo ve él.
+    // Es una columna nueva que acepta null: Hibernate la agrega sola y los comercios que ya existían quedan como predeterminados.
+    @ManyToOne
+    @JoinColumn(name = "idUsuario")
+    private Usuario usuario;
+
     @Column(name = "nombreComerciante", length = 50, nullable = false)
     private String nombreComerciante;
 
@@ -50,6 +57,19 @@ public class Comerciante {
 
     public void setCategoria(Categoria categoria) {
         this.categoria = categoria;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    // true si es de todos (no tiene dueño)
+    public boolean esPredeterminado() {
+        return usuario == null;
     }
 
     public String getNombreComerciante() {

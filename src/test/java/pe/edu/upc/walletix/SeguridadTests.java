@@ -242,11 +242,29 @@ class SeguridadTests {
     }
 
     @Test
-    @DisplayName("Un USUARIO no puede crear comercios (solo ADMIN): 403")
-    void usuarioNoCreaComercios_403() throws Exception {
-        mockMvc.perform(post("/comercios/web").header("Authorization", "Bearer " + login(registrarUsuario()))
+    @DisplayName("Un USUARIO crea sus comercios, pero no puede editar ni eliminar uno predeterminado (del ADMIN): 403")
+    void usuarioNoModificaComerciosPredeterminados_403() throws Exception {
+        String correoAdmin = crearAdmin();
+        String tokenAdmin = login(correoAdmin);
+        // Categoría de gasto predeterminada y un comercio predeterminado, creados por el ADMIN
+        String categoria = mockMvc.perform(post("/categorias/web").header("Authorization", "Bearer " + tokenAdmin)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"idCategoria\":1,\"nombreComerciante\":\"Hack\",\"urlLogoComerciante\":\"x\"}"))
+                        .content("{\"idUsuario\":" + idDe(correoAdmin) + ",\"nombreCategoria\":\"Seguridad " + contador.getAndIncrement()
+                                + "\",\"tipoCategoria\":\"gasto\",\"urlIconoCategoria\":\"category\",\"colorHexCategoria\":\"#22C55E\",\"predeterminadoCategoria\":true}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        int idCategoria = JsonPath.read(categoria, "$.idCategoria");
+        String comercio = mockMvc.perform(post("/comercios/web").header("Authorization", "Bearer " + tokenAdmin)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"idCategoria\":" + idCategoria + ",\"nombreComerciante\":\"Predeterminado " + contador.getAndIncrement() + "\"}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        int idComercio = JsonPath.read(comercio, "$.idComerciante");
+
+        String tokenUsuario = login(registrarUsuario());
+        mockMvc.perform(put("/comercios/actualiza").header("Authorization", "Bearer " + tokenUsuario)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"idComerciante\":" + idComercio + ",\"idCategoria\":" + idCategoria + ",\"nombreComerciante\":\"Hack\"}"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(delete("/comercios/" + idComercio).header("Authorization", "Bearer " + tokenUsuario))
                 .andExpect(status().isForbidden());
     }
 
@@ -305,6 +323,18 @@ class SeguridadTests {
                         .header("Access-Control-Request-Headers", "Authorization"))
                 .andExpect(status().isOk())
                 .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:4200"));
+    }
+
+    @Test
+    @DisplayName("CORS: la app publicada en GitHub Pages (producción) sí puede llamar a la API")
+    void corsAppPublicada() throws Exception {
+        // Si alguien agrega otra configuración de CORS que pise a la de WebSecurityConfig, esta prueba falla
+        mockMvc.perform(options("/gastos")
+                        .header("Origin", "https://pierochlz.github.io")
+                        .header("Access-Control-Request-Method", "PUT")
+                        .header("Access-Control-Request-Headers", "Authorization, Content-Type, Accept-Language"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", "https://pierochlz.github.io"));
     }
 
     @Test

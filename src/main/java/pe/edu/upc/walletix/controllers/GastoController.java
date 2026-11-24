@@ -151,6 +151,10 @@ public class GastoController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(mensajes.get("comercio.no.encontrado"));
         }
+        // El comercio debe ser predeterminado o del dueño del gasto (no se usan comercios privados de otro)
+        if (!usuarioActual.comercioDisponible(comerciante.get(), gastoDTO.getIdUsuario())) {
+            return ResponseEntity.badRequest().body(mensajes.get("comercio.no.pertenece.usuario"));
+        }
         // US11: el gasto sale del saldo, que no puede quedar negativo
         if (!saldoService.alcanza(usuario.get(), gastoDTO.getMontoGasto().negate())) {
             return saldoInsuficiente(usuario.get());
@@ -219,6 +223,9 @@ public class GastoController {
         if (comerciante.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(mensajes.get("comercio.no.encontrado"));
+        }
+        if (!usuarioActual.comercioDisponible(comerciante.get(), gastoExistente.get().getUsuario().getIdUsuario())) {
+            return ResponseEntity.badRequest().body(mensajes.get("comercio.no.pertenece.usuario"));
         }
         // El dueño del gasto no cambia al editarlo
         Gasto gasto = gastoExistente.get();

@@ -13,4 +13,6 @@ public interface IComercianteService {
     public void delete(int id);
     // true si todavía tiene gastos activos (no se puede eliminar)
     public boolean tieneRegistrosActivos(int id);
+    // true si el usuario ya ve (predeterminado o suyo) otro comercio activo con ese nombre
+    public boolean existeNombre(String nombre, int idUsuario, int idComercianteExcluido);
 }

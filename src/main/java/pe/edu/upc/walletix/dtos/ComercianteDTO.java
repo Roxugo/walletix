@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.dtos;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 // Datos de un comercio
 public class ComercianteDTO {
     private int idComerciante;
@@ -7,6 +9,27 @@ public class ComercianteDTO {
     private String nombreComerciante;
     private String urlLogoComerciante;
     private int estadoComerciante = 1;
+    // Dueño del comercio: null si es predeterminado (lo ven todos). Lo decide la API según quién lo crea.
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Integer idUsuario;
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private boolean predeterminadoComerciante;
+
+    public Integer getIdUsuario() {
+        return idUsuario;
+    }
+
+    public void setIdUsuario(Integer idUsuario) {
+        this.idUsuario = idUsuario;
+    }
+
+    public boolean isPredeterminadoComerciante() {
+        return predeterminadoComerciante;
+    }
+
+    public void setPredeterminadoComerciante(boolean predeterminadoComerciante) {
+        this.predeterminadoComerciante = predeterminadoComerciante;
+    }
 
     public int getIdComerciante() {
         return idComerciante;

@@ -9,6 +9,7 @@ import pe.edu.upc.walletix.entities.Auditoria;
 import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.repositories.IAuditoriaRepository;
 import pe.edu.upc.walletix.repositories.ICategoriaRepository;
+import pe.edu.upc.walletix.repositories.IComercianteRepository;
 import pe.edu.upc.walletix.repositories.IGastoRepository;
 import pe.edu.upc.walletix.repositories.IIntentoQuizUsuarioRepository;
 import pe.edu.upc.walletix.repositories.INotificacionRepository;
@@ -44,6 +45,8 @@ public class UsuarioServiceImplement implements IUsuarioService {
     private MetaAhorroRepository metaAhorroRepository;
     @Autowired
     private ICategoriaRepository categoriaRepository;
+    @Autowired
+    private IComercianteRepository comercianteRepository;
     @Autowired
     private INotificacionRepository notificacionRepository;
     @Autowired
@@ -116,10 +119,12 @@ public class UsuarioServiceImplement implements IUsuarioService {
 
             // Borrado lógico en cascada: sus datos dejan de aparecer junto con él
             // (las categorías predeterminadas no se tocan porque las usan todos)
+            // Orden: primero los hijos (gastos) y después los catálogos de los que dependen (comercios y categorías)
             gastoRepository.darDeBajaPorUsuario(id);
             ingresoRepository.darDeBajaPorUsuario(id);
             presupuestoRepository.darDeBajaPorUsuario(id);
             metaAhorroRepository.darDeBajaPorUsuario(id);
+            comercianteRepository.darDeBajaPorUsuario(id);
             categoriaRepository.darDeBajaPorUsuario(id);
             notificacionRepository.darDeBajaPorUsuario(id);
             usuarioLogroRepository.darDeBajaPorUsuario(id);

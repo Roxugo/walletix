@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import pe.edu.upc.walletix.entities.Categoria;
+import pe.edu.upc.walletix.entities.Comerciante;
 import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
 
@@ -36,5 +37,10 @@ public class UsuarioActual {
     public boolean categoriaDisponible(Categoria categoria, int idUsuario) {
         return categoria.isPredeterminadoCategoria()
                 || (categoria.getUsuario() != null && categoria.getUsuario().getIdUsuario() == idUsuario);
+    }
+
+    // Un comercio se puede usar si es predeterminado (sin dueño) o si pertenece al dueño del registro
+    public boolean comercioDisponible(Comerciante comerciante, int idUsuario) {
+        return comerciante.esPredeterminado() || comerciante.getUsuario().getIdUsuario() == idUsuario;
     }
 }
