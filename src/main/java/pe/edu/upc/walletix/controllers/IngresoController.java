@@ -16,9 +16,12 @@ import pe.edu.upc.walletix.entities.Categoria;
 import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
 import pe.edu.upc.walletix.servicesinterfaces.ICategoriaService;
+import pe.edu.upc.walletix.servicesinterfaces.ISaldoService;
 import pe.edu.upc.walletix.servicesinterfaces.IngresoServiceInterface;
 import pe.edu.upc.walletix.securities.UsuarioActual;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -38,6 +41,15 @@ public class IngresoController {
     @Autowired
     private IUsuarioService usuarioService;
 
+    // US12: los ingresos suman al saldo del usuario
+    @Autowired
+    private ISaldoService saldoService;
+
+    // El monto del ingreso es float; se pasa por texto para no arrastrar decimales de más (1500.1 -> 1500.1)
+    private BigDecimal comoDecimal(float monto) {
+        return new BigDecimal(Float.toString(monto));
+    }
+
     @Autowired
     private ICategoriaService categoriaService;
 
@@ -56,9 +68,10 @@ public class IngresoController {
         return ResponseEntity.ok(lista);
     }
 
-    @Operation(summary = "Registrar un ingreso")
+    @Operation(summary = "Registrar un ingreso (suma al saldo del usuario)")
     @PostMapping("/web")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    @Transactional // el ingreso y el saldo se guardan juntos (todo o nada)
     public ResponseEntity<?> registrar(@RequestBody IngresoDto dto, Authentication autenticacion) {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
@@ -75,6 +88,8 @@ public class IngresoController {
         ingreso.setUsuario(usuario.get());
         ingreso.setCategoria(categoria.get());
         Ingreso registrado = ingresoService.registrar(ingreso);
+        // US12: el ingreso se suma al saldo disponible
+        saldoService.aplicar(usuario.get(), comoDecimal(registrado.getMonto()));
         return ResponseEntity.status(HttpStatus.CREATED).body(toDto(registrado, new ModelMapper()));
     }
 
@@ -88,9 +103,10 @@ public class IngresoController {
         return ResponseEntity.ok(toDto(ingreso.get(), new ModelMapper()));
     }
 
-    @Operation(summary = "Actualizar los datos de un ingreso")
+    @Operation(summary = "Actualizar los datos de un ingreso (ajusta el saldo con la diferencia del monto)")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    @Transactional
     public ResponseEntity<String> actualizar(@RequestBody IngresoDto dto, Authentication autenticacion) {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
@@ -108,6 +124,20 @@ public class IngresoController {
         if (!usuarioActual.categoriaDisponible(categoria.get(), dto.getIdUsuario())) return ResponseEntity.badRequest().body(mensajes.get("categoria.no.pertenece.usuario"));
 
         Ingreso ingreso = existente.get();
+        // US12: se quita el monto anterior al dueño anterior y se suma el nuevo al dueño nuevo
+        // (casi siempre es el mismo usuario; un ADMIN puede pasar el ingreso a otro)
+        Usuario duenoAnterior = ingreso.getUsuario();
+        BigDecimal montoAnterior = comoDecimal(ingreso.getMonto());
+        BigDecimal montoNuevo = comoDecimal(dto.getMonto());
+        boolean mismoDueno = duenoAnterior.getIdUsuario() == usuario.get().getIdUsuario();
+        BigDecimal cambioAnterior = mismoDueno ? montoNuevo.subtract(montoAnterior) : montoAnterior.negate();
+        if (!saldoService.alcanza(duenoAnterior, cambioAnterior)) {
+            return ResponseEntity.badRequest().body(mensajes.get("saldo.insuficiente.ingreso"));
+        }
+        saldoService.aplicar(duenoAnterior, cambioAnterior);
+        if (!mismoDueno) {
+            saldoService.aplicar(usuario.get(), montoNuevo);
+        }
         ingreso.setMonto(dto.getMonto());
         ingreso.setFecha(dto.getFecha());
         ingreso.setTipoIngreso(dto.getTipoIngreso());
@@ -120,14 +150,22 @@ public class IngresoController {
         return ResponseEntity.ok(mensajes.get("ingreso.actualizado.correctamente"));
     }
 
-    @Operation(summary = "Eliminar un ingreso (borrado lógico)")
+    @Operation(summary = "Eliminar un ingreso (borrado lógico; el monto se descuenta del saldo)")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    @Transactional
     public ResponseEntity<String> eliminar(@PathVariable int id, Authentication autenticacion) {
-        if (ingresoService.buscarPorId(id).isEmpty()) {
+        Optional<Ingreso> ingreso = ingresoService.buscarPorId(id);
+        if (ingreso.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("ingreso.no.encontrado"));
         }
-        if (!usuarioActual.puedeGestionar(autenticacion, ingresoService.buscarPorId(id).get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
+        if (!usuarioActual.puedeGestionar(autenticacion, ingreso.get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
+        // Si ese dinero ya se gastó, eliminar el ingreso dejaría el saldo en negativo
+        BigDecimal monto = comoDecimal(ingreso.get().getMonto()).negate();
+        if (!saldoService.alcanza(ingreso.get().getUsuario(), monto)) {
+            return ResponseEntity.badRequest().body(mensajes.get("saldo.insuficiente.ingreso"));
+        }
+        saldoService.aplicar(ingreso.get().getUsuario(), monto);
         ingresoService.eliminar(id);
         return ResponseEntity.ok(mensajes.get("ingreso.eliminado.correctamente"));
     }

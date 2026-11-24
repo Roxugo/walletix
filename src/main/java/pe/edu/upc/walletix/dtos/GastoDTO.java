@@ -1,5 +1,8 @@
 package pe.edu.upc.walletix.dtos;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -15,6 +18,19 @@ public class GastoDTO {
     private String metodoPagoGasto;
     private boolean fijoGasto;
     private int estadoGasto = 1;
+
+    // US15: solo en la respuesta al registrar; aparece si el gasto superó el presupuesto del mes
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String alertaPresupuesto;
+
+    public String getAlertaPresupuesto() {
+        return alertaPresupuesto;
+    }
+
+    public void setAlertaPresupuesto(String alertaPresupuesto) {
+        this.alertaPresupuesto = alertaPresupuesto;
+    }
 
     public int getIdGasto() {
         return idGasto;

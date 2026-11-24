@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.upc.walletix.entities.Gasto;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +28,17 @@ public interface IGastoRepository extends JpaRepository<Gasto, Integer> {
             "AND gasto.estadoGasto = 1 " +
             "ORDER BY gasto.fechaGasto")
     List<Gasto> buscarPorUsuarioYRango(@Param("idUsuario") int idUsuario,
+                                       @Param("fechaInicio") LocalDate fechaInicio,
+                                       @Param("fechaFin") LocalDate fechaFin);
+
+    // JPQL (US15): total gastado por un usuario en una categoría entre dos fechas (0 si no hay gastos)
+    @Query("SELECT COALESCE(SUM(gasto.montoGasto), 0) FROM Gasto gasto " +
+            "WHERE gasto.usuario.idUsuario = :idUsuario " +
+            "AND gasto.categoria.idCategoria = :idCategoria " +
+            "AND gasto.fechaGasto BETWEEN :fechaInicio AND :fechaFin " +
+            "AND gasto.estadoGasto = 1")
+    BigDecimal sumarPorCategoriaYRango(@Param("idUsuario") int idUsuario,
+                                       @Param("idCategoria") int idCategoria,
                                        @Param("fechaInicio") LocalDate fechaInicio,
                                        @Param("fechaFin") LocalDate fechaFin);
 

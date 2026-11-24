@@ -15,11 +15,14 @@ import pe.edu.upc.walletix.entities.Comerciante;
 import pe.edu.upc.walletix.entities.Gasto;
 import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.i18n.Mensajes;
+import pe.edu.upc.walletix.servicesinterfaces.IAlertaPresupuestoService;
 import pe.edu.upc.walletix.servicesinterfaces.ICategoriaService;
 import pe.edu.upc.walletix.servicesinterfaces.IComercianteService;
 import pe.edu.upc.walletix.servicesinterfaces.IGastoService;
+import pe.edu.upc.walletix.servicesinterfaces.ISaldoService;
 import pe.edu.upc.walletix.servicesinterfaces.IUsuarioService;
 import pe.edu.upc.walletix.securities.UsuarioActual;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -44,6 +47,18 @@ public class GastoController {
     private ICategoriaService categoriaService;
     @Autowired
     private IComercianteService comercianteService;
+    // US11 / US13 / US14: los gastos restan del saldo del usuario
+    @Autowired
+    private ISaldoService saldoService;
+    // US15: alerta si el gasto hace superar el presupuesto del mes
+    @Autowired
+    private IAlertaPresupuestoService alertaPresupuestoService;
+
+    // Respuesta 400 cuando el usuario no tiene saldo suficiente
+    private ResponseEntity<String> saldoInsuficiente(Usuario usuario) {
+        return ResponseEntity.badRequest().body(mensajes.get("saldo.insuficiente.gasto",
+                usuario.getSaldoActualUsuario().setScale(2, java.math.RoundingMode.HALF_UP).toPlainString()));
+    }
 
     private boolean estaVacio(String texto) {
         return texto == null || texto.isBlank();
@@ -97,9 +112,10 @@ public class GastoController {
         return ResponseEntity.ok(listaGastos);
     }
 
-    @Operation(summary = "Registrar un gasto")
+    @Operation(summary = "Registrar un gasto (resta del saldo y avisa si se supera el presupuesto del mes)")
     @PostMapping("/web")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    @Transactional // el gasto, el saldo y la notificación se guardan juntos (todo o nada)
     public ResponseEntity<?> registrar(@RequestBody GastoDTO gastoDTO, Authentication autenticacion) {
         String error = validar(gastoDTO);
         if (error != null) {
@@ -130,6 +146,10 @@ public class GastoController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(mensajes.get("comercio.no.encontrado"));
         }
+        // US11: el gasto sale del saldo, que no puede quedar negativo
+        if (!saldoService.alcanza(usuario.get(), gastoDTO.getMontoGasto().negate())) {
+            return saldoInsuficiente(usuario.get());
+        }
 
         ModelMapper modelMapper = new ModelMapper();
         Gasto nuevoGasto = modelMapper.map(gastoDTO, Gasto.class);
@@ -137,7 +157,12 @@ public class GastoController {
         nuevoGasto.setCategoria(categoria.get());
         nuevoGasto.setComerciante(comerciante.get());
         Gasto gastoRegistrado = gastoService.insert(nuevoGasto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(convertirADTO(gastoRegistrado));
+        saldoService.aplicar(usuario.get(), gastoRegistrado.getMontoGasto().negate());
+
+        GastoDTO respuesta = convertirADTO(gastoRegistrado);
+        // US15: si con este gasto se superó el presupuesto de la categoría, la respuesta trae la alerta
+        alertaPresupuestoService.revisar(gastoRegistrado).ifPresent(respuesta::setAlertaPresupuesto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
     }
 
     @Operation(summary = "Buscar un gasto por su id")
@@ -156,9 +181,10 @@ public class GastoController {
         }
     }
 
-    @Operation(summary = "Actualizar los datos de un gasto")
+    @Operation(summary = "Actualizar los datos de un gasto (ajusta el saldo con la diferencia del monto)")
     @PutMapping("/actualiza")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    @Transactional
     public ResponseEntity<String> actualizar(@RequestBody GastoDTO gastoDTO, Authentication autenticacion) {
         String error = validar(gastoDTO);
         if (error != null) {
@@ -191,6 +217,12 @@ public class GastoController {
         }
         // El dueño del gasto no cambia al editarlo
         Gasto gasto = gastoExistente.get();
+        // US13: el saldo se ajusta con la diferencia (si el gasto sube, se descuenta lo que subió)
+        BigDecimal diferencia = gasto.getMontoGasto().subtract(gastoDTO.getMontoGasto());
+        if (!saldoService.alcanza(gasto.getUsuario(), diferencia)) {
+            return saldoInsuficiente(gasto.getUsuario());
+        }
+        saldoService.aplicar(gasto.getUsuario(), diferencia);
         gasto.setCategoria(categoria.get());
         gasto.setComerciante(comerciante.get());
         gasto.setDescripcionGasto(gastoDTO.getDescripcionGasto());
@@ -202,15 +234,18 @@ public class GastoController {
         return ResponseEntity.ok(mensajes.get("gasto.actualizado.correctamente"));
     }
 
-    @Operation(summary = "Eliminar un gasto (borrado lógico)")
+    @Operation(summary = "Eliminar un gasto (borrado lógico; el monto vuelve al saldo)")
     @DeleteMapping("/{idGasto}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    @Transactional
     public ResponseEntity<String> eliminar(@PathVariable int idGasto, Authentication autenticacion) {
         Optional<Gasto> gasto = gastoService.listId(idGasto);
         if (gasto.isPresent()) {
             if (!usuarioActual.puedeGestionar(autenticacion, gasto.get().getUsuario().getIdUsuario())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
             }
+            // US14: al eliminar el gasto, el dinero vuelve al saldo
+            saldoService.aplicar(gasto.get().getUsuario(), gasto.get().getMontoGasto());
             gastoService.delete(idGasto);
             return ResponseEntity.ok(mensajes.get("gasto.eliminado.correctamente"));
         } else {
