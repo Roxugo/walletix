@@ -71,4 +71,9 @@ public class CategoriaServiceImplement implements ICategoriaService {
                 || ingresoRepository.existsByCategoriaIdCategoriaAndEstado(id, 1)
                 || presupuestoRepository.existsByCategoriaIdCategoriaAndEstado(id, 1);
     }
+
+    @Override
+    public boolean existeNombre(String nombre, String tipo, int idUsuario, int idCategoriaExcluida) {
+        return categoriaRepository.existeNombreVisible(nombre, tipo, idUsuario, idCategoriaExcluida);
+    }
 }

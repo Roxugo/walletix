@@ -25,6 +25,17 @@ public interface ICategoriaRepository extends JpaRepository<Categoria, Integer> 
             "AND categoria.estadoCategoria = 1")
     List<Categoria> buscarPorTipo(@Param("tipo") String tipo);
 
+    // JPQL: ¿el usuario ya ve una categoría activa con ese nombre y tipo?
+    // "Ve" = las predeterminadas + las suyas. idExcluido es la propia categoría al editarla (0 al crear).
+    @Query("SELECT COUNT(categoria) > 0 FROM Categoria categoria " +
+            "WHERE categoria.estadoCategoria = 1 " +
+            "AND LOWER(TRIM(categoria.nombreCategoria)) = LOWER(TRIM(:nombre)) " +
+            "AND LOWER(categoria.tipoCategoria) = LOWER(:tipo) " +
+            "AND (categoria.predeterminadoCategoria = true OR categoria.usuario.idUsuario = :idUsuario) " +
+            "AND categoria.idCategoria <> :idExcluido")
+    boolean existeNombreVisible(@Param("nombre") String nombre, @Param("tipo") String tipo,
+                                @Param("idUsuario") int idUsuario, @Param("idExcluido") int idExcluido);
+
     // Borrado lógico en cascada: al eliminar un usuario se dan de baja sus registros
     @Transactional
     @Modifying

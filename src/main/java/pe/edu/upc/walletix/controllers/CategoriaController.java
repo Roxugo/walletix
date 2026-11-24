@@ -88,7 +88,13 @@ public class CategoriaController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(mensajes.get("usuario.no.encontrado"));
         }
+        // Sin nombres repetidos: el usuario vería dos "Comida" al registrar un gasto
+        if (categoriaService.existeNombre(categoriaDTO.getNombreCategoria(), categoriaDTO.getTipoCategoria(),
+                categoriaDTO.getIdUsuario(), 0)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(mensajes.get("categoria.duplicada"));
+        }
         ModelMapper modelMapper = new ModelMapper();
+        categoriaDTO.setNombreCategoria(categoriaDTO.getNombreCategoria().trim());
         categoriaDTO.setTipoCategoria(categoriaDTO.getTipoCategoria().toLowerCase());
         Categoria nuevaCategoria = modelMapper.map(categoriaDTO, Categoria.class);
         nuevaCategoria.setUsuario(usuario.get());
@@ -143,9 +149,14 @@ public class CategoriaController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(mensajes.get("usuario.no.encontrado"));
         }
+        // Se excluye la propia categoría: guardarla con su mismo nombre no es un duplicado
+        if (categoriaService.existeNombre(categoriaDTO.getNombreCategoria(), categoriaDTO.getTipoCategoria(),
+                categoriaDTO.getIdUsuario(), categoriaDTO.getIdCategoria())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(mensajes.get("categoria.duplicada"));
+        }
         Categoria categoria = categoriaExistente.get();
         categoria.setUsuario(usuario.get());
-        categoria.setNombreCategoria(categoriaDTO.getNombreCategoria());
+        categoria.setNombreCategoria(categoriaDTO.getNombreCategoria().trim());
         categoria.setTipoCategoria(categoriaDTO.getTipoCategoria().toLowerCase());
         categoria.setUrlIconoCategoria(categoriaDTO.getUrlIconoCategoria());
         categoria.setColorHexCategoria(categoriaDTO.getColorHexCategoria());

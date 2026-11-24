@@ -14,4 +14,6 @@ public interface ICategoriaService {
     public List<Categoria> buscarPorTipo(String tipo);
     // true si todavía tiene comercios, gastos, ingresos o presupuestos activos (no se puede eliminar)
     public boolean tieneRegistrosActivos(int id);
+    // true si el usuario ya ve (predeterminada o suya) otra categoría activa con ese nombre y tipo
+    public boolean existeNombre(String nombre, String tipo, int idUsuario, int idCategoriaExcluida);
 }
