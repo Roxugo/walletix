@@ -412,4 +412,15 @@ class RetosIntegracionTests {
                 .andExpect(jsonPath("$.avisoReto").doesNotExist());
         assertThat(activo(idParticipacion, "diaActual")).isEqualTo(1);
     }
+
+    @Test
+    @DisplayName("La racha no cuenta el progreso de una participación eliminada")
+    void rachaSinParticipacionesEliminadas() throws Exception {
+        int idParticipacion = retoPersonal("ahorro_libre", 7);
+        progreso(token, idParticipacion).andExpect(status().isOk());
+        assertThat((Integer) JsonPath.read(resumen(token), "$.racha")).isEqualTo(1);
+        mockMvc.perform(delete("/usuariosdesafios/" + idParticipacion).header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+        assertThat((Integer) JsonPath.read(resumen(token), "$.racha")).isEqualTo(0);
+    }
 }

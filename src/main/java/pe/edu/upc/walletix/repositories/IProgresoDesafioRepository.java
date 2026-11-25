@@ -14,8 +14,10 @@ import java.util.Optional;
 public interface IProgresoDesafioRepository extends JpaRepository<ProgresoDesafio, Integer> {
 
     // Días distintos en que el usuario registró progreso en algún reto (para calcular su racha)
+    // (solo de participaciones activas: si se elimina la participación, sus días ya no cuentan)
     @Query("SELECT DISTINCT progreso.fechaProgreso FROM ProgresoDesafio progreso " +
-            "WHERE progreso.usuarioDesafio.usuario.idUsuario = :idUsuario ORDER BY progreso.fechaProgreso DESC")
+            "WHERE progreso.usuarioDesafio.usuario.idUsuario = :idUsuario AND progreso.usuarioDesafio.estado = 1 " +
+            "ORDER BY progreso.fechaProgreso DESC")
     List<LocalDate> fechasConProgreso(@Param("idUsuario") int idUsuario);
 
     // El progreso de un día concreto (para quitarlo si un gasto de ese día rompe el reto)
