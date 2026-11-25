@@ -10,6 +10,7 @@ import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.repositories.IAuditoriaRepository;
 import pe.edu.upc.walletix.repositories.ICategoriaRepository;
 import pe.edu.upc.walletix.repositories.IComercianteRepository;
+import pe.edu.upc.walletix.repositories.IFavoritoMicroleccionRepository;
 import pe.edu.upc.walletix.repositories.IGastoRepository;
 import pe.edu.upc.walletix.repositories.IIntentoQuizUsuarioRepository;
 import pe.edu.upc.walletix.repositories.INotificacionRepository;
@@ -55,6 +56,8 @@ public class UsuarioServiceImplement implements IUsuarioService {
     private IUsuarioDesafioRepository usuarioDesafioRepository;
     @Autowired
     private IIntentoQuizUsuarioRepository intentoQuizUsuarioRepository;
+    @Autowired
+    private IFavoritoMicroleccionRepository favoritoMicroleccionRepository;
 
     // Usuario que inició sesión y está haciendo la acción (sale del token JWT).
     // Si no hay sesión, se usa el usuario afectado
@@ -130,6 +133,7 @@ public class UsuarioServiceImplement implements IUsuarioService {
             usuarioLogroRepository.darDeBajaPorUsuario(id);
             usuarioDesafioRepository.darDeBajaPorUsuario(id);
             intentoQuizUsuarioRepository.darDeBajaPorUsuario(id);
+            favoritoMicroleccionRepository.eliminarPorUsuario(id);
 
             // Registro automático en Auditoría (Fase 3: Eliminación / Baja lógica)
             List<Auditoria> auditorias = auditoriaRepository.findByUsuarioRegistroIdUsuario(id);

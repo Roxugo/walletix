@@ -348,4 +348,109 @@ public class PasosDefinicion {
                 .andExpect(jsonPath("$.puntosRecompensa").value(puntos))
                 .andExpect(jsonPath("$.estadoDesafio").value("EN_PROGRESO"));
     }
+
+    // ---------- US31, US32, US33, US34, US35: Aprende (consejos, microlecciones y quiz) ----------
+
+    private final java.util.Map<String, Integer> contenidos = new java.util.HashMap<>();
+    private final java.util.Map<String, java.util.List<Integer>> preguntas = new java.util.HashMap<>();
+
+    // Contenido creado por un ADMIN; cada pregunta tiene la "a" como respuesta correcta
+    private void crearContenido(String titulo, String tipo, String categoria, boolean bloqueado, int numeroPreguntas) throws Exception {
+        String tokenAdmin = api.login(api.registrarAdmin());
+        String json = """
+                {"tituloMicroleccion":"%s","descripcionMicroleccion":"Test","contenidoMicroleccion":"Save a little every day.",
+                 "urlMediaMicroleccion":"-","categoriaEducativaMicroleccion":"%s","tipoMicroleccion":"%s","bloqueadoMicroleccion":%s,
+                 "tituloQuizMicroleccion":"Quiz","puntajeAprobatorioMicroleccion":60,"puntosRecompensaMicroleccion":20}
+                """.formatted(titulo, categoria, tipo, bloqueado);
+        String creado = mockMvc.perform(post("/microlecciones/web").header("Authorization", "Bearer " + tokenAdmin)
+                        .contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        int id = JsonPath.read(creado, "$.idMicroleccion");
+        contenidos.put(titulo, id);
+        java.util.List<Integer> ids = new java.util.ArrayList<>();
+        for (int i = 1; i <= numeroPreguntas; i++) {
+            String pregunta = mockMvc.perform(post("/preguntas-quiz/web").header("Authorization", "Bearer " + tokenAdmin)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{\"idMicroleccion\":" + id + ",\"enunciadoPreguntaQuiz\":\"Question " + i + "\",\"opcionAPreguntaQuiz\":\"Yes\","
+                                    + "\"opcionBPreguntaQuiz\":\"No\",\"opcionCorrectaPreguntaQuiz\":\"A\",\"explicacionPreguntaQuiz\":\"Because\"}"))
+                    .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+            ids.add(JsonPath.read(pregunta, "$.idPreguntaQuiz"));
+        }
+        preguntas.put(titulo, ids);
+    }
+
+    @Given("a micro-lesson {string} of the category {string} with {int} quiz questions")
+    public void unaMicroleccion(String titulo, String categoria, int numeroPreguntas) throws Exception {
+        crearContenido(titulo, "leccion", categoria, false, numeroPreguntas);
+    }
+
+    @Given("a tip {string} of the category {string}")
+    public void unConsejo(String titulo, String categoria) throws Exception {
+        crearContenido(titulo, "tip", categoria, false, 0);
+    }
+
+    @Given("a locked micro-lesson {string} of the category {string}")
+    public void unaMicroleccionBloqueada(String titulo, String categoria) throws Exception {
+        crearContenido(titulo, "leccion", categoria, true, 1);
+    }
+
+    @When("the user opens the category {string}")
+    public void abreLaCategoria(String categoria) throws Exception {
+        respuesta = enviar(get("/aprende").param("categoria", categoria));
+    }
+
+    @Then("only content of the category {string} is shown, including {string}")
+    public void soloEsaCategoria(String categoria, String titulo) throws Exception {
+        String cuerpo = respuesta.andExpect(status().isOk()).andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertThat((java.util.List<String>) JsonPath.read(cuerpo, "$[*].categoria")).isNotEmpty().allMatch(categoria::equalsIgnoreCase);
+        assertThat((java.util.List<String>) JsonPath.read(cuerpo, "$[*].titulo")).contains(titulo);
+    }
+
+    @When("the user marks {string} as favorite")
+    public void marcaFavorito(String titulo) throws Exception {
+        respuesta = enviar(put("/aprende/" + contenidos.get(titulo) + "/favorito"));
+        respuesta.andExpect(status().isOk());
+    }
+
+    @Then("{string} is in the favorites list")
+    public void estaEnFavoritos(String titulo) throws Exception {
+        enviar(get("/aprende").param("favoritos", "true")).andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].titulo", hasItem(titulo)));
+    }
+
+    @Then("the favorites list is empty")
+    public void favoritosVacios() throws Exception {
+        enviar(get("/aprende").param("favoritos", "true")).andExpect(status().isOk()).andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @When("the user opens the micro-lesson {string}")
+    public void abreLaMicroleccion(String titulo) throws Exception {
+        respuesta = enviar(get("/aprende/" + contenidos.get(titulo)));
+    }
+
+    @Then("the content and {int} quiz questions without their answers are shown")
+    public void contenidoYPreguntas(int numeroPreguntas) throws Exception {
+        String cuerpo = respuesta.andExpect(status().isOk())
+                .andExpect(jsonPath("$.contenido").value("Save a little every day."))
+                .andExpect(jsonPath("$.preguntas", hasSize(numeroPreguntas)))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertThat(cuerpo).doesNotContain("Because").doesNotContain("opcionCorrecta");
+    }
+
+    @When("the user answers all the questions of {string} correctly")
+    public void respondeBien(String titulo) throws Exception {
+        String respuestas = preguntas.get(titulo).stream().map(id -> "\"" + id + "\":\"a\"")
+                .collect(java.util.stream.Collectors.joining(","));
+        respuesta = enviar(post("/aprende/" + contenidos.get(titulo) + "/quiz").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"respuestas\":{" + respuestas + "}}"));
+    }
+
+    @Then("the score is {int}, the quiz is passed and each answer has its feedback")
+    public void puntajeYRetroalimentacion(int puntaje) throws Exception {
+        respuesta.andExpect(status().isOk())
+                .andExpect(jsonPath("$.puntaje").value(puntaje))
+                .andExpect(jsonPath("$.aprobado").value(true))
+                .andExpect(jsonPath("$.retroalimentacion[*].acerto", hasItem(true)))
+                .andExpect(jsonPath("$.retroalimentacion[0].explicacion").value("Because"));
+    }
 }

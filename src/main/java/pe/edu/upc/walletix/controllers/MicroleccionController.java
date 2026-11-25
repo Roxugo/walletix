@@ -64,7 +64,8 @@ public class MicroleccionController {
 
     @Operation(summary = "Listar las microlecciones activas")
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    // Catálogo para el ADMIN; el usuario usa /aprende (así no lee el contenido bloqueado)
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<MicroleccionDTO>> listar() {
         ModelMapper modelMapper = new ModelMapper();
         List<MicroleccionDTO> listaMicrolecciones = microleccionService.list().stream()
@@ -90,7 +91,8 @@ public class MicroleccionController {
 
     @Operation(summary = "Buscar una microlección por su id")
     @GetMapping("/{idMicroleccion}")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    // Catálogo para el ADMIN; el usuario usa /aprende (así no lee el contenido bloqueado)
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> buscarPorId(@PathVariable int idMicroleccion) {
         ModelMapper modelMapper = new ModelMapper();
         Optional<Microleccion> microleccion = microleccionService.listId(idMicroleccion);
@@ -151,7 +153,8 @@ public class MicroleccionController {
     // JPQL: consejos y microlecciones por categoría (US31). Ej: /microlecciones/categoria?categoria=Ahorro
     @Operation(summary = "Listar las microlecciones de una categoría educativa")
     @GetMapping("/categoria")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    // Catálogo para el ADMIN; el usuario usa /aprende (así no lee el contenido bloqueado)
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> buscarPorCategoria(@RequestParam("categoria") String categoria) {
         ModelMapper modelMapper = new ModelMapper();
         List<MicroleccionDTO> listaMicrolecciones = microleccionService.buscarPorCategoria(categoria).stream()

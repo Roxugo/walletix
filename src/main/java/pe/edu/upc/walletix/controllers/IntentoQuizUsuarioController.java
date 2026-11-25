@@ -58,7 +58,8 @@ public class IntentoQuizUsuarioController {
 
     @Operation(summary = "Registrar un intento de quiz (calcula si aprobó)")
     @PostMapping("/web")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    // Solo ADMIN: el usuario no envía su propio puntaje; su quiz lo califica la API en POST /aprende/{id}/quiz
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> registrar(@RequestBody IntentoQuizUsuarioDTO intentoQuizUsuarioDTO, Authentication autenticacion) {
         if (!usuarioActual.puedeGestionar(autenticacion, intentoQuizUsuarioDTO.getIdUsuario())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));

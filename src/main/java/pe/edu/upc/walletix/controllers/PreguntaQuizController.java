@@ -59,7 +59,8 @@ public class PreguntaQuizController {
 
     @Operation(summary = "Listar las preguntas de quiz activas")
     @GetMapping
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    // Solo ADMIN: incluye la respuesta correcta. El usuario recibe las preguntas sin respuesta en /aprende
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<PreguntaQuizDTO>> listar() {
         ModelMapper modelMapper = new ModelMapper();
         List<PreguntaQuizDTO> listaPreguntas = preguntaQuizService.list().stream()
@@ -97,7 +98,8 @@ public class PreguntaQuizController {
 
     @Operation(summary = "Buscar una pregunta de quiz por su id")
     @GetMapping("/{idPreguntaQuiz}")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    // Solo ADMIN: incluye la respuesta correcta. El usuario recibe las preguntas sin respuesta en /aprende
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> buscarPorId(@PathVariable int idPreguntaQuiz) {
         ModelMapper modelMapper = new ModelMapper();
         Optional<PreguntaQuiz> preguntaQuiz = preguntaQuizService.listId(idPreguntaQuiz);
@@ -158,7 +160,8 @@ public class PreguntaQuizController {
     // Preguntas del quiz de una microlección. Ej: /preguntas-quiz/microleccion/1
     @Operation(summary = "Listar las preguntas de una microlección")
     @GetMapping("/microleccion/{idMicroleccion}")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    // Solo ADMIN: incluye la respuesta correcta. El usuario recibe las preguntas sin respuesta en /aprende
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> listarPorMicroleccion(@PathVariable int idMicroleccion) {
         if (microleccionService.listId(idMicroleccion).isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)

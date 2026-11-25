@@ -42,6 +42,9 @@ public interface IIntentoQuizUsuarioRepository extends JpaRepository<IntentoQuiz
     // Para no eliminar una microlección que todavía tiene intentos activos
     boolean existsByMicroleccionIdMicroleccionAndEstadoIntentoQuizUsuario(int idMicroleccion, Integer estadoIntentoQuizUsuario);
 
+    // Aprende: los intentos activos del usuario (mejor puntaje y si ya aprobó cada microlección)
+    List<IntentoQuizUsuario> findByUsuarioIdUsuarioAndEstadoIntentoQuizUsuario(int idUsuario, Integer estadoIntentoQuizUsuario);
+
     // Logros: quizzes intentados y aprobados
     long countByUsuarioIdUsuarioAndEstadoIntentoQuizUsuario(int idUsuario, Integer estadoIntentoQuizUsuario);
 
