@@ -10,6 +10,9 @@ public interface IGamificacionService {
     // Suma puntos de gamificación al usuario
     void sumarPuntos(Usuario usuario, int puntos);
 
+    // Resta puntos (sin bajar de 0), ej. cuando un gasto le quita un día a un reto
+    void quitarPuntos(Usuario usuario, int puntos);
+
     // Revisa las reglas de los logros y desbloquea los que el usuario ya cumple
     // (suma sus puntos y le manda una notificación). Devuelve los nombres de los nuevos.
     List<String> revisarLogros(Usuario usuario);

@@ -105,6 +105,15 @@ public class GamificacionServiceImplement implements IGamificacionService {
         usuarioRepository.save(usuario);
     }
 
+    @Override
+    public void quitarPuntos(Usuario usuario, int puntos) {
+        if (puntos <= 0) {
+            return;
+        }
+        usuario.setPuntosGamificacionUsuario(Math.max(0, usuario.getPuntosGamificacionUsuario() - puntos));
+        usuarioRepository.save(usuario);
+    }
+
     // Un candado por usuario: si llegan dos peticiones a la vez (ej. al abrir la página),
     // la segunda espera a la primera y ya ve el logro entregado, así no se otorga dos veces.
     private final java.util.concurrent.ConcurrentHashMap<Integer, Object> candados = new java.util.concurrent.ConcurrentHashMap<>();

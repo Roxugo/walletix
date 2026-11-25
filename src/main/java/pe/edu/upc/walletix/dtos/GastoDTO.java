@@ -24,6 +24,19 @@ public class GastoDTO {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String alertaPresupuesto;
 
+    // Solo en la respuesta: el gasto le quitó un día a un reto en progreso
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String avisoReto;
+
+    public String getAvisoReto() {
+        return avisoReto;
+    }
+
+    public void setAvisoReto(String avisoReto) {
+        this.avisoReto = avisoReto;
+    }
+
     public String getAlertaPresupuesto() {
         return alertaPresupuesto;
     }

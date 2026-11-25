@@ -39,6 +39,8 @@ public class GastoController {
     @Autowired
     private IGamificacionService gamificacionService;
     @Autowired
+    private pe.edu.upc.walletix.servicesinterfaces.IRetoService retoService;
+    @Autowired
     private Mensajes mensajes;
     // Usuario que inició sesión: un USUARIO solo trabaja con sus datos, un ADMIN con todos
     @Autowired
@@ -175,6 +177,8 @@ public class GastoController {
         GastoDTO respuesta = convertirADTO(gastoRegistrado);
         // US15: si con este gasto se superó el presupuesto de la categoría, la respuesta trae la alerta
         alertaPresupuestoService.revisar(gastoRegistrado).ifPresent(respuesta::setAlertaPresupuesto);
+        // Retos verificados con gastos: un delivery en "Semana sin delivery" le quita ese día al reto
+        respuesta.setAvisoReto(retoService.revisarGasto(usuario.get(), gastoRegistrado));
         gamificacionService.revisarLogros(usuario.get());
         return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
     }
@@ -248,6 +252,8 @@ public class GastoController {
         gasto.setMetodoPagoGasto(gastoDTO.getMetodoPagoGasto());
         gasto.setFijoGasto(gastoDTO.isFijoGasto());
         gastoService.update(gasto);
+        // Si al editarlo ahora rompe un reto (ej. cambió el comercio a Rappi), también se quita el día
+        retoService.revisarGasto(gasto.getUsuario(), gasto);
         return ResponseEntity.ok(mensajes.get("gasto.actualizado.correctamente"));
     }
 

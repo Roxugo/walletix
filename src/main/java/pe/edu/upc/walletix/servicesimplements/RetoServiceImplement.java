@@ -8,6 +8,7 @@ import pe.edu.upc.walletix.dtos.RetosDTOs.*;
 import pe.edu.upc.walletix.entities.*;
 import pe.edu.upc.walletix.i18n.Mensajes;
 import pe.edu.upc.walletix.repositories.IDesafioRepository;
+import pe.edu.upc.walletix.repositories.IGastoRepository;
 import pe.edu.upc.walletix.repositories.IProgresoDesafioRepository;
 import pe.edu.upc.walletix.repositories.IUsuarioDesafioRepository;
 import pe.edu.upc.walletix.servicesinterfaces.IGamificacionService;
@@ -52,6 +53,8 @@ public class RetoServiceImplement implements IRetoService {
     private INotificacionService notificacionService;
     @Autowired
     private Mensajes mensajes;
+    @Autowired
+    private IGastoRepository gastoRepository;
     @Autowired
     private Reloj reloj;
 
@@ -168,6 +171,15 @@ public class RetoServiceImplement implements IRetoService {
             throw new ReglaRetoException(409, mensajes.get("reto.progreso.ya.registrado.hoy"));
         }
         Desafio desafio = participacion.getDesafio();
+        // Verificación con los gastos de hoy: si ya registró un gasto que rompe el reto, el día no cuenta
+        if (ReglasReto.seVerificaConGastos(desafio.getTipoDesafio())) {
+            ReglasReto.primeroQueRompe(desafio.getTipoDesafio(),
+                            gastoRepository.buscarPorUsuarioYRango(usuario.getIdUsuario(), hoy, hoy))
+                    .ifPresent(gasto -> {
+                        // 422 (y no 409, que es "ya registraste hoy"): la web muestra el gasto que rompió el día
+                        throw new ReglaRetoException(422, mensajes.get("reto.dia.roto", detalle(gasto)));
+                    });
+        }
         int duracion = desafio.duracionEfectiva();
         int dias = participacion.getDiasCompletados() + 1;
         participacion.setDiasCompletados(dias);
@@ -241,6 +253,54 @@ public class RetoServiceImplement implements IRetoService {
         desafio.setUsuarioCreador(usuario);
         desafioRepository.save(desafio);
         return aDTO(inscribir(usuario, desafio)); // quien lo crea queda inscrito
+    }
+
+    @Override
+    @Transactional
+    public String revisarGasto(Usuario usuario, Gasto gasto) {
+        List<String> perdidos = new ArrayList<>();
+        for (UsuarioDesafio participacion : participacionesDe(usuario)) {
+            String tipo = participacion.getDesafio().getTipoDesafio();
+            if (!EN_PROGRESO.equals(participacion.getEstadoDesafio()) || !ReglasReto.seVerificaConGastos(tipo)
+                    || !ReglasReto.rompe(tipo, gasto)) {
+                continue;
+            }
+            // Solo importa si ese día ya estaba marcado como cumplido
+            progresoDesafioRepository.findFirstByUsuarioDesafioIdUsuarioDesafioAndFechaProgreso(
+                    participacion.getIdUsuarioDesafio(), gasto.getFechaGasto()).ifPresent(progreso -> {
+                quitarDia(usuario, participacion, progreso);
+                perdidos.add(participacion.getDesafio().getTitulo());
+                notificar(usuario, mensajes.get("reto.dia.perdido.titulo"), mensajes.get("reto.dia.perdido.mensaje",
+                        participacion.getDesafio().getTitulo(), String.valueOf(Niveles.XP_POR_PROGRESO_DIARIO)));
+            });
+        }
+        return perdidos.isEmpty() ? null
+                : mensajes.get("reto.dia.perdido.aviso", String.join(", ", perdidos), detalle(gasto));
+    }
+
+    // Deshace el progreso de ese día: el reto retrocede un día y se descuentan sus +20 XP
+    private void quitarDia(Usuario usuario, UsuarioDesafio participacion, ProgresoDesafio progreso) {
+        progresoDesafioRepository.delete(progreso);
+        progresoDesafioRepository.flush();
+        Desafio desafio = participacion.getDesafio();
+        int duracion = desafio.duracionEfectiva();
+        int dias = Math.max(0, participacion.getDiasCompletados() - 1);
+        participacion.setDiasCompletados(dias);
+        participacion.setPorcentajeProgreso(porcentaje(dias, duracion));
+        participacion.setMontoProgresoActual(ahorroEstimado(desafio.getMontoObjetivo(), dias, duracion));
+        // Si era el progreso de hoy, puede volver a registrarlo cuando ya no tenga ese gasto
+        participacion.setFechaUltimoProgreso(progresoDesafioRepository
+                .findFirstByUsuarioDesafioIdUsuarioDesafioOrderByFechaProgresoDesc(participacion.getIdUsuarioDesafio())
+                .map(ProgresoDesafio::getFechaProgreso).orElse(null));
+        usuarioDesafioRepository.save(participacion);
+        gamificacionService.quitarPuntos(usuario, Niveles.XP_POR_PROGRESO_DIARIO);
+    }
+
+    // "Rappi, S/ 25.00"
+    private static String detalle(Gasto gasto) {
+        String nombre = gasto.getComerciante() == null || gasto.getComerciante().getNombreComerciante() == null
+                ? gasto.getDescripcionGasto() : gasto.getComerciante().getNombreComerciante();
+        return nombre + ", S/ " + gasto.getMontoGasto().setScale(2, RoundingMode.HALF_UP).toPlainString();
     }
 
     // ---------- Apoyo ----------

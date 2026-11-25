@@ -1,6 +1,7 @@
 package pe.edu.upc.walletix.servicesinterfaces;
 
 import pe.edu.upc.walletix.dtos.RetosDTOs.*;
+import pe.edu.upc.walletix.entities.Gasto;
 import pe.edu.upc.walletix.entities.Usuario;
 
 import java.util.List;
@@ -23,6 +24,10 @@ public interface IRetoService {
 
     // Reto personal: tipo, duración y meta (US29). Solo lo ve su creador y no da puntos de recompensa.
     ParticipacionDTO crearPersonal(Usuario usuario, RetoPersonalDTO datos);
+
+    // Al registrar o editar un gasto: si rompe un reto en progreso (ej. un delivery en "Semana sin delivery")
+    // y ese día ya tenía progreso, se le quita el día. Devuelve el aviso para el usuario (o null).
+    String revisarGasto(Usuario usuario, Gasto gasto);
 
     // Error de una regla de los retos, con el código HTTP que debe responder la API
     class ReglaRetoException extends RuntimeException {

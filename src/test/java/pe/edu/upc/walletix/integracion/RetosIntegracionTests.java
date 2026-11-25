@@ -318,4 +318,98 @@ class RetosIntegracionTests {
         assertThat(desbloqueada).isNotEmpty().allMatch(Boolean::booleanValue);
         assertThat(puntos()).isGreaterThanOrEqualTo(puntosAntes + 10);
     }
+
+    // ---------- Retos verificados con los gastos registrados ----------
+
+    private int retoPersonal(String tipo, int dias) throws Exception {
+        String respuesta = mockMvc.perform(post("/retos/personal").header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"tipo\":\"" + tipo + "\",\"duracionDias\":" + dias + ",\"montoObjetivo\":70}"))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        return JsonPath.read(respuesta, "$.idUsuarioDesafio");
+    }
+
+    private ResultActions gasto(int idCategoria, int idComercio, String descripcion, String monto, LocalDate fecha) throws Exception {
+        return mockMvc.perform(post("/gastos/web").header("Authorization", "Bearer " + token).header("Accept-Language", "es-419")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(api.jsonGasto(0, idUsuario, idCategoria, idComercio, descripcion, monto, fecha)));
+    }
+
+    private Object activo(int idParticipacion, String campo) throws Exception {
+        List<Object> valor = JsonPath.read(resumen(token), "$.activos[?(@.idUsuarioDesafio == " + idParticipacion + ")]." + campo);
+        return valor.get(0);
+    }
+
+    @Test
+    @DisplayName("Sin delivery: registro mi progreso en la mañana, pido delivery después y pierdo el día de hoy")
+    void deliveryDespuesDelProgresoQuitaElDia() throws Exception {
+        LocalDate hoy = LocalDate.now(); // los gastos no pueden ser de una fecha futura
+        when(reloj.hoy()).thenReturn(hoy);
+        int idCategoria = api.crearCategoria(token, idUsuario, "gasto");
+        int idComercio = api.crearComercio(tokenAdmin, idCategoria);
+        gasto(idCategoria, idComercio, "Primer gasto", "50", hoy).andExpect(status().isCreated()); // logros de primer gasto
+        int idParticipacion = retoPersonal("sin_delivery", 7);
+
+        progreso(token, idParticipacion).andExpect(status().isOk()).andExpect(jsonPath("$.diaActual").value(1));
+        int puntosConElDia = puntos();
+
+        // 2 horas después: un delivery
+        gasto(idCategoria, idComercio, "Rappi pollo a la brasa", "25", hoy).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.avisoReto", containsString("perdiste ese día")))
+                .andExpect(jsonPath("$.avisoReto", containsString("S/ 25.00")));
+        assertThat(activo(idParticipacion, "diaActual")).isEqualTo(0);
+        assertThat(activo(idParticipacion, "registradoHoy")).isEqualTo(false);
+        assertThat(puntos()).isEqualTo(puntosConElDia - 20);
+        String notificaciones = mockMvc.perform(get("/notificaciones").header("Authorization", "Bearer " + token)
+                .header("Accept-Language", "es-419")).andReturn().getResponse().getContentAsString();
+        assertThat((List<String>) JsonPath.read(notificaciones, "$[*].titulo")).contains("Perdiste un día de tu reto");
+
+        // Y hoy ya no puede volver a marcarlo: el delivery sigue registrado
+        progreso(token, idParticipacion).andExpect(status().isUnprocessableContent())
+                .andExpect(content().string(containsString("rompe este reto (Comercio ")))
+                .andExpect(content().string(containsString(", S/ 25.00)")));
+
+        // Un gasto normal no afecta un reto que ya no tiene progreso ese día, ni aparece el aviso
+        gasto(idCategoria, idComercio, "Mercado", "40", hoy).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.avisoReto").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("Sin gastos hormiga: un gasto chico registrado después le quita al reto el día en que se hizo")
+    void gastoHormigaDeAyerQuitaSoloEseDia() throws Exception {
+        LocalDate hoy = LocalDate.now();
+        LocalDate ayer = hoy.minusDays(1);
+        int idCategoria = api.crearCategoria(token, idUsuario, "gasto");
+        int idComercio = api.crearComercio(tokenAdmin, idCategoria);
+        when(reloj.hoy()).thenReturn(ayer);
+        int idParticipacion = retoPersonal("sin_gastos_hormiga", 5);
+        progreso(token, idParticipacion).andExpect(status().isOk());
+        when(reloj.hoy()).thenReturn(hoy);
+        progreso(token, idParticipacion).andExpect(status().isOk()).andExpect(jsonPath("$.diaActual").value(2));
+
+        // Un almuerzo de S/ 15 no es gasto hormiga
+        gasto(idCategoria, idComercio, "Almuerzo", "15", hoy).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.avisoReto").doesNotExist());
+        assertThat(activo(idParticipacion, "diaActual")).isEqualTo(2);
+
+        // Recién hoy anota unas galletas de ayer (S/ 3.50): pierde AYER, pero hoy sigue marcado
+        gasto(idCategoria, idComercio, "Galletas", "3.50", ayer).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.avisoReto", containsString("perdiste ese día")));
+        assertThat(activo(idParticipacion, "diaActual")).isEqualTo(1);
+        assertThat(activo(idParticipacion, "registradoHoy")).isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("Ahorro libre sigue siendo por honestidad: un delivery no le quita días")
+    void retoPorHonestidadNoSeVerifica() throws Exception {
+        LocalDate hoy = LocalDate.now();
+        when(reloj.hoy()).thenReturn(hoy);
+        int idCategoria = api.crearCategoria(token, idUsuario, "gasto");
+        int idComercio = api.crearComercio(tokenAdmin, idCategoria);
+        int idParticipacion = retoPersonal("ahorro_libre", 7);
+        progreso(token, idParticipacion).andExpect(status().isOk());
+        gasto(idCategoria, idComercio, "Rappi", "5", hoy).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.avisoReto").doesNotExist());
+        assertThat(activo(idParticipacion, "diaActual")).isEqualTo(1);
+    }
 }
