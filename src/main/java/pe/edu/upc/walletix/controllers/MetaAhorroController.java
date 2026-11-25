@@ -1,5 +1,6 @@
 package pe.edu.upc.walletix.controllers;
 
+import pe.edu.upc.walletix.servicesinterfaces.IGamificacionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
@@ -27,6 +28,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/metas-ahorro")
 public class MetaAhorroController {
+    // Logros automáticos (Primer gasto registrado, Alcancía Iniciada...): se revisan después de registrar
+    @Autowired
+    private IGamificacionService gamificacionService;
     @Autowired
     private Mensajes mensajes;
     // Usuario que inició sesión: un USUARIO solo trabaja con sus datos, un ADMIN con todos
@@ -70,6 +74,7 @@ public class MetaAhorroController {
         MetaAhorro meta = toEntity(dto);
         meta.setUsuario(usuario.get());
         MetaAhorro registrada = metaAhorroService.registrar(meta);
+        gamificacionService.revisarLogros(usuario.get());
         return ResponseEntity.status(HttpStatus.CREATED).body(toDto(registrada, new ModelMapper()));
     }
 
@@ -106,6 +111,7 @@ public class MetaAhorroController {
         meta.setEstadoMetaAhorro(dto.getEstadoMetaAhorro());
         meta.setUsuario(usuario.get());
         metaAhorroService.actualizar(meta);
+        gamificacionService.revisarLogros(usuario.get()); // al cumplir una meta: "Gran ahorrador"
         return ResponseEntity.ok(mensajes.get("meta.ahorro.actualizada.correctamente"));
     }
 

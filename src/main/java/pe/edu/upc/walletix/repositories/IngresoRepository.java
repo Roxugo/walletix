@@ -39,4 +39,7 @@ public interface IngresoRepository extends JpaRepository<Ingreso, Integer> {
 
     // Para no eliminar una categoría que todavía tiene ingresos activos
     boolean existsByCategoriaIdCategoriaAndEstado(int idCategoria, int estado);
+
+    // Logros: cantidad de ingresos del usuario
+    long countByUsuarioIdUsuarioAndEstado(int idUsuario, int estado);
 }

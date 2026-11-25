@@ -39,4 +39,7 @@ public interface IUsuarioLogroRepository extends JpaRepository<UsuarioLogro, Int
 
     // Para no eliminar un logro que todavía tienen usuarios
     boolean existsByLogroIdLogroAndEstadoUsuarioLogro(int idLogro, int estadoUsuarioLogro);
+
+    // ¿El usuario ya tiene ese logro? (para no darlo ni sumar sus puntos dos veces)
+    boolean existsByUsuarioIdUsuarioAndLogroIdLogroAndEstadoUsuarioLogro(int idUsuario, int idLogro, int estadoUsuarioLogro);
 }

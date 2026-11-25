@@ -1,5 +1,6 @@
 package pe.edu.upc.walletix.controllers;
 
+import pe.edu.upc.walletix.servicesinterfaces.IGamificacionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
@@ -31,6 +32,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/ingresos")
 public class IngresoController {
+    // Logros automáticos (Primer gasto registrado, Alcancía Iniciada...): se revisan después de registrar
+    @Autowired
+    private IGamificacionService gamificacionService;
     @Autowired
     private Mensajes mensajes;
     // Usuario que inició sesión: un USUARIO solo trabaja con sus datos, un ADMIN con todos
@@ -91,6 +95,7 @@ public class IngresoController {
         Ingreso registrado = ingresoService.registrar(ingreso);
         // US12: el ingreso se suma al saldo disponible
         saldoService.aplicar(usuario.get(), comoDecimal(registrado.getMonto()));
+        gamificacionService.revisarLogros(usuario.get());
         return ResponseEntity.status(HttpStatus.CREATED).body(toDto(registrado, new ModelMapper()));
     }
 

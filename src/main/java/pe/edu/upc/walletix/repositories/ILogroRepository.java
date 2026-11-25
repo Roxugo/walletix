@@ -11,4 +11,7 @@ import java.util.Optional;
 public interface ILogroRepository extends JpaRepository<Logro, Integer> {
     List<Logro> findByEstadoLogro(int estadoLogro);
     Optional<Logro> findByIdLogroAndEstadoLogro(int idLogro, int estadoLogro);
+
+    // Los logros automáticos se buscan por nombre (Primer gasto registrado, Retador, ...)
+    Optional<Logro> findFirstByNombreLogroIgnoreCaseAndEstadoLogro(String nombreLogro, int estadoLogro);
 }

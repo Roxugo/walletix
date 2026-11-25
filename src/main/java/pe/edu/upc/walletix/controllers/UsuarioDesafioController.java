@@ -74,9 +74,11 @@ public class UsuarioDesafioController {
         return ResponseEntity.ok(listaUsuarioDesafios);
     }
 
-    @Operation(summary = "Inscribir a un usuario en un desafío")
+    // Solo ADMIN: aquí el progreso y el estado vienen en el JSON. Un usuario se une con POST /retos/{id}/unirme,
+    // donde la API pone el progreso (así nadie puede enviar "100%, COMPLETADO" sin haber cumplido el reto).
+    @Operation(summary = "Inscribir a un usuario en un desafío (solo ADMIN; los usuarios usan /retos)")
     @PostMapping("/web")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<?> registrar(@RequestBody UsuarioDesafioDTO usuarioDesafioDTO, Authentication autenticacion) {
         if (!usuarioActual.puedeGestionar(autenticacion, usuarioDesafioDTO.getIdUsuario())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
@@ -122,9 +124,10 @@ public class UsuarioDesafioController {
         }
     }
 
-    @Operation(summary = "Actualizar el progreso de un usuario en un desafío")
+    // Solo ADMIN (corrección manual). Un usuario avanza con POST /retos/participaciones/{id}/progreso
+    @Operation(summary = "Actualizar el progreso de un usuario en un desafío (solo ADMIN; los usuarios usan /retos)")
     @PutMapping("/actualiza")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> actualizar(@RequestBody UsuarioDesafioDTO usuarioDesafioDTO, Authentication autenticacion) {
         Optional<UsuarioDesafio> usuarioDesafioExistente = usuarioDesafioService.buscarPorId(usuarioDesafioDTO.getIdUsuarioDesafio());
         if (usuarioDesafioExistente.isEmpty()) {

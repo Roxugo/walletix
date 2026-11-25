@@ -120,7 +120,14 @@ class SaldoPresupuestoIntegracionTests {
                         .contentType(MediaType.APPLICATION_JSON).content(gasto(0, "80")))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.alertaPresupuesto").doesNotExist());
-        assertThat(notificacionService.buscarNoLeidasPorUsuario(idUsuario)).isEmpty();
+        assertThat(alertasDePresupuesto()).isEmpty();
+    }
+
+    // Solo las notificaciones de tipo "alerta" (un primer gasto también puede desbloquear un logro y avisarlo)
+    private List<Notificacion> alertasDePresupuesto() {
+        return notificacionService.buscarNoLeidasPorUsuario(idUsuario).stream()
+                .filter(notificacion -> "alerta".equals(notificacion.getTipo()))
+                .toList();
     }
 
     @Test
@@ -134,7 +141,7 @@ class SaldoPresupuestoIntegracionTests {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.alertaPresupuesto").value(org.hamcrest.Matchers.containsString("S/ 110.00 de S/ 100.00")));
 
-        List<Notificacion> alertas = notificacionService.buscarNoLeidasPorUsuario(idUsuario);
+        List<Notificacion> alertas = alertasDePresupuesto();
         assertThat(alertas).hasSize(1);
         assertThat(alertas.get(0).getTipo()).isEqualTo("alerta");
         assertThat(alertas.get(0).getTitulo()).isEqualTo("Presupuesto excedido");

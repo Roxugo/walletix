@@ -4,6 +4,27 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class DesafioDTO {
+    // Opcionales (Centro de Retos): días que hay que registrar progreso y tipo de reto.
+    // Si no se envía la duración, son los días entre fechaInicio y fechaFin.
+    private Integer duracionDias;
+    private String tipoDesafio;
+
+    public Integer getDuracionDias() {
+        return duracionDias;
+    }
+
+    public void setDuracionDias(Integer duracionDias) {
+        this.duracionDias = duracionDias;
+    }
+
+    public String getTipoDesafio() {
+        return tipoDesafio;
+    }
+
+    public void setTipoDesafio(String tipoDesafio) {
+        this.tipoDesafio = tipoDesafio;
+    }
+
     private int idDesafio;
     private String titulo;
     private String descripcion;

@@ -3,6 +3,7 @@ package pe.edu.upc.walletix.entities;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "usuarioDesafio")
@@ -33,6 +34,43 @@ public class UsuarioDesafio {
 
     @Column(name = "estado", nullable = false)
     private int estado = 1;
+
+    // ---- Progreso diario (columnas nuevas que aceptan null) ----
+
+    // Días en que el usuario registró su progreso ("Día 5 de 7")
+    @Column(name = "diasCompletados")
+    private Integer diasCompletados;
+
+    // Último día con progreso registrado: solo se puede registrar UNA vez por día
+    @Column(name = "fechaUltimoProgreso")
+    private LocalDate fechaUltimoProgreso;
+
+    @Column(name = "fechaInscripcion")
+    private LocalDate fechaInscripcion;
+
+    public int getDiasCompletados() {
+        return diasCompletados == null ? 0 : diasCompletados;
+    }
+
+    public void setDiasCompletados(Integer diasCompletados) {
+        this.diasCompletados = diasCompletados;
+    }
+
+    public LocalDate getFechaUltimoProgreso() {
+        return fechaUltimoProgreso;
+    }
+
+    public void setFechaUltimoProgreso(LocalDate fechaUltimoProgreso) {
+        this.fechaUltimoProgreso = fechaUltimoProgreso;
+    }
+
+    public LocalDate getFechaInscripcion() {
+        return fechaInscripcion;
+    }
+
+    public void setFechaInscripcion(LocalDate fechaInscripcion) {
+        this.fechaInscripcion = fechaInscripcion;
+    }
 
     public UsuarioDesafio() {
     }

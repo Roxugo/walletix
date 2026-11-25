@@ -46,6 +46,58 @@ public class Desafio {
     @OneToMany(mappedBy = "desafio")
     private List<UsuarioDesafio> usuarioDesafios;
 
+    // ---- Centro de Retos y Logros (columnas nuevas que aceptan null: Hibernate las agrega solo) ----
+
+    // Tipo de reto: sin_delivery, sin_gastos_hormiga, ahorro_libre... (null en los retos antiguos)
+    @Column(name = "tipoDesafio", length = 30)
+    private String tipoDesafio;
+
+    // Cuántos días hay que registrar progreso para superarlo (null = los días entre fechaInicio y fechaFin)
+    @Column(name = "duracionDias")
+    private Integer duracionDias;
+
+    // Quién lo creó. null = reto OFICIAL de Walletix (lo ve todo usuario y da puntos de recompensa).
+    // Con dueño = reto PERSONAL (US29): solo lo ve su creador y no da puntos de recompensa.
+    @ManyToOne
+    @JoinColumn(name = "idUsuarioCreador")
+    private Usuario usuarioCreador;
+
+    public boolean esOficial() {
+        return usuarioCreador == null;
+    }
+
+    // Días que hay que cumplir para superar el reto
+    public int duracionEfectiva() {
+        if (duracionDias != null && duracionDias > 0) {
+            return duracionDias;
+        }
+        return (int) java.time.temporal.ChronoUnit.DAYS.between(fechaInicio, fechaFin) + 1;
+    }
+
+    public String getTipoDesafio() {
+        return tipoDesafio;
+    }
+
+    public void setTipoDesafio(String tipoDesafio) {
+        this.tipoDesafio = tipoDesafio;
+    }
+
+    public Integer getDuracionDias() {
+        return duracionDias;
+    }
+
+    public void setDuracionDias(Integer duracionDias) {
+        this.duracionDias = duracionDias;
+    }
+
+    public Usuario getUsuarioCreador() {
+        return usuarioCreador;
+    }
+
+    public void setUsuarioCreador(Usuario usuarioCreador) {
+        this.usuarioCreador = usuarioCreador;
+    }
+
     public Desafio() {
     }
 

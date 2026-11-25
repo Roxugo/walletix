@@ -1,5 +1,6 @@
 package pe.edu.upc.walletix.controllers;
 
+import pe.edu.upc.walletix.servicesinterfaces.IGamificacionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
@@ -34,6 +35,9 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/gastos")
 public class GastoController {
+    // Logros automáticos (Primer gasto registrado, Alcancía Iniciada...): se revisan después de registrar
+    @Autowired
+    private IGamificacionService gamificacionService;
     @Autowired
     private Mensajes mensajes;
     // Usuario que inició sesión: un USUARIO solo trabaja con sus datos, un ADMIN con todos
@@ -171,6 +175,7 @@ public class GastoController {
         GastoDTO respuesta = convertirADTO(gastoRegistrado);
         // US15: si con este gasto se superó el presupuesto de la categoría, la respuesta trae la alerta
         alertaPresupuestoService.revisar(gastoRegistrado).ifPresent(respuesta::setAlertaPresupuesto);
+        gamificacionService.revisarLogros(usuario.get());
         return ResponseEntity.status(HttpStatus.CREATED).body(respuesta);
     }
 

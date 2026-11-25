@@ -52,4 +52,11 @@ public interface IGastoRepository extends JpaRepository<Gasto, Integer> {
     boolean existsByCategoriaIdCategoriaAndEstadoGasto(int idCategoria, Integer estadoGasto);
 
     boolean existsByComercianteIdComercianteAndEstadoGasto(int idComerciante, Integer estadoGasto);
+
+    // Logros: cantidad de gastos y días distintos con gastos (para la racha de "Constante")
+    long countByUsuarioIdUsuarioAndEstadoGasto(int idUsuario, Integer estadoGasto);
+
+    @Query("SELECT DISTINCT gasto.fechaGasto FROM Gasto gasto " +
+            "WHERE gasto.usuario.idUsuario = :idUsuario AND gasto.estadoGasto = 1 ORDER BY gasto.fechaGasto DESC")
+    List<java.time.LocalDate> fechasConGastos(@Param("idUsuario") int idUsuario);
 }

@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.controllers;
 
+import pe.edu.upc.walletix.securities.UsuarioActual;
+import org.springframework.security.core.Authentication;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.modelmapper.ModelMapper;
@@ -27,6 +29,8 @@ public class DesafioController {
     private Mensajes mensajes;
     @Autowired
     private IDesafioService desafioService;
+    @Autowired
+    private UsuarioActual usuarioActual;
 
     private ModelMapper crearModelMapper() {
         ModelMapper modelMapper = new ModelMapper();
@@ -37,9 +41,13 @@ public class DesafioController {
     @Operation(summary = "Listar los desafíos activos")
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
-    public ResponseEntity<List<DesafioDTO>> listar() {
+    public ResponseEntity<List<DesafioDTO>> listar(Authentication autenticacion) {
+        // Los retos oficiales los ve todo usuario; los personales (US29) solo su creador. Un ADMIN ve todos.
+        boolean esAdmin = usuarioActual.esAdmin(autenticacion);
+        int idActual = usuarioActual.id(autenticacion);
         ModelMapper modelMapper = crearModelMapper();
         List<DesafioDTO> listaDesafios = desafioService.listar().stream()
+                .filter(desafio -> esAdmin || desafio.esOficial() || desafio.getUsuarioCreador().getIdUsuario() == idActual)
                 .map(desafio -> modelMapper.map(desafio, DesafioDTO.class))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(listaDesafios);
@@ -63,10 +71,14 @@ public class DesafioController {
     @Operation(summary = "Buscar un desafío por su id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
-    public ResponseEntity<?> buscarPorId(@PathVariable int id) {
+    public ResponseEntity<?> buscarPorId(@PathVariable int id, Authentication autenticacion) {
         ModelMapper modelMapper = crearModelMapper();
         Optional<Desafio> desafio = desafioService.buscarPorId(id);
         if (desafio.isPresent()) {
+            // Un reto personal solo lo ve su creador (o un ADMIN)
+            if (!desafio.get().esOficial() && !usuarioActual.puedeGestionar(autenticacion, desafio.get().getUsuarioCreador().getIdUsuario())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
+            }
             return ResponseEntity.ok(modelMapper.map(desafio.get(), DesafioDTO.class));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("desafio.no.encontrado"));
@@ -95,6 +107,8 @@ public class DesafioController {
         desafio.setSaldoInicial(desafioDTO.getSaldoInicial());
         desafio.setEdadMinima(desafioDTO.getEdadMinima());
         desafio.setSaldoProyectado(desafioDTO.getSaldoProyectado());
+        desafio.setDuracionDias(desafioDTO.getDuracionDias());
+        desafio.setTipoDesafio(desafioDTO.getTipoDesafio());
         desafioService.actualizar(desafio);
         return ResponseEntity.ok(mensajes.get("desafio.actualizado.correctamente"));
     }
@@ -124,6 +138,7 @@ public class DesafioController {
     public ResponseEntity<List<DesafioDTO>> buscarVigentes() {
         ModelMapper modelMapper = crearModelMapper();
         List<DesafioDTO> listaDesafios = desafioService.buscarVigentes().stream()
+                .filter(Desafio::esOficial) // los personales no son "retos de la plataforma"
                 .map(desafio -> modelMapper.map(desafio, DesafioDTO.class))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(listaDesafios);
@@ -139,6 +154,7 @@ public class DesafioController {
         }
         ModelMapper modelMapper = crearModelMapper();
         List<DesafioDTO> listaDesafios = desafioService.buscarPorEdadMinima(edad).stream()
+                .filter(Desafio::esOficial)
                 .map(desafio -> modelMapper.map(desafio, DesafioDTO.class))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(listaDesafios);
@@ -166,6 +182,13 @@ public class DesafioController {
         if (desafioDTO.getFechaInicio() != null && desafioDTO.getFechaFin() != null
                 && desafioDTO.getFechaFin().isBefore(desafioDTO.getFechaInicio())) {
             return mensajes.get("fecha.fin.no.puede.ser");
+        }
+        // La duración (si se envía) debe caber entre la fecha de inicio y la de fin
+        if (desafioDTO.getDuracionDias() != null) {
+            long diasDelPeriodo = java.time.temporal.ChronoUnit.DAYS.between(desafioDTO.getFechaInicio(), desafioDTO.getFechaFin()) + 1;
+            if (desafioDTO.getDuracionDias() < 1 || desafioDTO.getDuracionDias() > diasDelPeriodo) {
+                return mensajes.get("reto.duracion.no.cabe", String.valueOf(diasDelPeriodo));
+            }
         }
         return null;
     }

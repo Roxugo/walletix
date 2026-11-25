@@ -38,4 +38,11 @@ public interface IUsuarioDesafioRepository extends JpaRepository<UsuarioDesafio,
 
     // Para no eliminar un desafío que todavía tiene participantes
     boolean existsByDesafioIdDesafioAndEstado(int idDesafio, int estado);
+
+    // Centro de Retos: participaciones activas de un usuario, de la más nueva a la más antigua
+    List<UsuarioDesafio> findByUsuarioIdUsuarioAndEstadoOrderByIdUsuarioDesafioDesc(int idUsuario, int estado);
+
+    // ¿Ya está en el reto (en progreso o ya superado)? Entonces no puede volver a unirse
+    boolean existsByUsuarioIdUsuarioAndDesafioIdDesafioAndEstadoAndEstadoDesafioIn(
+            int idUsuario, int idDesafio, int estado, java.util.Collection<String> estadosDesafio);
 }

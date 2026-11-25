@@ -30,4 +30,11 @@ public interface MetaAhorroRepository extends JpaRepository<MetaAhorro, Integer>
     @Modifying
     @Query("UPDATE MetaAhorro meta SET meta.estado = 0 WHERE meta.usuario.idUsuario = :idUsuario")
     void darDeBajaPorUsuario(@Param("idUsuario") int idUsuario);
+
+    // Logros: metas creadas y metas cumplidas (llegó al monto objetivo o se marcó como cumplida)
+    long countByUsuarioIdUsuarioAndEstado(int idUsuario, int estado);
+
+    @Query("SELECT COUNT(meta) FROM MetaAhorro meta WHERE meta.usuario.idUsuario = :idUsuario AND meta.estado = 1 " +
+            "AND (meta.montoActual >= meta.montoObjetivo OR LOWER(meta.estadoMetaAhorro) = 'cumplida')")
+    long contarCumplidas(@Param("idUsuario") int idUsuario);
 }

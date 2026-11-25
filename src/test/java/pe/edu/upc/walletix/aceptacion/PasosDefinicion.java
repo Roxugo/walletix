@@ -263,4 +263,89 @@ public class PasosDefinicion {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].descripcionGasto").value(descripcion));
     }
+
+    // ---------- US26, US27, US28, US29: Centro de Retos y Logros ----------
+
+    private final java.util.Map<String, Integer> retos = new java.util.HashMap<>();
+    private int idParticipacion;
+
+    // Reto oficial creado por un ADMIN: empieza hoy y dura un mes
+    private void crearRetoOficial(String titulo, int dias, int edadMinima) throws Exception {
+        String tokenAdmin = api.login(api.registrarAdmin());
+        LocalDate hoy = LocalDate.now();
+        String json = """
+                {"titulo":"%s","descripcion":"Reto de prueba","montoObjetivo":70,"puntosRecompensa":50,
+                 "fechaInicio":"%s","fechaFin":"%s","saldoInicial":0,"edadMinima":%d,"saldoProyectado":70,"duracionDias":%d}
+                """.formatted(titulo, hoy, hoy.plusDays(30), edadMinima, dias);
+        String creado = mockMvc.perform(post("/desafios/web").header("Authorization", "Bearer " + tokenAdmin)
+                        .contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        retos.put(titulo, JsonPath.read(creado, "$.idDesafio"));
+    }
+
+    @Given("an official challenge {string} of {int} days that started today")
+    public void unRetoOficial(String titulo, int dias) throws Exception {
+        crearRetoOficial(titulo, dias, 18);
+    }
+
+    @Given("an official challenge {string} only for users of at least {int} years")
+    public void unRetoConEdadMinima(String titulo, int edad) throws Exception {
+        crearRetoOficial(titulo, 7, edad);
+    }
+
+    @When("the user joins the challenge {string}")
+    public void seUneAlReto(String titulo) throws Exception {
+        respuesta = enviar(post("/retos/" + retos.get(titulo) + "/unirme"));
+        String cuerpo = respuesta.andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        if (respuesta.andReturn().getResponse().getStatus() == 201) {
+            idParticipacion = JsonPath.read(cuerpo, "$.idUsuarioDesafio");
+        }
+    }
+
+    @Given("the user has joined the challenge {string}")
+    public void yaSeUnio(String titulo) throws Exception {
+        seUneAlReto(titulo);
+        respuesta.andExpect(status().isCreated());
+    }
+
+    @Then("the user is added to the challenge with status {int}")
+    public void quedaInscrito(int codigo) throws Exception {
+        respuesta.andExpect(status().is(codigo)).andExpect(jsonPath("$.estadoDesafio").value("EN_PROGRESO"));
+    }
+
+    @Then("the challenge {string} appears in the active challenges on day {int} of {int}")
+    public void apareceEnActivos(String titulo, int dia, int duracion) throws Exception {
+        enviar(get("/retos/resumen")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.activos[0].titulo").value(titulo))
+                .andExpect(jsonPath("$.activos[0].diaActual").value(dia))
+                .andExpect(jsonPath("$.activos[0].duracionDias").value(duracion));
+    }
+
+    @When("the user registers today's progress in the challenge")
+    public void registraElProgreso() throws Exception {
+        respuesta = enviar(post("/retos/participaciones/" + idParticipacion + "/progreso"));
+    }
+
+    @Then("the user earns {int} XP and is on day {int} of {int}")
+    public void ganaXp(int xp, int dia, int duracion) throws Exception {
+        respuesta.andExpect(status().isOk())
+                .andExpect(jsonPath("$.xpGanado").value(xp))
+                .andExpect(jsonPath("$.diaActual").value(dia))
+                .andExpect(jsonPath("$.duracionDias").value(duracion));
+    }
+
+    @When("the user creates a personal challenge of type {string} for {int} days to save {double}")
+    public void creaRetoPersonal(String tipo, int dias, double meta) throws Exception {
+        respuesta = enviar(post("/retos/personal").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"tipo\":\"" + tipo + "\",\"duracionDias\":" + dias + ",\"montoObjetivo\":" + meta + "}"));
+    }
+
+    @Then("the personal challenge {string} is created, is not official and gives {int} reward points")
+    public void retoPersonalCreado(String titulo, int puntos) throws Exception {
+        respuesta.andExpect(status().isCreated())
+                .andExpect(jsonPath("$.titulo").value(titulo))
+                .andExpect(jsonPath("$.oficial").value(false))
+                .andExpect(jsonPath("$.puntosRecompensa").value(puntos))
+                .andExpect(jsonPath("$.estadoDesafio").value("EN_PROGRESO"));
+    }
 }
