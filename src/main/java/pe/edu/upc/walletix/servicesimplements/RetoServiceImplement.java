@@ -226,7 +226,7 @@ public class RetoServiceImplement implements IRetoService {
         LocalDate hoy = reloj.hoy();
         Desafio desafio = new Desafio();
         desafio.setTitulo(titulo);
-        desafio.setDescripcion(mensajes.get("reto.personal.descripcion",
+        desafio.setDescripcion(mensajes.get(datos.duracionDias() == 1 ? "reto.personal.descripcion.un.dia" : "reto.personal.descripcion",
                 String.valueOf(datos.duracionDias()), datos.montoObjetivo().setScale(2, RoundingMode.HALF_UP).toPlainString()));
         desafio.setTipoDesafio(tipo);
         desafio.setDuracionDias(datos.duracionDias());

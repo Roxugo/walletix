@@ -216,9 +216,12 @@ class RetosIntegracionTests {
         int idParticipacion = JsonPath.read(respuesta, "$.idUsuarioDesafio");
         int idDesafio = JsonPath.read(respuesta, "$.idDesafio");
 
-        progreso(token, idParticipacion).andExpect(status().isOk())
+        String completado = progreso(token, idParticipacion).andExpect(status().isOk())
                 .andExpect(jsonPath("$.completado").value(true))
-                .andExpect(jsonPath("$.puntosRecompensa").value(0));
+                .andExpect(jsonPath("$.puntosRecompensa").value(0))
+                .andReturn().getResponse().getContentAsString();
+        // Un reto personal de 1 día no puede dar la medalla "Retador" (si no, cualquiera ganaría 40 puntos en un minuto)
+        assertThat((List<String>) JsonPath.read(completado, "$.logrosDesbloqueados")).doesNotContain("Retador");
 
         String tokenOtro = api.login(api.registrarUsuario());
         mockMvc.perform(get("/desafios/" + idDesafio).header("Authorization", "Bearer " + tokenOtro))

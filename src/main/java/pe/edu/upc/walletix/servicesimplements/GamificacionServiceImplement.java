@@ -74,10 +74,19 @@ public class GamificacionServiceImplement implements IGamificacionService {
         return gastoRepository.countByUsuarioIdUsuarioAndEstadoGasto(usuario.getIdUsuario(), 1);
     }
 
+    // Solo retos OFICIALES: un reto personal (que cualquiera crea de 1 día) no puede dar la medalla "Retador"
     private long retosSuperados(int idUsuario) {
         return usuarioDesafioRepository.findByUsuarioIdUsuarioAndEstadoOrderByIdUsuarioDesafioDesc(idUsuario, 1).stream()
                 .filter(participacion -> "COMPLETADO".equals(participacion.getEstadoDesafio()))
+                .filter(participacion -> participacion.getDesafio().esOficial())
                 .count();
+    }
+
+    // Ids de los logros que el usuario ya tiene: UNA consulta en vez de una por cada logro
+    private java.util.Set<Integer> logrosDe(Usuario usuario) {
+        return usuarioLogroRepository.findByUsuarioIdUsuarioAndEstadoUsuarioLogro(usuario.getIdUsuario(), 1).stream()
+                .map(usuarioLogro -> usuarioLogro.getLogro().getIdLogro())
+                .collect(java.util.stream.Collectors.toSet());
     }
 
     // "Alcancía Iniciada" -> "alcancia iniciada"
@@ -86,10 +95,6 @@ public class GamificacionServiceImplement implements IGamificacionService {
         return sinTildes.trim().toLowerCase();
     }
 
-    private boolean tiene(Usuario usuario, Logro logro) {
-        return usuarioLogroRepository.existsByUsuarioIdUsuarioAndLogroIdLogroAndEstadoUsuarioLogro(
-                usuario.getIdUsuario(), logro.getIdLogro(), 1);
-    }
 
     @Override
     public void sumarPuntos(Usuario usuario, int puntos) {
@@ -114,9 +119,11 @@ public class GamificacionServiceImplement implements IGamificacionService {
     private List<String> revisarLogrosSinCompetencia(Usuario usuario) {
         List<String> nuevos = new ArrayList<>();
         Map<String, Regla> reglas = reglas();
+        java.util.Set<Integer> yaTiene = logrosDe(usuario);
         for (Logro logro : logroRepository.findByEstadoLogro(1)) {
             Regla regla = reglas.get(clave(logro.getNombreLogro()));
-            if (regla == null || tiene(usuario, logro) || regla.actual().applyAsLong(usuario) < regla.meta()) {
+            // Solo se calcula la regla de los logros que todavía no tiene (menos consultas a la base)
+            if (regla == null || yaTiene.contains(logro.getIdLogro()) || regla.actual().applyAsLong(usuario) < regla.meta()) {
                 continue;
             }
             // Se desbloquea: queda registrado, suma sus puntos y llega una notificación a la campana
@@ -136,14 +143,13 @@ public class GamificacionServiceImplement implements IGamificacionService {
     @Override
     public List<MedallaDTO> medallas(Usuario usuario) {
         Map<String, Regla> reglas = reglas();
+        java.util.Set<Integer> yaTiene = logrosDe(usuario);
         return logroRepository.findByEstadoLogro(1).stream().map(logro -> {
             Regla regla = reglas.get(clave(logro.getNombreLogro()));
-            boolean desbloqueada = tiene(usuario, logro);
-            Long actual = regla == null ? null : Math.min(regla.actual().applyAsLong(usuario), regla.meta());
+            boolean desbloqueada = yaTiene.contains(logro.getIdLogro());
             Long meta = regla == null ? null : regla.meta();
-            if (desbloqueada && meta != null) {
-                actual = meta; // una medalla ya ganada se muestra completa
-            }
+            // Una medalla ya ganada se muestra completa (no hace falta calcular su avance)
+            Long actual = regla == null ? null : desbloqueada ? meta : Math.min(regla.actual().applyAsLong(usuario), meta);
             return new MedallaDTO(logro.getIdLogro(), logro.getNombreLogro(), logro.getDescripcionLogro(),
                     logro.getPuntosLogro(), desbloqueada, actual, meta);
         }).toList();

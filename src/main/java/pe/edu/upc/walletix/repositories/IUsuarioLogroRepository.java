@@ -41,5 +41,7 @@ public interface IUsuarioLogroRepository extends JpaRepository<UsuarioLogro, Int
     boolean existsByLogroIdLogroAndEstadoUsuarioLogro(int idLogro, int estadoUsuarioLogro);
 
     // ¿El usuario ya tiene ese logro? (para no darlo ni sumar sus puntos dos veces)
+    List<UsuarioLogro> findByUsuarioIdUsuarioAndEstadoUsuarioLogro(int idUsuario, int estadoUsuarioLogro);
+
     boolean existsByUsuarioIdUsuarioAndLogroIdLogroAndEstadoUsuarioLogro(int idUsuario, int idLogro, int estadoUsuarioLogro);
 }
