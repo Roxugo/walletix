@@ -168,8 +168,10 @@ public class UsuarioDesafioController {
     }
 
     @Operation(summary = "Eliminar una participación (borrado lógico)")
+    // Solo ADMIN: si el usuario borrara un reto superado, podría unirse de nuevo y volver a cobrar la recompensa.
+    // El usuario deja un reto con "Abandonar" (PUT /retos/participaciones/{id}/abandonar)
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> eliminar(@PathVariable int id, Authentication autenticacion) {
         Optional<UsuarioDesafio> usuarioDesafio = usuarioDesafioService.buscarPorId(id);
         if (usuarioDesafio.isPresent()) {

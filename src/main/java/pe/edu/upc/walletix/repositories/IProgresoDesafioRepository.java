@@ -23,6 +23,9 @@ public interface IProgresoDesafioRepository extends JpaRepository<ProgresoDesafi
     // El progreso de un día concreto (para quitarlo si un gasto de ese día rompe el reto)
     Optional<ProgresoDesafio> findFirstByUsuarioDesafioIdUsuarioDesafioAndFechaProgreso(int idUsuarioDesafio, LocalDate fechaProgreso);
 
+    // ¿Ya ganó hoy los XP del progreso diario en algún reto? (incluye retos abandonados: así no se reinicia para volver a ganarlos)
+    boolean existsByUsuarioDesafioUsuarioIdUsuarioAndFechaProgresoAndXpOtorgadoGreaterThan(int idUsuario, LocalDate fechaProgreso, Integer xp);
+
     // El último día con progreso que le queda a la participación
     Optional<ProgresoDesafio> findFirstByUsuarioDesafioIdUsuarioDesafioOrderByFechaProgresoDesc(int idUsuarioDesafio);
 }

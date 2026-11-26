@@ -419,8 +419,60 @@ class RetosIntegracionTests {
         int idParticipacion = retoPersonal("ahorro_libre", 7);
         progreso(token, idParticipacion).andExpect(status().isOk());
         assertThat((Integer) JsonPath.read(resumen(token), "$.racha")).isEqualTo(1);
-        mockMvc.perform(delete("/usuariosdesafios/" + idParticipacion).header("Authorization", "Bearer " + token))
+        mockMvc.perform(delete("/usuariosdesafios/" + idParticipacion).header("Authorization", "Bearer " + tokenAdmin))
                 .andExpect(status().isOk());
         assertThat((Integer) JsonPath.read(resumen(token), "$.racha")).isEqualTo(0);
+    }
+
+    // ---------- Abusos y peticiones simultáneas ----------
+
+    @Test
+    @DisplayName("Abuso: el usuario no puede borrar su participación (así no puede volver a cobrar un reto superado)")
+    void noBorraSuParticipacion() throws Exception {
+        int idParticipacion = retoPersonal("ahorro_libre", 1);
+        progreso(token, idParticipacion).andExpect(status().isOk()).andExpect(jsonPath("$.completado").value(true));
+        mockMvc.perform(delete("/usuariosdesafios/" + idParticipacion).header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @DisplayName("Abuso: los +20 XP del progreso se ganan una vez al día aunque cree o abandone retos")
+    void xpDelProgresoUnaVezAlDia() throws Exception {
+        when(reloj.hoy()).thenReturn(LocalDate.now());
+        int antes = puntos();
+        int primero = retoPersonal("ahorro_libre", 7);
+        progreso(token, primero).andExpect(status().isOk()).andExpect(jsonPath("$.xpGanado").value(20));
+        mockMvc.perform(put("/retos/participaciones/" + primero + "/abandonar").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+        int segundo = retoPersonal("ahorro_libre", 7);
+        // El reto avanza igual, pero sin XP: ya los ganó hoy
+        progreso(token, segundo).andExpect(status().isOk())
+                .andExpect(jsonPath("$.diaActual").value(1))
+                .andExpect(jsonPath("$.xpGanado").value(0));
+        assertThat(puntos()).isEqualTo(antes + 20);
+
+        // Mañana vuelve a ganar los +20
+        when(reloj.hoy()).thenReturn(LocalDate.now().plusDays(1));
+        progreso(token, segundo).andExpect(status().isOk()).andExpect(jsonPath("$.xpGanado").value(20));
+    }
+
+    @Test
+    @DisplayName("Doble clic: 4 registros de progreso simultáneos cuentan una sola vez")
+    void progresoSimultaneoCuentaUnaVez() throws Exception {
+        when(reloj.hoy()).thenReturn(LocalDate.now());
+        int idParticipacion = retoPersonal("ahorro_libre", 7);
+        int antes = puntos();
+        java.util.concurrent.ExecutorService hilos = java.util.concurrent.Executors.newFixedThreadPool(4);
+        List<java.util.concurrent.Future<Integer>> codigos = new java.util.ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            codigos.add(hilos.submit(() -> progreso(token, idParticipacion).andReturn().getResponse().getStatus()));
+        }
+        List<Integer> resultados = new java.util.ArrayList<>();
+        for (java.util.concurrent.Future<Integer> codigo : codigos) {
+            resultados.add(codigo.get());
+        }
+        hilos.shutdown();
+        assertThat(resultados).containsExactlyInAnyOrder(200, 409, 409, 409);
+        assertThat(puntos()).isEqualTo(antes + 20);
     }
 }

@@ -263,4 +263,59 @@ class AprendeIntegracionTests {
                 .andExpect(status().isForbidden());
         mockMvc.perform(get("/aprende")).andExpect(status().isUnauthorized());
     }
+
+    @Test
+    @DisplayName("Abuso: el usuario no puede borrar su intento aprobado para volver a cobrar los puntos")
+    void noBorraSuIntento() throws Exception {
+        int leccion = contenido("Sin trampas", "leccion", "ahorro", false, 60, 20);
+        int p1 = pregunta(leccion, "A");
+        quiz(leccion, "\"%d\":\"a\"".formatted(p1)).andExpect(status().isOk()).andExpect(jsonPath("$.puntosGanados").value(20));
+        String intentos = mockMvc.perform(get("/intentos-quiz").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        int idIntento = JsonPath.read(intentos, "$[0].idIntentoQuizUsuario");
+        mockMvc.perform(delete("/intentos-quiz/" + idIntento).header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden());
+        quiz(leccion, "\"%d\":\"a\"".formatted(p1)).andExpect(status().isOk()).andExpect(jsonPath("$.puntosGanados").value(0));
+    }
+
+    @Test
+    @DisplayName("Doble clic: 4 envíos simultáneos del mismo quiz dan los puntos una sola vez")
+    void quizSimultaneoDaPuntosUnaVez() throws Exception {
+        int leccion = contenido("Doble clic", "leccion", "ahorro", false, 60, 30);
+        int p1 = pregunta(leccion, "B");
+        int antes = puntos();
+        java.util.concurrent.ExecutorService hilos = java.util.concurrent.Executors.newFixedThreadPool(4);
+        List<java.util.concurrent.Future<String>> respuestas = new java.util.ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            respuestas.add(hilos.submit(() -> quiz(leccion, "\"%d\":\"b\"".formatted(p1)).andReturn().getResponse().getContentAsString()));
+        }
+        int conPuntos = 0;
+        for (java.util.concurrent.Future<String> respuesta : respuestas) {
+            if (JsonPath.<Integer>read(respuesta.get(), "$.puntosGanados") > 0) {
+                conPuntos++;
+            }
+        }
+        hilos.shutdown();
+        assertThat(conPuntos).isEqualTo(1);
+        // +30 de la lección (y las medallas del primer quiz, que también se entregan una sola vez)
+        assertThat(puntos()).isEqualTo(antes + 30 + 10 + 20);
+    }
+
+    @Test
+    @DisplayName("Doble clic en la estrella: dos favoritos simultáneos no rompen la API")
+    void favoritoSimultaneo() throws Exception {
+        int tip = contenido("Estrella rápida", "tip", "ahorro", false, 0, 0);
+        java.util.concurrent.ExecutorService hilos = java.util.concurrent.Executors.newFixedThreadPool(2);
+        List<java.util.concurrent.Future<Integer>> codigos = new java.util.ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            codigos.add(hilos.submit(() -> mockMvc.perform(put("/aprende/" + tip + "/favorito").header("Authorization", "Bearer " + token))
+                    .andReturn().getResponse().getStatus()));
+        }
+        for (java.util.concurrent.Future<Integer> codigo : codigos) {
+            assertThat(codigo.get()).isEqualTo(200);
+        }
+        hilos.shutdown();
+        // Marcar y desmarcar: queda sin favorito
+        assertThat((List<Integer>) JsonPath.read(listar("?favoritos=true"), "$[*].idMicroleccion")).doesNotContain(tip);
+    }
 }

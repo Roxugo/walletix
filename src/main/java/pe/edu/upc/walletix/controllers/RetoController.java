@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.RetosDTOs.RetoPersonalDTO;
 import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.i18n.Mensajes;
+import pe.edu.upc.walletix.securities.CandadoUsuario;
 import pe.edu.upc.walletix.securities.UsuarioActual;
 import pe.edu.upc.walletix.servicesinterfaces.IGamificacionService;
 import pe.edu.upc.walletix.servicesinterfaces.IRetoService;
@@ -36,10 +37,19 @@ public class RetoController {
     @Autowired
     private UsuarioActual usuarioActual;
     @Autowired
+    private CandadoUsuario candado;
+    @Autowired
     private Mensajes mensajes;
 
     // Busca al usuario del token y ejecuta la acción; las reglas incumplidas responden con su código (400, 403, 404, 409)
+    // Acciones que cambian datos o dan puntos: van con el candado del usuario. El usuario se carga DENTRO del
+    // candado, así sus puntos están al día aunque llegue otra petición suya a la vez (ej. doble clic)
     private ResponseEntity<?> conUsuario(Authentication autenticacion, Function<Usuario, Object> accion, HttpStatus exito) {
+        return candado.ejecutar(usuarioActual.id(autenticacion), () -> consulta(autenticacion, accion, exito));
+    }
+
+    // Consultas: sin candado, para que la página pueda pedir sus datos en paralelo
+    private ResponseEntity<?> consulta(Authentication autenticacion, Function<Usuario, Object> accion, HttpStatus exito) {
         Optional<Usuario> usuario = usuarioService.listId(usuarioActual.id(autenticacion));
         if (usuario.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("usuario.no.encontrado"));
@@ -54,7 +64,7 @@ public class RetoController {
     @Operation(summary = "Resumen: nivel, XP, efectividad, dinero blindado, racha y mis retos (US26)")
     @GetMapping("/resumen")
     public ResponseEntity<?> resumen(Authentication autenticacion) {
-        return conUsuario(autenticacion, usuario -> {
+        return consulta(autenticacion, usuario -> {
             gamificacionService.revisarLogros(usuario); // por si ya cumple algún logro
             return retoService.resumen(usuario);
         }, HttpStatus.OK);
@@ -63,7 +73,7 @@ public class RetoController {
     @Operation(summary = "Retos oficiales disponibles y los requisitos que me faltan (US27, US28)")
     @GetMapping("/disponibles")
     public ResponseEntity<?> disponibles(Authentication autenticacion) {
-        return conUsuario(autenticacion, retoService::disponibles, HttpStatus.OK);
+        return consulta(autenticacion, retoService::disponibles, HttpStatus.OK);
     }
 
     @Operation(summary = "Unirme a un reto oficial; responde 400 con los requisitos que faltan (US27, US28)")
@@ -94,6 +104,6 @@ public class RetoController {
     @Operation(summary = "Vitrina de medallas: todos los logros, si los tengo y su avance (US30)")
     @GetMapping("/medallas")
     public ResponseEntity<?> medallas(Authentication autenticacion) {
-        return conUsuario(autenticacion, gamificacionService::medallas, HttpStatus.OK);
+        return consulta(autenticacion, gamificacionService::medallas, HttpStatus.OK);
     }
 }

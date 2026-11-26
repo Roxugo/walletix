@@ -186,8 +186,13 @@ public class RetoServiceImplement implements IRetoService {
         participacion.setFechaUltimoProgreso(hoy);
         participacion.setPorcentajeProgreso(porcentaje(dias, duracion));
         participacion.setMontoProgresoActual(ahorroEstimado(desafio.getMontoObjetivo(), dias, duracion));
-        progresoDesafioRepository.save(new ProgresoDesafio(participacion, hoy));
-        gamificacionService.sumarPuntos(usuario, Niveles.XP_POR_PROGRESO_DIARIO);
+        // Los +20 XP del progreso se ganan UNA vez al día aunque tenga varios retos: si no, bastaría con
+        // crear (o abandonar y volver a unirse a) retos para sumar XP sin límite
+        boolean yaGanoXpHoy = progresoDesafioRepository
+                .existsByUsuarioDesafioUsuarioIdUsuarioAndFechaProgresoAndXpOtorgadoGreaterThan(usuario.getIdUsuario(), hoy, 0);
+        int xp = yaGanoXpHoy ? 0 : Niveles.XP_POR_PROGRESO_DIARIO;
+        progresoDesafioRepository.save(new ProgresoDesafio(participacion, hoy, xp));
+        gamificacionService.sumarPuntos(usuario, xp);
 
         boolean completado = dias >= duracion;
         int recompensa = 0;
@@ -201,7 +206,7 @@ public class RetoServiceImplement implements IRetoService {
         }
         usuarioDesafioRepository.save(participacion);
         List<String> logros = gamificacionService.revisarLogros(usuario);
-        return new ProgresoRegistradoDTO(Niveles.XP_POR_PROGRESO_DIARIO, dias, duracion, completado, recompensa, logros);
+        return new ProgresoRegistradoDTO(xp, dias, duracion, completado, recompensa, logros);
     }
 
     @Override
@@ -271,7 +276,7 @@ public class RetoServiceImplement implements IRetoService {
                 quitarDia(usuario, participacion, progreso);
                 perdidos.add(participacion.getDesafio().getTitulo());
                 notificar(usuario, mensajes.get("reto.dia.perdido.titulo"), mensajes.get("reto.dia.perdido.mensaje",
-                        participacion.getDesafio().getTitulo(), String.valueOf(Niveles.XP_POR_PROGRESO_DIARIO)));
+                        participacion.getDesafio().getTitulo(), String.valueOf(progreso.xpOtorgadoEfectivo())));
             });
         }
         return perdidos.isEmpty() ? null
@@ -293,7 +298,7 @@ public class RetoServiceImplement implements IRetoService {
                 .findFirstByUsuarioDesafioIdUsuarioDesafioOrderByFechaProgresoDesc(participacion.getIdUsuarioDesafio())
                 .map(ProgresoDesafio::getFechaProgreso).orElse(null));
         usuarioDesafioRepository.save(participacion);
-        gamificacionService.quitarPuntos(usuario, Niveles.XP_POR_PROGRESO_DIARIO);
+        gamificacionService.quitarPuntos(usuario, progreso.xpOtorgadoEfectivo()); // solo lo que ese día realmente dio
     }
 
     // "Rappi, S/ 25.00"

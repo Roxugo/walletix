@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import pe.edu.upc.walletix.dtos.AprendeDTOs.RespuestasQuizDTO;
 import pe.edu.upc.walletix.entities.Usuario;
 import pe.edu.upc.walletix.i18n.Mensajes;
+import pe.edu.upc.walletix.securities.CandadoUsuario;
 import pe.edu.upc.walletix.securities.UsuarioActual;
 import pe.edu.upc.walletix.servicesinterfaces.IAprendeService;
 import pe.edu.upc.walletix.servicesinterfaces.IAprendeService.ReglaAprendeException;
@@ -33,10 +34,19 @@ public class AprendeController {
     @Autowired
     private UsuarioActual usuarioActual;
     @Autowired
+    private CandadoUsuario candado;
+    @Autowired
     private Mensajes mensajes;
 
     // Busca al usuario del token y ejecuta la acción; las reglas incumplidas responden con su código (400, 403, 404)
+    // Acciones que cambian datos o dan puntos: van con el candado del usuario. El usuario se carga DENTRO del
+    // candado, así sus puntos están al día aunque llegue otra petición suya a la vez (ej. doble clic)
     private ResponseEntity<?> conUsuario(Authentication autenticacion, Function<Usuario, Object> accion, HttpStatus exito) {
+        return candado.ejecutar(usuarioActual.id(autenticacion), () -> consulta(autenticacion, accion, exito));
+    }
+
+    // Consultas: sin candado, para que la página pueda pedir sus datos en paralelo
+    private ResponseEntity<?> consulta(Authentication autenticacion, Function<Usuario, Object> accion, HttpStatus exito) {
         Optional<Usuario> usuario = usuarioService.listId(usuarioActual.id(autenticacion));
         if (usuario.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("usuario.no.encontrado"));
@@ -54,13 +64,13 @@ public class AprendeController {
                                     @RequestParam(required = false) String buscar,
                                     @RequestParam(defaultValue = "false") boolean favoritos,
                                     Authentication autenticacion) {
-        return conUsuario(autenticacion, usuario -> aprendeService.listar(usuario, categoria, buscar, favoritos), HttpStatus.OK);
+        return consulta(autenticacion, usuario -> aprendeService.listar(usuario, categoria, buscar, favoritos), HttpStatus.OK);
     }
 
     @Operation(summary = "Tip de 30 segundos del día (204 si no hay consejos)")
     @GetMapping("/tip-del-dia")
     public ResponseEntity<?> tipDelDia(Authentication autenticacion) {
-        ResponseEntity<?> respuesta = conUsuario(autenticacion, aprendeService::tipDelDia, HttpStatus.OK);
+        ResponseEntity<?> respuesta = consulta(autenticacion, aprendeService::tipDelDia, HttpStatus.OK);
         return respuesta.getStatusCode().is2xxSuccessful() && respuesta.getBody() == null
                 ? ResponseEntity.noContent().build() : respuesta;
     }
@@ -68,7 +78,7 @@ public class AprendeController {
     @Operation(summary = "Abrir una microlección o consejo: contenido y preguntas sin la respuesta (US34); 403 si está bloqueado (US33)")
     @GetMapping("/{idMicroleccion}")
     public ResponseEntity<?> abrir(@PathVariable int idMicroleccion, Authentication autenticacion) {
-        return conUsuario(autenticacion, usuario -> aprendeService.abrir(usuario, idMicroleccion), HttpStatus.OK);
+        return consulta(autenticacion, usuario -> aprendeService.abrir(usuario, idMicroleccion), HttpStatus.OK);
     }
 
     @Operation(summary = "Enviar las respuestas del quiz: puntaje, puntos y retroalimentación (US35)")

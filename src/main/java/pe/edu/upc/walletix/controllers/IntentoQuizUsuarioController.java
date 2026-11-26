@@ -133,8 +133,9 @@ public class IntentoQuizUsuarioController {
     }
 
     @Operation(summary = "Eliminar un intento de quiz (borrado lógico)")
+    // Solo ADMIN: si el usuario borrara su intento aprobado, podría repetir el quiz y volver a cobrar los puntos
     @DeleteMapping("/{idIntentoQuizUsuario}")
-    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> eliminar(@PathVariable int idIntentoQuizUsuario, Authentication autenticacion) {
         Optional<IntentoQuizUsuario> intentoQuizUsuario = intentoQuizUsuarioService.listId(idIntentoQuizUsuario);
         if (intentoQuizUsuario.isPresent()) {
