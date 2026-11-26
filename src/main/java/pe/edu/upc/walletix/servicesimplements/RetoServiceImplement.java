@@ -131,7 +131,7 @@ public class RetoServiceImplement implements IRetoService {
         BigDecimal saldoMinimo = desafio.getSaldoInicial() == null ? BigDecimal.ZERO : desafio.getSaldoInicial();
         BigDecimal saldo = usuario.getSaldoActualUsuario() == null ? BigDecimal.ZERO : usuario.getSaldoActualUsuario();
         if (saldo.compareTo(saldoMinimo) < 0) {
-            faltan.add(mensajes.get("reto.saldo.minimo", saldoMinimo.setScale(2, RoundingMode.HALF_UP).toPlainString()));
+            faltan.add(mensajes.get("reto.saldo.minimo", pe.edu.upc.walletix.config.Montos.formato(saldoMinimo)));
         }
         return faltan;
     }
@@ -244,7 +244,7 @@ public class RetoServiceImplement implements IRetoService {
         Desafio desafio = new Desafio();
         desafio.setTitulo(titulo);
         desafio.setDescripcion(mensajes.get(datos.duracionDias() == 1 ? "reto.personal.descripcion.un.dia" : "reto.personal.descripcion",
-                String.valueOf(datos.duracionDias()), datos.montoObjetivo().setScale(2, RoundingMode.HALF_UP).toPlainString()));
+                String.valueOf(datos.duracionDias()), pe.edu.upc.walletix.config.Montos.formato(datos.montoObjetivo())));
         desafio.setTipoDesafio(tipo);
         desafio.setDuracionDias(datos.duracionDias());
         desafio.setMontoObjetivo(datos.montoObjetivo());
@@ -303,11 +303,18 @@ public class RetoServiceImplement implements IRetoService {
         gamificacionService.quitarPuntos(usuario, progreso.xpOtorgadoEfectivo()); // solo lo que ese día realmente dio
     }
 
-    // "Rappi, S/ 25.00"
+    // «Pedido Rappi pizza», S/ 35.00: la descripción que escribió el usuario (es lo que lo delató),
+    // no el comercio. Si no tiene descripción, se usa el comercio.
     private static String detalle(Gasto gasto) {
-        String nombre = gasto.getComerciante() == null || gasto.getComerciante().getNombreComerciante() == null
-                ? gasto.getDescripcionGasto() : gasto.getComerciante().getNombreComerciante();
-        return nombre + ", S/ " + gasto.getMontoGasto().setScale(2, RoundingMode.HALF_UP).toPlainString();
+        String texto = gasto.getDescripcionGasto();
+        if (texto == null || texto.isBlank()) {
+            texto = gasto.getComerciante() == null ? "" : gasto.getComerciante().getNombreComerciante();
+        }
+        texto = texto == null ? "" : texto.trim();
+        if (texto.length() > 40) {
+            texto = texto.substring(0, 37) + "...";
+        }
+        return "«" + texto + "», S/ " + pe.edu.upc.walletix.config.Montos.formato(gasto.getMontoGasto());
     }
 
     // ---------- Apoyo ----------

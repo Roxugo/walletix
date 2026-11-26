@@ -35,6 +35,6 @@ public interface MetaAhorroRepository extends JpaRepository<MetaAhorro, Integer>
     long countByUsuarioIdUsuarioAndEstado(int idUsuario, int estado);
 
     @Query("SELECT COUNT(meta) FROM MetaAhorro meta WHERE meta.usuario.idUsuario = :idUsuario AND meta.estado = 1 " +
-            "AND (meta.montoActual >= meta.montoObjetivo OR LOWER(meta.estadoMetaAhorro) = 'cumplida')")
+            "AND (meta.montoActual >= meta.montoObjetivo OR LOWER(meta.estadoMetaAhorro) IN ('cumplida', 'completada'))")
     long contarCumplidas(@Param("idUsuario") int idUsuario);
 }

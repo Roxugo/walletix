@@ -69,7 +69,7 @@ class SaldoPresupuestoIntegracionTests {
         mockMvc.perform(post("/gastos/web").header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON).content(gasto(0, "1500")))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string("El gasto supera tu saldo disponible (S/ 1000.00)"));
+                .andExpect(content().string("El gasto supera tu saldo disponible (S/ 1,000.00)")); // con separador de miles, como la app
         assertThat(api.saldo(token)).isEqualByComparingTo("1000.00");
     }
 
@@ -152,7 +152,8 @@ class SaldoPresupuestoIntegracionTests {
     void us15_otraCategoria() throws Exception {
         api.crearPresupuesto(token, idUsuario, idCategoriaGasto, "100");
         int otraCategoria = api.crearCategoria(token, idUsuario, "gasto");
-        String gastoOtraCategoria = api.jsonGasto(0, idUsuario, otraCategoria, idComercio, "Otra", "150", LocalDate.now());
+        int comercioOtraCategoria = api.crearComercio(api.login(api.registrarAdmin()), otraCategoria);
+        String gastoOtraCategoria = api.jsonGasto(0, idUsuario, otraCategoria, comercioOtraCategoria, "Otra", "150", LocalDate.now());
         mockMvc.perform(post("/gastos/web").header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON).content(gastoOtraCategoria))
                 .andExpect(status().isCreated())

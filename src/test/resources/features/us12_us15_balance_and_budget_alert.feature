@@ -17,7 +17,7 @@ Feature: Balance and budget alerts
   Scenario: An expense greater than the balance is rejected
     When the user registers an expense of 1500 described as "New phone"
     Then the request is rejected with status 400
-    And the message "The expense exceeds your available balance (S/ 1000.00)" is shown
+    And the message "The expense exceeds your available balance (S/ 1,000.00)" is shown
     And the balance of the user is 1000.00
 
   # US12 - "...el sistema debe guardar el ingreso y actualizar mi saldo disponible"

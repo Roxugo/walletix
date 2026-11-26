@@ -27,9 +27,9 @@ public class AlertaPresupuestoServiceImplement implements IAlertaPresupuestoServ
     @Autowired
     private Mensajes mensajes;
 
-    // Montos con 2 decimales y punto, ej. "1250.50"
+    // Montos con separador de miles y 2 decimales, ej. "1,250.50" (igual que la app)
     private String monto(BigDecimal valor) {
-        return valor.setScale(2, RoundingMode.HALF_UP).toPlainString();
+        return pe.edu.upc.walletix.config.Montos.formato(valor);
     }
 
     // Los textos de la tabla notificacion tienen un largo máximo (titulo 30, mensaje 100)

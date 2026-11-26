@@ -67,6 +67,9 @@ public class MetaAhorroController {
         if (dto.getFechaLimite().isBefore(LocalDate.now())) {
             return ResponseEntity.badRequest().body(mensajes.get("fecha.limite.no.puede.ser.pasada"));
         }
+        if (dto.getMontoActual().compareTo(dto.getMontoObjetivo()) >= 0) {
+            return ResponseEntity.badRequest().body(mensajes.get("meta.nueva.ya.cumplida"));
+        }
         if (!usuarioActual.puedeGestionar(autenticacion, dto.getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
 
         Optional<Usuario> usuario = usuarioService.listId(dto.getIdUsuario());
@@ -108,7 +111,7 @@ public class MetaAhorroController {
         meta.setMontoObjetivo(dto.getMontoObjetivo());
         meta.setMontoActual(dto.getMontoActual());
         meta.setFechaLimite(dto.getFechaLimite());
-        meta.setEstadoMetaAhorro(dto.getEstadoMetaAhorro());
+        meta.setEstadoMetaAhorro(estadoSegunMonto(dto));
         meta.setUsuario(usuario.get());
         metaAhorroService.actualizar(meta);
         gamificacionService.revisarLogros(usuario.get()); // al cumplir una meta: "Gran ahorrador"
@@ -142,7 +145,26 @@ public class MetaAhorroController {
     private MetaAhorroDto toDto(MetaAhorro meta, ModelMapper mapper) {
         MetaAhorroDto dto = mapper.map(meta, MetaAhorroDto.class);
         if (meta.getUsuario() != null) dto.setIdUsuario(meta.getUsuario().getIdUsuario());
+        // Las metas antiguas guardaron "EN_PROGRESO" / "COMPLETADA": la app usa activa / cumplida / pausada
+        dto.setEstadoMetaAhorro(normalizarEstado(meta.getEstadoMetaAhorro()));
         return dto;
+    }
+
+    // "EN_PROGRESO" -> "activa", "COMPLETADA" -> "cumplida"; cualquier otro valor queda en minúsculas
+    private static String normalizarEstado(String estado) {
+        if (estado == null) return null;
+        String valor = estado.trim().toLowerCase();
+        return switch (valor) {
+            case "en_progreso", "en progreso" -> "activa";
+            case "completada" -> "cumplida";
+            default -> valor;
+        };
+    }
+
+    // Al llegar al objetivo la meta pasa sola a "cumplida" (antes quedaba "En progreso" con el 100%)
+    private String estadoSegunMonto(MetaAhorroDto dto) {
+        if (dto.getMontoActual().compareTo(dto.getMontoObjetivo()) >= 0) return "cumplida";
+        return normalizarEstado(dto.getEstadoMetaAhorro());
     }
 
     private String validar(MetaAhorroDto dto) {
@@ -153,6 +175,19 @@ public class MetaAhorroController {
         if (dto.getMontoActual() == null || dto.getMontoActual().compareTo(BigDecimal.ZERO) < 0) return mensajes.get("monto.actual.no.puede.ser");
         if (dto.getFechaLimite() == null) return mensajes.get("requiere.fecha.limite");
         if (dto.getEstadoMetaAhorro() == null || dto.getEstadoMetaAhorro().isBlank()) return mensajes.get("requiere.estado.meta");
+        String estado = normalizarEstado(dto.getEstadoMetaAhorro());
+        if (!List.of("activa", "cumplida", "pausada").contains(estado)) return mensajes.get("estado.meta.no.valido");
+        dto.setEstadoMetaAhorro(estado);
+        // Soles y céntimos
+        if (dto.getMontoObjetivo().stripTrailingZeros().scale() > 2 || dto.getMontoActual().stripTrailingZeros().scale() > 2) {
+            return mensajes.get("monto.maximo.dos.decimales");
+        }
+        // Lo ahorrado no puede pasar el objetivo (antes se aceptaba S/ 1,200 de S/ 1,000)
+        if (dto.getMontoActual().compareTo(dto.getMontoObjetivo()) > 0) return mensajes.get("meta.ahorrado.supera.objetivo");
+        // "Cumplida" solo cuando de verdad se llegó al objetivo (si no, se ganaba "Gran ahorrador" sin ahorrar)
+        if ("cumplida".equals(estado) && dto.getMontoActual().compareTo(dto.getMontoObjetivo()) < 0) {
+            return mensajes.get("meta.cumplida.sin.objetivo");
+        }
         if (dto.getIdUsuario() <= 0) return mensajes.get("requiere.id.usuario.valido");
         return null;
     }

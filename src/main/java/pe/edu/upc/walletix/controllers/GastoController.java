@@ -63,7 +63,12 @@ public class GastoController {
     // Respuesta 400 cuando el usuario no tiene saldo suficiente
     private ResponseEntity<String> saldoInsuficiente(Usuario usuario) {
         return ResponseEntity.badRequest().body(mensajes.get("saldo.insuficiente.gasto",
-                saldoService.saldoActual(usuario).setScale(2, java.math.RoundingMode.HALF_UP).toPlainString()));
+                pe.edu.upc.walletix.config.Montos.formato(saldoService.saldoActual(usuario))));
+    }
+
+    private boolean comercioDeLaCategoria(Comerciante comerciante, Categoria categoria) {
+        return comerciante.getCategoria() != null
+                && comerciante.getCategoria().getIdCategoria() == categoria.getIdCategoria();
     }
 
     private boolean estaVacio(String texto) {
@@ -165,6 +170,10 @@ public class GastoController {
         if (!usuarioActual.comercioDisponible(comerciante.get(), gastoDTO.getIdUsuario())) {
             return ResponseEntity.badRequest().body(mensajes.get("comercio.no.pertenece.usuario"));
         }
+        // El comercio pertenece a una categoría: un gasto en "Salud" no puede ser en Cineplanet
+        if (!comercioDeLaCategoria(comerciante.get(), categoria.get())) {
+            return ResponseEntity.badRequest().body(mensajes.get("comercio.otra.categoria"));
+        }
         // US11: el gasto sale del saldo, que no puede quedar negativo. Se descuenta ANTES de guardar el gasto
         // y de forma atómica: si llegan dos gastos a la vez, el segundo ya ve el saldo descontado.
         if (!saldoService.aplicar(usuario.get(), gastoDTO.getMontoGasto().negate())) {
@@ -239,6 +248,9 @@ public class GastoController {
         }
         if (!usuarioActual.comercioDisponible(comerciante.get(), gastoExistente.get().getUsuario().getIdUsuario())) {
             return ResponseEntity.badRequest().body(mensajes.get("comercio.no.pertenece.usuario"));
+        }
+        if (!comercioDeLaCategoria(comerciante.get(), categoria.get())) {
+            return ResponseEntity.badRequest().body(mensajes.get("comercio.otra.categoria"));
         }
         // El dueño del gasto no cambia al editarlo
         Gasto gasto = gastoExistente.get();

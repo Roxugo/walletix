@@ -366,7 +366,7 @@ class RetosIntegracionTests {
 
         // Y hoy ya no puede volver a marcarlo: el delivery sigue registrado
         progreso(token, idParticipacion).andExpect(status().isUnprocessableContent())
-                .andExpect(content().string(containsString("rompe este reto (Comercio ")))
+                .andExpect(content().string(containsString("rompe este reto («")))  // nombra la descripción del gasto, no el comercio
                 .andExpect(content().string(containsString(", S/ 25.00)")));
 
         // Un gasto normal no afecta un reto que ya no tiene progreso ese día, ni aparece el aviso
