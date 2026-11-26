@@ -377,6 +377,6 @@ public class RetoServiceImplement implements IRetoService {
         notificacion.setTitulo(titulo.length() <= 30 ? titulo : titulo.substring(0, 27) + "...");
         notificacion.setMensaje(mensaje.length() <= 100 ? mensaje : mensaje.substring(0, 97) + "...");
         notificacion.setEstadoNotificacion(false);
-        notificacionService.registrar(notificacion);
+        notificacionService.registrarAutomatica(notificacion); // US25: respeta sus preferencias
     }
 }

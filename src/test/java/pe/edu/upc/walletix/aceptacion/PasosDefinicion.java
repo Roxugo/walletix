@@ -473,4 +473,27 @@ public class PasosDefinicion {
         lector.close();
         assertThat(texto).contains(titulo).contains(movimiento);
     }
+
+    // ---------- US25: preferencias de notificaciones ----------
+
+    @Given("the user turns off the budget alerts and keeps achievements and challenges")
+    public void apagaLasAlertas() throws Exception {
+        enviar(put("/notificaciones/preferencias").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"alerta\":false,\"logro\":true,\"reto\":true}")).andExpect(status().isOk());
+    }
+
+    @Then("the notification preferences show alerts off, achievements on and challenges on")
+    public void preferenciasGuardadas() throws Exception {
+        enviar(get("/notificaciones/preferencias")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.alerta").value(false))
+                .andExpect(jsonPath("$.logro").value(true))
+                .andExpect(jsonPath("$.reto").value(true));
+    }
+
+    @Then("the user has no budget alert in the notifications")
+    public void sinAlertaDePresupuesto() throws Exception {
+        String cuerpo = enviar(get("/notificaciones")).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        assertThat((java.util.List<String>) JsonPath.read(cuerpo, "$[*].tipo")).doesNotContain("alerta");
+    }
 }

@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import pe.edu.upc.walletix.dtos.PreferenciasNotificacionDTO;
 import pe.edu.upc.walletix.dtos.NotificacionDTO;
 import pe.edu.upc.walletix.entities.Notificacion;
 import pe.edu.upc.walletix.entities.Usuario;
@@ -174,6 +175,39 @@ public class NotificacionController {
         notificacion.get().setEstadoNotificacion(leida);
         notificacionService.actualizar(notificacion.get());
         return ResponseEntity.ok(convertirADTO(notificacion.get(), crearModelMapper()));
+    }
+
+    @Operation(summary = "Mis preferencias de notificaciones: alertas de presupuesto, logros y retos (US25)")
+    @GetMapping("/preferencias")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    public ResponseEntity<?> misPreferencias(Authentication autenticacion) {
+        Optional<Usuario> usuario = usuarioService.listId(usuarioActual.id(autenticacion));
+        if (usuario.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("usuario.no.encontrado"));
+        }
+        Usuario u = usuario.get();
+        return ResponseEntity.ok(new PreferenciasNotificacionDTO(
+                u.aceptaNotificacion("alerta"), u.aceptaNotificacion("logro"), u.aceptaNotificacion("reto")));
+    }
+
+    @Operation(summary = "Guardar qué notificaciones automáticas quiero recibir (US25)")
+    @PutMapping("/preferencias")
+    @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
+    public ResponseEntity<?> guardarPreferencias(@RequestBody(required = false) PreferenciasNotificacionDTO preferencias,
+                                                 Authentication autenticacion) {
+        if (preferencias == null || preferencias.alerta() == null || preferencias.logro() == null || preferencias.reto() == null) {
+            return ResponseEntity.badRequest().body(mensajes.get("notificacion.preferencias.incompletas"));
+        }
+        Optional<Usuario> usuario = usuarioService.listId(usuarioActual.id(autenticacion));
+        if (usuario.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("usuario.no.encontrado"));
+        }
+        Usuario u = usuario.get();
+        u.setNotificarAlertas(preferencias.alerta());
+        u.setNotificarLogros(preferencias.logro());
+        u.setNotificarRetos(preferencias.reto());
+        usuarioService.update(u);
+        return ResponseEntity.ok(preferencias);
     }
 
     // US24: "Marcar todas como leídas" del usuario que inició sesión (sale del token, no de la URL)

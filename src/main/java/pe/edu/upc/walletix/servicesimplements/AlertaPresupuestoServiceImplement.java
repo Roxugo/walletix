@@ -68,7 +68,7 @@ public class AlertaPresupuestoServiceImplement implements IAlertaPresupuestoServ
         notificacion.setTipo("alerta");
         notificacion.setMensaje(recortar(alerta, 100));
         notificacion.setEstadoNotificacion(false); // no leída
-        notificacionService.registrar(notificacion);
+        notificacionService.registrarAutomatica(notificacion); // US25: respeta sus preferencias
         return Optional.of(alerta);
     }
 }

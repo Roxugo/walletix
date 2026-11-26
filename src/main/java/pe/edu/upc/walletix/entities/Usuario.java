@@ -42,6 +42,16 @@ public class Usuario {
     @Column(name = "contrasenaUsuario", length = 200)
     private String contrasenaUsuario;
 
+    // US25: qué notificaciones automáticas quiere recibir (null = sí; así los usuarios existentes siguen igual)
+    @Column(name = "notificarAlertas")
+    private Boolean notificarAlertas;
+
+    @Column(name = "notificarLogros")
+    private Boolean notificarLogros;
+
+    @Column(name = "notificarRetos")
+    private Boolean notificarRetos;
+
     // Roles del usuario (USUARIO, ADMIN). Se cargan junto al usuario para el login
     @OneToMany(mappedBy = "usuario", fetch = FetchType.EAGER)
     private List<Rol> roles = new ArrayList<>();
@@ -115,6 +125,41 @@ public class Usuario {
 
     public void setSaldoActualUsuario(BigDecimal saldoActualUsuario) {
         this.saldoActualUsuario = saldoActualUsuario;
+    }
+
+    // US25: ¿acepta las notificaciones automáticas de este tipo ("alerta", "logro" o "reto")?
+    public boolean aceptaNotificacion(String tipo) {
+        Boolean acepta = switch (tipo == null ? "" : tipo) {
+            case "alerta" -> notificarAlertas;
+            case "logro" -> notificarLogros;
+            case "reto" -> notificarRetos;
+            default -> Boolean.TRUE;
+        };
+        return acepta == null || acepta;
+    }
+
+    public Boolean getNotificarAlertas() {
+        return notificarAlertas;
+    }
+
+    public void setNotificarAlertas(Boolean notificarAlertas) {
+        this.notificarAlertas = notificarAlertas;
+    }
+
+    public Boolean getNotificarLogros() {
+        return notificarLogros;
+    }
+
+    public void setNotificarLogros(Boolean notificarLogros) {
+        this.notificarLogros = notificarLogros;
+    }
+
+    public Boolean getNotificarRetos() {
+        return notificarRetos;
+    }
+
+    public void setNotificarRetos(Boolean notificarRetos) {
+        this.notificarRetos = notificarRetos;
     }
 
     public int getPuntosGamificacionUsuario() {

@@ -8,6 +8,9 @@ import java.util.Optional;
 public interface INotificacionService {
     public List<Notificacion> listar();
     public Notificacion registrar(Notificacion notificacion);
+    // US25: notificación automática (alerta, logro, reto). Solo se guarda si el usuario acepta ese tipo;
+    // devuelve vacío si la desactivó. Las que crea un ADMIN a mano usan registrar() y no se filtran.
+    public java.util.Optional<Notificacion> registrarAutomatica(Notificacion notificacion);
     public Optional<Notificacion> buscarPorId(int id);
     public void actualizar(Notificacion notificacion);
     public void eliminar(int id);

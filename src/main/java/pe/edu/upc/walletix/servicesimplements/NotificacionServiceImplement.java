@@ -23,6 +23,14 @@ public class NotificacionServiceImplement implements INotificacionService {
     }
 
     @Override
+    public Optional<Notificacion> registrarAutomatica(Notificacion notificacion) {
+        if (notificacion.getUsuario() != null && !notificacion.getUsuario().aceptaNotificacion(notificacion.getTipo())) {
+            return Optional.empty();
+        }
+        return Optional.of(registrar(notificacion));
+    }
+
+    @Override
     public Notificacion registrar(Notificacion notificacion) {
         // Toda notificación nueva lleva la fecha y hora en que se generó
         if (notificacion.getFechaNotificacion() == null) {
