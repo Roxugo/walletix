@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.repositories;
 
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -20,6 +22,13 @@ public interface IGastoRepository extends JpaRepository<Gasto, Integer> {
     List<Gasto> findByEstadoGasto(Integer estadoGasto);
 
     Optional<Gasto> findByIdGastoAndEstadoGasto(int idGasto, Integer estadoGasto);
+
+    // Para editar o eliminar: bloquea la fila (SELECT ... FOR UPDATE) hasta el fin de la transacción.
+    // Si llegan dos peticiones sobre el mismo gasto, la segunda espera y ve el gasto ya cambiado
+    // (así no se devuelve dos veces el dinero de un gasto eliminado dos veces).
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT gasto FROM Gasto gasto WHERE gasto.idGasto = :id AND gasto.estadoGasto = 1")
+    Optional<Gasto> bloquearActivo(@Param("id") int idGasto);
 
     // JPQL: gastos activos de un usuario entre dos fechas (US09, US18, US19)
     @Query("SELECT gasto FROM Gasto gasto " +

@@ -400,6 +400,28 @@ class RetosIntegracionTests {
     }
 
     @Test
+    @DisplayName("Si el día perdido no había dado XP, la notificación no dice «-0 XP»")
+    void diaPerdidoSinXpNoDiceMenosCero() throws Exception {
+        LocalDate hoy = LocalDate.now();
+        when(reloj.hoy()).thenReturn(hoy);
+        int idCategoria = api.crearCategoria(token, idUsuario, "gasto");
+        int idComercio = api.crearComercio(tokenAdmin, idCategoria);
+        int conXp = retoPersonal("sin_delivery", 7);
+        int sinXp = retoPersonal("sin_gastos_hormiga", 5);
+        progreso(token, conXp).andExpect(status().isOk()).andExpect(jsonPath("$.xpGanado").value(20));
+        progreso(token, sinXp).andExpect(status().isOk()).andExpect(jsonPath("$.xpGanado").value(0)); // +20 solo una vez al día
+
+        // Galletas de S/ 3.50: rompen solo "sin gastos hormiga", el reto que ese día no dio XP
+        gasto(idCategoria, idComercio, "Galletas", "3.50", hoy).andExpect(status().isCreated());
+        String json = mockMvc.perform(get("/notificaciones").header("Authorization", "Bearer " + token)
+                        .header("Accept-Language", "es-419"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        List<String> mensajes = JsonPath.read(json, "$[?(@.tipo == 'reto')].mensaje");
+        assertThat(mensajes).anySatisfy(m -> assertThat(m).contains("ese día ya no cuenta"));
+        assertThat(mensajes).allSatisfy(m -> assertThat(m).doesNotContain("XP"));
+    }
+
+    @Test
     @DisplayName("Ahorro libre sigue siendo por honestidad: un delivery no le quita días")
     void retoPorHonestidadNoSeVerifica() throws Exception {
         LocalDate hoy = LocalDate.now();

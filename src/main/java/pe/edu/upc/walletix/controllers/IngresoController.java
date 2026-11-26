@@ -117,7 +117,7 @@ public class IngresoController {
         String error = validar(dto);
         if (error != null) return ResponseEntity.badRequest().body(error);
 
-        Optional<Ingreso> existente = ingresoService.buscarPorId(dto.getIdIngreso());
+        Optional<Ingreso> existente = ingresoService.buscarParaModificar(dto.getIdIngreso());
         if (existente.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("ingreso.no.encontrado"));
         // Debe ser dueño del registro y no puede pasárselo a otro usuario
         if (!usuarioActual.puedeGestionar(autenticacion, existente.get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
@@ -137,10 +137,9 @@ public class IngresoController {
         BigDecimal montoNuevo = comoDecimal(dto.getMonto());
         boolean mismoDueno = duenoAnterior.getIdUsuario() == usuario.get().getIdUsuario();
         BigDecimal cambioAnterior = mismoDueno ? montoNuevo.subtract(montoAnterior) : montoAnterior.negate();
-        if (!saldoService.alcanza(duenoAnterior, cambioAnterior)) {
+        if (!saldoService.aplicar(duenoAnterior, cambioAnterior)) {
             return ResponseEntity.badRequest().body(mensajes.get("saldo.insuficiente.ingreso"));
         }
-        saldoService.aplicar(duenoAnterior, cambioAnterior);
         if (!mismoDueno) {
             saldoService.aplicar(usuario.get(), montoNuevo);
         }
@@ -161,17 +160,16 @@ public class IngresoController {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     @Transactional
     public ResponseEntity<String> eliminar(@PathVariable int id, Authentication autenticacion) {
-        Optional<Ingreso> ingreso = ingresoService.buscarPorId(id);
+        Optional<Ingreso> ingreso = ingresoService.buscarParaModificar(id);
         if (ingreso.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensajes.get("ingreso.no.encontrado"));
         }
         if (!usuarioActual.puedeGestionar(autenticacion, ingreso.get().getUsuario().getIdUsuario())) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));
         // Si ese dinero ya se gastó, eliminar el ingreso dejaría el saldo en negativo
         BigDecimal monto = comoDecimal(ingreso.get().getMonto()).negate();
-        if (!saldoService.alcanza(ingreso.get().getUsuario(), monto)) {
+        if (!saldoService.aplicar(ingreso.get().getUsuario(), monto)) {
             return ResponseEntity.badRequest().body(mensajes.get("saldo.insuficiente.ingreso"));
         }
-        saldoService.aplicar(ingreso.get().getUsuario(), monto);
         ingresoService.eliminar(id);
         return ResponseEntity.ok(mensajes.get("ingreso.eliminado.correctamente"));
     }
@@ -200,6 +198,8 @@ public class IngresoController {
         if (dto == null) return mensajes.get("requiere.informacion.ingreso");
         if (dto.getIdIngreso() < 0) return mensajes.get("id.ingreso.no.puede.ser");
         if (dto.getMonto() <= 0) return mensajes.get("monto.debe.ser.mayor.cero");
+        // Soles y céntimos (con más decimales el saldo se descuadraba al redondear)
+        if (comoDecimal(dto.getMonto()).stripTrailingZeros().scale() > 2) return mensajes.get("monto.maximo.dos.decimales");
         if (dto.getFecha() == null) return mensajes.get("requiere.fecha");
         // Igual que los gastos: no futura (sumaría al saldo dinero que aún no llegó)
         // y como mínimo el 1 de enero del año anterior

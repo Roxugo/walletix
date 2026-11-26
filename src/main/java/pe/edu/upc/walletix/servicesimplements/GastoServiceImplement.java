@@ -34,6 +34,11 @@ public class GastoServiceImplement implements IGastoService {
     }
 
     @Override
+    public Optional<Gasto> listIdParaModificar(int id) {
+        return gastoRepository.bloquearActivo(id);
+    }
+
+    @Override
     public void update(Gasto gasto) {
         gastoRepository.save(gasto);
     }

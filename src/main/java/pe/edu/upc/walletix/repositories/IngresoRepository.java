@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.repositories;
 
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,9 +13,15 @@ import pe.edu.upc.walletix.entities.Ingreso;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface IngresoRepository extends JpaRepository<Ingreso, Integer> {
+    // Para editar o eliminar: bloquea la fila hasta el fin de la transacción (ver IGastoRepository)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT i FROM Ingreso i WHERE i.idIngreso = :id AND i.estado = 1")
+    Optional<Ingreso> bloquearActivo(@Param("id") int idIngreso);
+
     List<Ingreso> findAllByEstado(int estado);
     java.util.Optional<Ingreso> findByIdIngresoAndEstado(int idIngreso, int estado);
 

@@ -101,8 +101,9 @@ public class GamificacionServiceImplement implements IGamificacionService {
         if (puntos <= 0) {
             return;
         }
-        usuario.setPuntosGamificacionUsuario(usuario.getPuntosGamificacionUsuario() + puntos);
-        usuarioRepository.save(usuario);
+        // UPDATE atómico: dos peticiones a la vez no se pisan los puntos
+        usuarioRepository.sumarPuntos(usuario.getIdUsuario(), puntos);
+        usuario.setPuntosGamificacionUsuario(usuarioRepository.puntosGuardados(usuario.getIdUsuario()));
     }
 
     @Override
@@ -110,8 +111,8 @@ public class GamificacionServiceImplement implements IGamificacionService {
         if (puntos <= 0) {
             return;
         }
-        usuario.setPuntosGamificacionUsuario(Math.max(0, usuario.getPuntosGamificacionUsuario() - puntos));
-        usuarioRepository.save(usuario);
+        usuarioRepository.sumarPuntos(usuario.getIdUsuario(), -puntos); // nunca baja de 0
+        usuario.setPuntosGamificacionUsuario(usuarioRepository.puntosGuardados(usuario.getIdUsuario()));
     }
 
     // Un candado por usuario: si llegan dos peticiones a la vez (ej. al abrir la página),

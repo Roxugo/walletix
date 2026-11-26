@@ -9,6 +9,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "Usuario")
+// Solo actualiza las columnas modificadas (no pisa el saldo o los puntos que cambió otra petición)
+@org.hibernate.annotations.DynamicUpdate
 public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

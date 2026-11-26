@@ -275,8 +275,10 @@ public class RetoServiceImplement implements IRetoService {
                     participacion.getIdUsuarioDesafio(), gasto.getFechaGasto()).ifPresent(progreso -> {
                 quitarDia(usuario, participacion, progreso);
                 perdidos.add(participacion.getDesafio().getTitulo());
-                notificar(usuario, mensajes.get("reto.dia.perdido.titulo"), mensajes.get("reto.dia.perdido.mensaje",
-                        participacion.getDesafio().getTitulo(), String.valueOf(progreso.xpOtorgadoEfectivo())));
+                int xpPerdido = progreso.xpOtorgadoEfectivo();
+                notificar(usuario, mensajes.get("reto.dia.perdido.titulo"), xpPerdido > 0
+                        ? mensajes.get("reto.dia.perdido.mensaje", participacion.getDesafio().getTitulo(), String.valueOf(xpPerdido))
+                        : mensajes.get("reto.dia.perdido.mensaje.sin.xp", participacion.getDesafio().getTitulo()));
             });
         }
         return perdidos.isEmpty() ? null

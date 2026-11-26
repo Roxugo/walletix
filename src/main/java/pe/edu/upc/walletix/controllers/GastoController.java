@@ -63,7 +63,7 @@ public class GastoController {
     // Respuesta 400 cuando el usuario no tiene saldo suficiente
     private ResponseEntity<String> saldoInsuficiente(Usuario usuario) {
         return ResponseEntity.badRequest().body(mensajes.get("saldo.insuficiente.gasto",
-                usuario.getSaldoActualUsuario().setScale(2, java.math.RoundingMode.HALF_UP).toPlainString()));
+                saldoService.saldoActual(usuario).setScale(2, java.math.RoundingMode.HALF_UP).toPlainString()));
     }
 
     private boolean estaVacio(String texto) {
@@ -73,6 +73,10 @@ public class GastoController {
     private String validar(GastoDTO gastoDTO) {
         if (gastoDTO.getMontoGasto() == null || gastoDTO.getMontoGasto().compareTo(BigDecimal.ZERO) <= 0) {
             return mensajes.get("monto.debe.ser.mayor.cero");
+        }
+        // Soles y céntimos: con 3 decimales el gasto se guardaba redondeado y el saldo no (descuadre de 1 céntimo)
+        if (gastoDTO.getMontoGasto().stripTrailingZeros().scale() > 2) {
+            return mensajes.get("monto.maximo.dos.decimales");
         }
         if (gastoDTO.getFechaGasto() == null) {
             return mensajes.get("fecha.obligatoria");
@@ -161,8 +165,9 @@ public class GastoController {
         if (!usuarioActual.comercioDisponible(comerciante.get(), gastoDTO.getIdUsuario())) {
             return ResponseEntity.badRequest().body(mensajes.get("comercio.no.pertenece.usuario"));
         }
-        // US11: el gasto sale del saldo, que no puede quedar negativo
-        if (!saldoService.alcanza(usuario.get(), gastoDTO.getMontoGasto().negate())) {
+        // US11: el gasto sale del saldo, que no puede quedar negativo. Se descuenta ANTES de guardar el gasto
+        // y de forma atómica: si llegan dos gastos a la vez, el segundo ya ve el saldo descontado.
+        if (!saldoService.aplicar(usuario.get(), gastoDTO.getMontoGasto().negate())) {
             return saldoInsuficiente(usuario.get());
         }
 
@@ -172,7 +177,6 @@ public class GastoController {
         nuevoGasto.setCategoria(categoria.get());
         nuevoGasto.setComerciante(comerciante.get());
         Gasto gastoRegistrado = gastoService.insert(nuevoGasto);
-        saldoService.aplicar(usuario.get(), gastoRegistrado.getMontoGasto().negate());
 
         GastoDTO respuesta = convertirADTO(gastoRegistrado);
         // US15: si con este gasto se superó el presupuesto de la categoría, la respuesta trae la alerta
@@ -208,7 +212,7 @@ public class GastoController {
         if (error != null) {
             return ResponseEntity.badRequest().body(error);
         }
-        Optional<Gasto> gastoExistente = gastoService.listId(gastoDTO.getIdGasto());
+        Optional<Gasto> gastoExistente = gastoService.listIdParaModificar(gastoDTO.getIdGasto());
         if (gastoExistente.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(mensajes.get("gasto.no.encontrado"));
@@ -240,10 +244,9 @@ public class GastoController {
         Gasto gasto = gastoExistente.get();
         // US13: el saldo se ajusta con la diferencia (si el gasto sube, se descuenta lo que subió)
         BigDecimal diferencia = gasto.getMontoGasto().subtract(gastoDTO.getMontoGasto());
-        if (!saldoService.alcanza(gasto.getUsuario(), diferencia)) {
+        if (!saldoService.aplicar(gasto.getUsuario(), diferencia)) {
             return saldoInsuficiente(gasto.getUsuario());
         }
-        saldoService.aplicar(gasto.getUsuario(), diferencia);
         gasto.setCategoria(categoria.get());
         gasto.setComerciante(comerciante.get());
         gasto.setDescripcionGasto(gastoDTO.getDescripcionGasto());
@@ -262,7 +265,7 @@ public class GastoController {
     @PreAuthorize("hasAnyAuthority('ADMIN', 'USUARIO')")
     @Transactional
     public ResponseEntity<String> eliminar(@PathVariable int idGasto, Authentication autenticacion) {
-        Optional<Gasto> gasto = gastoService.listId(idGasto);
+        Optional<Gasto> gasto = gastoService.listIdParaModificar(idGasto);
         if (gasto.isPresent()) {
             if (!usuarioActual.puedeGestionar(autenticacion, gasto.get().getUsuario().getIdUsuario())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(mensajes.get("no.tiene.permiso.sobre.datos"));

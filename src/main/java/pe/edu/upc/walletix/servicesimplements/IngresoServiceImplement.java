@@ -32,6 +32,11 @@ public class IngresoServiceImplement implements IngresoServiceInterface {
     }
 
     @Override
+    public Optional<Ingreso> buscarParaModificar(int id) {
+        return ingresoRepository.bloquearActivo(id);
+    }
+
+    @Override
     public void actualizar(Ingreso i) {
         ingresoRepository.save(i);
     }

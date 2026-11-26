@@ -6,9 +6,11 @@ import java.math.BigDecimal;
 
 // Saldo del usuario (US11, US12, US14): los gastos lo restan y los ingresos lo suman
 public interface ISaldoService {
-    // true si el saldo no queda negativo al aplicar el cambio (cambio negativo = sale dinero)
-    public boolean alcanza(Usuario usuario, BigDecimal cambio);
+    // Aplica el cambio (negativo = sale dinero) solo si el saldo no queda negativo.
+    // Es atómico: dos peticiones simultáneas no pueden gastar el mismo dinero.
+    // Devuelve false (y no cambia nada) si no alcanza.
+    public boolean aplicar(Usuario usuario, BigDecimal cambio);
 
-    // Suma el cambio al saldo y lo guarda (cambio negativo = resta)
-    public void aplicar(Usuario usuario, BigDecimal cambio);
+    // Saldo actual guardado en la base
+    public BigDecimal saldoActual(Usuario usuario);
 }
