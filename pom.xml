@@ -97,6 +97,12 @@
             <version>3.2.6</version>
             <scope>compile</scope>
         </dependency>
+        <!-- US39: reporte financiero en PDF (OpenPDF 2.0.x es la última versión compatible con Java 17) -->
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>2.0.5</version>
+        </dependency>
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>

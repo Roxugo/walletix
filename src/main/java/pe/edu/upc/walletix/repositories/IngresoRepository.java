@@ -31,6 +31,13 @@ public interface IngresoRepository extends JpaRepository<Ingreso, Integer> {
             @Param("fechaFin") LocalDate fechaFin
     );
 
+    // US39 (reporte PDF): ingresos activos de un usuario entre dos fechas, en orden
+    @Query("SELECT ingreso FROM Ingreso ingreso WHERE ingreso.usuario.idUsuario = :idUsuario " +
+            "AND ingreso.fecha BETWEEN :fechaInicio AND :fechaFin AND ingreso.estado = 1 ORDER BY ingreso.fecha")
+    List<Ingreso> buscarPorUsuarioYRango(@Param("idUsuario") int idUsuario,
+                                        @Param("fechaInicio") LocalDate fechaInicio,
+                                        @Param("fechaFin") LocalDate fechaFin);
+
     // Borrado lógico en cascada: al eliminar un usuario se dan de baja sus registros
     @Transactional
     @Modifying

@@ -453,4 +453,24 @@ public class PasosDefinicion {
                 .andExpect(jsonPath("$.retroalimentacion[*].acerto", hasItem(true)))
                 .andExpect(jsonPath("$.retroalimentacion[0].explicacion").value("Because"));
     }
+
+    // ---------- US39: reporte financiero en PDF ----------
+
+    @When("the user exports the financial report of this month")
+    public void exportaElReporte() throws Exception {
+        String mes = java.time.YearMonth.now().toString();
+        respuesta = enviar(get("/reportes/pdf").param("desde", mes).param("hasta", mes));
+    }
+
+    @Then("a PDF file is downloaded that contains {string} and {string}")
+    public void seDescargaElPdf(String titulo, String movimiento) throws Exception {
+        byte[] pdf = respuesta.andExpect(status().isOk())
+                .andExpect(content().contentType("application/pdf"))
+                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("attachment")))
+                .andReturn().getResponse().getContentAsByteArray();
+        com.lowagie.text.pdf.PdfReader lector = new com.lowagie.text.pdf.PdfReader(pdf);
+        String texto = new com.lowagie.text.pdf.parser.PdfTextExtractor(lector).getTextFromPage(1);
+        lector.close();
+        assertThat(texto).contains(titulo).contains(movimiento);
+    }
 }
