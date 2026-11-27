@@ -1,9 +1,16 @@
 package pe.edu.upc.walletix.dtos;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Rol de un usuario")
 public class RolDTO {
+    @Schema(description = "Id del rol", example = "0")
     private int idRol;
+    @Schema(description = "\"USUARIO\" o \"ADMIN\"", example = "USUARIO")
     private String rol;
+    @Schema(description = "Usuario", example = "7")
     private int idUsuario;
+    @Schema(description = "1 = activo, 0 = eliminado", example = "1")
     private int estadoRol = 1;
 
     public int getIdRol() {

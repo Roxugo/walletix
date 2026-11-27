@@ -1,11 +1,20 @@
 package pe.edu.upc.walletix.dtos;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Logro que se desbloquea automáticamente")
 public class LogroDTO {
+    @Schema(description = "Id del logro (0 al crear)", example = "0")
     private int idLogro;
+    @Schema(description = "Nombre del logro", example = "Primer gasto registrado")
     private String nombreLogro;
+    @Schema(description = "Cómo se consigue", example = "Registraste tu primer gasto")
     private String descripcionLogro;
+    @Schema(description = "Ícono", example = "receipt_long")
     private String urlIconoLogro;
+    @Schema(description = "Puntos que da", example = "10")
     private int puntosLogro;
+    @Schema(description = "1 = activo, 0 = eliminado", example = "1")
     private int estadoLogro = 1;
 
     public int getIdLogro() {

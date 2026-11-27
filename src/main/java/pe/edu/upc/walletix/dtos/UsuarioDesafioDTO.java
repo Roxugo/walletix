@@ -1,15 +1,26 @@
 package pe.edu.upc.walletix.dtos;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.math.BigDecimal;
 
+@Schema(description = "Participación de un usuario en un reto")
 public class UsuarioDesafioDTO {
+    @Schema(description = "Id de la participación", example = "0")
     private int idUsuarioDesafio;
+    @Schema(description = "Usuario", example = "7")
     private int idUsuario;
+    @Schema(description = "Reto", example = "6")
     private int idDesafio;
+    @Schema(description = "Saldo al unirse", example = "1500.00")
     private BigDecimal saldoInicial;
+    @Schema(description = "Ahorro acumulado", example = "20.00")
     private BigDecimal montoProgresoActual;
+    @Schema(description = "Avance en porcentaje", example = "14.29")
     private BigDecimal porcentajeProgreso;
+    @Schema(description = "\"EN_PROGRESO\", \"COMPLETADO\", \"ABANDONADO\" o \"VENCIDO\"", example = "EN_PROGRESO")
     private String estadoDesafio;
+    @Schema(description = "1 = activa, 0 = eliminada", example = "1")
     private int estado = 1;
 
     public int getIdUsuarioDesafio() {

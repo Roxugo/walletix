@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.dtos;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -84,10 +86,11 @@ public final class RetosDTOs {
     }
 
     // Formulario "Crear nuevo reto" (US29): tipo, duración y meta de ahorro
+    @Schema(description = "Reto personal que crea el usuario (US29)")
     public record RetoPersonalDTO(
-            String tipo,
-            String titulo,
-            Integer duracionDias,
-            BigDecimal montoObjetivo) {
+            @Schema(description = "\"sin_delivery\", \"sin_gastos_hormiga\", \"transporte_inteligente\" o \"ahorro_libre\"", example = "sin_delivery") String tipo,
+            @Schema(description = "Título opcional (máximo 30 caracteres)", example = "Mi semana sin delivery") String titulo,
+            @Schema(description = "Duración de 1 a 90 días", example = "7") Integer duracionDias,
+            @Schema(description = "Meta de ahorro en soles (máximo 2 decimales)", example = "140.00") BigDecimal montoObjetivo) {
     }
 }

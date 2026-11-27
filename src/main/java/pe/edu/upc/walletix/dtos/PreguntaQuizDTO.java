@@ -1,16 +1,29 @@
 package pe.edu.upc.walletix.dtos;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 // Datos de una pregunta del quiz
+@Schema(description = "Pregunta del quiz de una microlección (la crea un ADMIN)")
 public class PreguntaQuizDTO {
+    @Schema(description = "Id (0 al crear)", example = "0")
     private int idPreguntaQuiz;
+    @Schema(description = "Microlección", example = "1")
     private int idMicroleccion;
+    @Schema(description = "Pregunta", example = "Con un ingreso de S/ 1,500, ¿cuánto deberías ahorrar según la regla 50/30/20?")
     private String enunciadoPreguntaQuiz;
+    @Schema(description = "Opción a", example = "S/ 150")
     private String opcionAPreguntaQuiz;
+    @Schema(description = "Opción b", example = "S/ 300")
     private String opcionBPreguntaQuiz;
+    @Schema(description = "Opción c", example = "S/ 450")
     private String opcionCPreguntaQuiz;
+    @Schema(description = "Opción d", example = "S/ 750")
     private String opcionDPreguntaQuiz;
+    @Schema(description = "Letra correcta (nunca se envía al navegador)", example = "b")
     private String opcionCorrectaPreguntaQuiz;
+    @Schema(description = "Explicación que se muestra después de responder", example = "El 20% de S/ 1,500 es S/ 300.")
     private String explicacionPreguntaQuiz;
+    @Schema(description = "1 = activa, 0 = eliminada", example = "1")
     private int estadoPreguntaQuiz = 1;
 
     public int getIdPreguntaQuiz() {

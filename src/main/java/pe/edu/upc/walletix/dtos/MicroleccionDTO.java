@@ -1,18 +1,33 @@
 package pe.edu.upc.walletix.dtos;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 // Datos de un consejo o microlección
+@Schema(description = "Microlección o tip de Aprende (la administra un ADMIN)")
 public class MicroleccionDTO {
+    @Schema(description = "Id (0 al crear)", example = "0")
     private int idMicroleccion;
+    @Schema(description = "Título", example = "La regla 50/30/20")
     private String tituloMicroleccion;
+    @Schema(description = "Resumen corto", example = "Una forma simple de repartir tu dinero cada mes.")
     private String descripcionMicroleccion;
+    @Schema(description = "Contenido (una línea en blanco separa párrafos)", example = "Divide tu ingreso en tres partes: 50% necesidades, 30% gustos y 20% ahorro.")
     private String contenidoMicroleccion;
+    @Schema(description = "Imagen o video opcional", example = "https://example.com/50-30-20.png")
     private String urlMediaMicroleccion;
+    @Schema(description = "Categoría", example = "presupuesto")
     private String categoriaEducativaMicroleccion;
+    @Schema(description = "\"leccion\" o \"tip\"", example = "leccion")
     private String tipoMicroleccion;
+    @Schema(description = "true si se desbloquea al superar un reto oficial", example = "false")
     private boolean bloqueadoMicroleccion;
+    @Schema(description = "Título del quiz", example = "Quiz: regla 50/30/20")
     private String tituloQuizMicroleccion;
+    @Schema(description = "Puntaje mínimo para aprobar (0-100)", example = "70")
     private int puntajeAprobatorioMicroleccion;
+    @Schema(description = "Puntos al aprobar por primera vez", example = "20")
     private int puntosRecompensaMicroleccion;
+    @Schema(description = "1 = activa, 0 = eliminada", example = "1")
     private int estadoMicroleccion = 1;
 
     public int getIdMicroleccion() {

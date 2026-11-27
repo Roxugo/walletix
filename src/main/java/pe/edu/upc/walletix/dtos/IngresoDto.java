@@ -1,17 +1,30 @@
 package pe.edu.upc.walletix.dtos;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.time.LocalDate;
 
+@Schema(description = "Ingreso del usuario: se suma al saldo")
 public class IngresoDto {
+    @Schema(description = "Id del ingreso (0 al crear)", example = "0")
     private int idIngreso;
+    @Schema(description = "Monto en soles, mayor que 0 y con máximo 2 decimales", example = "1500.00")
     private float monto;
+    @Schema(description = "Fecha del ingreso (no futura)", example = "2026-11-25")
     private LocalDate fecha;
+    @Schema(description = "\"fijo\" o \"variable\"", example = "fijo")
     private String tipoIngreso;
+    @Schema(description = "\"unica\", \"semanal\", \"quincenal\" o \"mensual\"", example = "mensual")
     private String frecuencia;
+    @Schema(description = "De dónde viene el ingreso", example = "Sueldo de practicante")
     private String fuente;
+    @Schema(description = "Descripción opcional", example = "Pago de noviembre")
     private String descripcion;
+    @Schema(description = "Dueño del ingreso", example = "7")
     private int idUsuario;
+    @Schema(description = "Categoría de tipo \"ingreso\"", example = "5")
     private int idCategoria;
+    @Schema(description = "1 = activo, 0 = eliminado", example = "1")
     private int estado = 1;
 
     public int getIdIngreso() {

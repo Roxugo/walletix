@@ -1,5 +1,7 @@
 package pe.edu.upc.walletix.dtos;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +46,10 @@ public final class AprendeDTOs {
     }
 
     // Lo que envía el usuario: id de la pregunta -> letra elegida ("a", "b", "c" o "d")
-    public record RespuestasQuizDTO(Map<Integer, String> respuestas) {
+    @Schema(description = "Respuestas del quiz: id de la pregunta -> letra elegida. Hay que responder todas.")
+    public record RespuestasQuizDTO(
+            @Schema(description = "Id de la pregunta y letra elegida (a, b, c o d)", example = "{\"7\": \"b\", \"8\": \"b\", \"9\": \"c\"}")
+            Map<Integer, String> respuestas) {
     }
 
     // Retroalimentación de una pregunta (US35)
